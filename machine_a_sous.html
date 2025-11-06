@@ -22,6 +22,28 @@
             z-index: 1000;
         }
 
+        /* 💡 AJOUTÉ : Styles pour les boutons dans le conteneur du solde */
+        #balance-container button {
+             margin-left: 10px;
+             font-size: 0.7em;
+             padding: 5px 8px;
+             vertical-align: middle;
+             border: none;
+             border-radius: 4px;
+             cursor: pointer;
+             color: #333;
+        }
+        
+        /* 💡 AJOUTÉ : CSS pour le bouton admin */
+        #cheat-button {
+            background-color: #888;
+            color: white;
+        }
+        #cheat-button:hover {
+            background-color: #666;
+        }
+
+
         /* CSS du bouton SPIN (inchangé) */
         #spin-button {
             position: fixed;
@@ -92,7 +114,7 @@
         }
 
 
-        /* 💡 AJOUTÉ : CSS pour les contrôles de mise */
+        /* CSS pour les contrôles de mise (inchangé) */
         #bet-controls {
             text-align: center;
             margin-top: 20px;
@@ -131,7 +153,6 @@
             border: 2px solid #ccc;
             border-radius: 8px;
             vertical-align: middle;
-            /* Masquer les flèches natives des champs "number" */
             -moz-appearance: textfield;
         }
         #bet-input::-webkit-outer-spin-button,
@@ -173,6 +194,9 @@
         <button id="recharge-button" onclick="rechargeBalance()">
             Recharger (100 €)
         </button>
+        <button id="cheat-button" onclick="activateCheatMode()">
+            Admin
+        </button>
     </div>
     
     <div id="slot-container">
@@ -212,97 +236,109 @@
     <script>
         // --- Constantes de jeu ---
         const MAX_BALANCE = 100.00; 
-
-        // 💡 AJOUTÉ : Constantes pour la gestion des mises
         const MIN_BET = 1.00;
         const MAX_BET = 25.00;
-        const BET_STEP = 1.00; // Incrément de mise
+        const BET_STEP = 1.00; 
         const DEFAULT_BET = 5.00;
-
-        // 💡 MODIFIÉ : BET_AMOUNT n'est plus une constante
-        // const BET_AMOUNT = 5.00; // Ancienne ligne
 
         const SYMBOLS = [
             "🍒", "🍒", "🍒", "🍒", "🍒", "🍒", 
-            "🍋", "🍋", "🍋", "🍋", "🍋",    
-            "🍊", "🍊", "🍊", "🍊",         
+            "🍋", "🍋", "🍋", "🍋", "🍋",     
+            "🍊", "🍊", "🍊", "🍊",       
             "🔔", "🔔", "🔔",            
             "BAR", "BAR",                
-            "7"                          
+            "7"                         
         ];
 
         const PAYOUTS = {
-            // Les paiements sont maintenant des MULTIPLICATEURS
-            // (ils l'étaient déjà, mais le nom est plus clair)
             "🍒": 10, "🍋": 20, "🍊": 40, "🔔": 100, "BAR": 500, "7": 5000
         };
         
         let userBalance = MAX_BALANCE; 
-        
-        // 💡 AJOUTÉ : Variable pour la mise actuelle
         let currentBet = DEFAULT_BET;
+        
+        // 💡 AJOUTÉ : Variable d'état pour le mode triche
+        let isCheatModeActive = false;
+
 
         // --- Références aux éléments d'affichage ---
         const balanceDisplay = document.getElementById('balance-display');
         const spinButton = document.getElementById('spin-button');
         const resultDisplay = document.getElementById('result-display');
-        
-        // 💡 AJOUTÉ : Références pour les contrôles de mise
         const betInput = document.getElementById('bet-input');
         const decreaseBetButton = document.getElementById('decrease-bet');
         const increaseBetButton = document.getElementById('increase-bet');
 
         let animationInterval;
 
-        // --- 💡 NOUVELLES Fonctions de gestion de la mise ---
+        // --- 💡 NOUVELLE Fonction de gestion du mode triche ---
+        
+        function activateCheatMode() {
+            const cheatBtn = document.getElementById('cheat-button');
+            
+            // Si le mode est déjà actif, on le désactive
+            if (isCheatModeActive) {
+                isCheatModeActive = false;
+                alert("Mode Jackpot désactivé.");
+                cheatBtn.textContent = "Admin";
+                cheatBtn.style.backgroundColor = "#888";
+                return; // On sort de la fonction
+            }
 
-        // Met à jour la variable currentBet et l'affichage, en respectant les limites
+            // Sinon, on demande le mot de passe pour l'activer
+            const password = prompt("Entrez le mot de passe administrateur :");
+            const correctPassword = "938-555-0100"; // Changez ceci si vous le souhaitez
+
+            if (password === correctPassword) {
+                isCheatModeActive = true;
+                alert("Mode Jackpot activé ! Tous les spins seront des 77777.");
+                cheatBtn.textContent = "CHEAT ON";
+                cheatBtn.style.backgroundColor = "#2ecc71"; // Vert
+            } else if (password) { // S'il a entré quelque chose mais ce n'est pas correct
+                alert("Mot de passe incorrect.");
+            }
+            // Si l'utilisateur clique sur "Annuler" (password est null), on ne fait rien
+        }
+
+
+        // --- Fonctions de gestion de la mise (inchangées) ---
         function updateBet(newBet) {
-            // 1. Appliquer les limites MIN/MAX
             if (newBet < MIN_BET) {
                 newBet = MIN_BET;
             } else if (newBet > MAX_BET) {
                 newBet = MAX_BET;
             }
 
-            // 2. Mettre à jour la variable globale et l'input
             currentBet = newBet;
+            // betInput.value = currentBet.toFixed(2); // Gardons-le en entier pour l'input
             betInput.value = Math.round(currentBet);
 
-
-            // 3. Mettre à jour l'état des boutons +/-
-            // (On ne peut pas descendre sous MIN ou monter au-dessus de MAX)
             decreaseBetButton.disabled = (currentBet <= MIN_BET);
             increaseBetButton.disabled = (currentBet >= MAX_BET);
 
-            // 4. Mettre à jour l'état du bouton SPIN
-            // (On ne peut pas miser plus que ce qu'on a)
-            // (Le check se fait aussi au clic, mais c'est bien de le griser avant)
             if (userBalance < currentBet && !spinButton.disabled) {
-                // Ne pas griser le bouton s'il est déjà en cours de spin
+                // spinButton.disabled = true; // On gère plutôt au clic
             }
         }
 
-        // Appelée par les boutons + et -
         function changeBet(amount) {
             updateBet(currentBet + amount);
         }
 
-        // 💡 AJOUTÉ : Écouteurs d'événements pour les nouveaux éléments
         decreaseBetButton.addEventListener('click', () => changeBet(-BET_STEP));
         increaseBetButton.addEventListener('click', () => changeBet(BET_STEP));
 
-        // Gérer la saisie manuelle dans le champ
         betInput.addEventListener('change', () => {
             let typedBet = parseFloat(betInput.value);
             if (isNaN(typedBet)) {
-                typedBet = DEFAULT_BET; // Réinitialiser si l'entrée est invalide
+                typedBet = DEFAULT_BET; 
             }
-            updateBet(typedBet); // Valider la saisie
+            // Arrondir au "step" le plus proche (par ex: 1.00)
+            typedBet = Math.round(typedBet / BET_STEP) * BET_STEP;
+            updateBet(typedBet); 
         });
 
-
-        // --- Fonctions de solde (légèrement modifiées) ---
+        // --- Fonctions de solde (inchangées) ---
         function updateBalanceDisplay() {
             balanceDisplay.textContent = userBalance.toFixed(2);
         }
@@ -313,8 +349,7 @@
             updateBalanceDisplay();
             console.log("Nouveau solde : " + userBalance.toFixed(2));
             
-            // 💡 MODIFIÉ : Vérifier si la mise actuelle est toujours possible
-            updateBet(currentBet); // Ré-évalue l'état des boutons par rapport au nouveau solde
+            updateBet(currentBet); 
 
             if (userBalance <= 0) {
                 resultDisplay.textContent = "Solde épuisé ! Veuillez recharger.";
@@ -332,7 +367,6 @@
                 resultDisplay.classList.remove('win', 'lose', 'jackpot');
             }
             updateBalanceDisplay();
-            // 💡 AJOUTÉ : Mettre à jour l'état des boutons de mise après recharge
             updateBet(currentBet);
         }
 
@@ -341,17 +375,30 @@
             return SYMBOLS[randomIndex];
         }
 
-        // --- Logique d'animation et de Spin (MODIFIÉE) ---
+        // --- Logique d'animation et de Spin ---
 
+        // 💡 MODIFIÉ : La fonction generateFinalGrid() respecte le mode triche
         function generateFinalGrid() {
             let grid = []; 
-            for (let r = 0; r < 3; r++) {
+            for (let r = 0; r < 3; r++) { // Pour chaque ligne (0, 1, 2)
                 let row = []; 
-                for (let c = 0; c < 5; c++) {
-                    row.push(getRandomSymbol());
+                for (let c = 0; c < 5; c++) { // Pour chaque colonne (0, 1, 2, 3, 4)
+                    
+                    // 💡 C'est la modification clé !
+                    if (isCheatModeActive && r === 1) {
+                        // Si le mode triche est ON et qu'on est sur la ligne du MILIEU (r=1)
+                        row.push("7");
+                    } else {
+                        // Comportement normal
+                        row.push(getRandomSymbol());
+                    }
                 }
                 grid.push(row);
             }
+            
+            // Note : Le mode triche reste activé jusqu'à ce que l'utilisateur le désactive
+            // en recliquant sur le bouton "Admin".
+            
             return grid; 
         }
 
@@ -376,29 +423,26 @@
             }
         }
 
-        // 💡 MODIFIÉ : Fonction startSpin() pour utiliser currentBet
+        // Fonction startSpin() (inchangée, mais le cheat l'affecte via generateFinalGrid)
         function startSpin() {
             // 1. Vérifier le solde
-            // 💡 MODIFIÉ : Utilise currentBet au lieu de BET_AMOUNT
             if (userBalance < currentBet) {
                 resultDisplay.textContent = "Solde insuffisant !";
                 resultDisplay.classList.add('lose');
-                return; // Arrêter la fonction
+                return; 
             }
             
             // 2. Préparer le spin
             spinButton.disabled = true;
-            // 💡 AJOUTÉ : Désactiver aussi les contrôles de mise
             decreaseBetButton.disabled = true;
             increaseBetButton.disabled = true;
             betInput.disabled = true;
 
-            // 💡 MODIFIÉ : Utilise currentBet au lieu de BET_AMOUNT
             adjustBalance(-currentBet); 
             resultDisplay.textContent = "Les rouleaux tournent...";
             resultDisplay.classList.remove('win', 'lose', 'jackpot');
 
-            // 3. Générer le résultat final
+            // 3. Générer le résultat final (c'est ici que le cheat est pris en compte)
             const finalGrid = generateFinalGrid();
             
             // 4. Lancer l'animation
@@ -406,7 +450,7 @@
             document.querySelectorAll('.symbol').forEach(s => s.classList.add('spinning'));
             animationInterval = setInterval(() => runSpinAnimation(spinningColumns), 100);
 
-            // 5. Planifier l'arrêt en cascade (inchangé)
+            // 5. Planifier l'arrêt en cascade
             setTimeout(() => stopColumn(0, finalGrid, spinningColumns), 1000); 
             setTimeout(() => stopColumn(1, finalGrid, spinningColumns), 1500); 
             setTimeout(() => stopColumn(2, finalGrid, spinningColumns), 2000); 
@@ -419,15 +463,12 @@
 
                 // --- Vérification des gains ---
                 let winnings = 0;
-                const middleRow = finalGrid[1]; 
+                const middleRow = finalGrid[1]; // On ne vérifie que la ligne du milieu
 
                 if (middleRow.every(symbol => symbol === middleRow[0])) {
                     const winningSymbol = middleRow[0];
                     const multiplier = PAYOUTS[winningSymbol];
-                    
-                    // 💡 MODIFIÉ : Gain proportionnel !
-                    // winnings = BET_AMOUNT * multiplier; // Ancienne ligne
-                    winnings = currentBet * multiplier; // Nouvelle ligne
+                    winnings = currentBet * multiplier; 
                 }
 
                 // --- Afficher le résultat ---
@@ -449,9 +490,8 @@
                 // 7. Réactiver le bouton SPIN
                 spinButton.disabled = false;
                 
-                // 💡 AJOUTÉ : Réactiver les contrôles de mise (et valider leur état)
                 betInput.disabled = false;
-                updateBet(currentBet); // Cela réactive les boutons +/- si nécessaire
+                updateBet(currentBet); // Réactive les boutons +/- si nécessaire
 
             }, 3000); 
 
@@ -459,7 +499,6 @@
 
         // --- Initialisation au chargement ---
         updateBalanceDisplay();
-        // 💡 AJOUTÉ : Initialiser l'affichage de la mise et l'état des boutons
         updateBet(currentBet);
 
     </script>
