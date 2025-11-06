@@ -1,300 +1,388 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Soltys Casino — Machine à sous</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solde de la Machine à Sous</title>
 
-  <style>
-    /* Solde */
-    #balance-container{
-      position:fixed; top:20px; right:20px; z-index:1000;
-      background:#007bff; color:#fff; padding:10px 15px; border-radius:8px;
-      box-shadow:0 4px 8px rgba(0,0,0,.3); font:700 1.5em Arial, sans-serif;
-      display:flex; gap:10px; align-items:center;
-    }
-    #recharge-button{
-      background:#111a2b; color:#fff; border:1px solid rgba(255,255,255,.25);
-      padding:6px 10px; border-radius:8px; cursor:pointer; font-size:.6em;
-    }
+    <style>
+        #balance-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            font-size: 1.5em;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            z-index: 1000;
+        }
 
-    /* Bouton SPIN */
-    #spin-button{
-      position:fixed; bottom:40px; left:50%; transform:translateX(-50%);
-      background:#007bff; color:#fff; font-size:2.5em; font-weight:700;
-      padding:20px 50px; border:0; border-radius:12px; cursor:pointer;
-      box-shadow:0 8px 16px rgba(0,0,0,.3); z-index:1000; transition:background-color .2s, transform .1s;
-    }
-    #spin-button:hover{background:#0056b3}
-    #spin-button:active{transform:translateX(-50%) scale(.95)}
-    #spin-button:disabled{background:#555; cursor:not-allowed; box-shadow:none; transform:translateX(-50%)}
+        #balance-container button {
+             margin-left: 10px;
+             font-size: 0.7em;
+             padding: 5px 8px;
+             vertical-align: middle;
+             border: none;
+             border-radius: 4px;
+             cursor: pointer;
+             color: #333;
+        }
+        
+        #cheat-button {
+            background-color: #888;
+            color: white;
+        }
+        #cheat-button:hover { background-color: #666; }
 
-    /* Machine */
-    #slot-container{
-      width:90%; max-width:600px; margin:80px auto 0; background:#2c3e50;
-      border:10px solid #f1c40f; border-radius:15px; padding:20px;
-      box-shadow:inset 0 0 15px rgba(0,0,0,.5), 0 10px 20px rgba(0,0,0,.5);
-    }
-    #reels-container{
-      display:grid; grid-template-columns:repeat(5,1fr); grid-template-rows:repeat(3,1fr);
-      gap:10px; background:#fff; padding:10px; border-radius:5px; border:3px solid #7f8c8d;
-    }
-    .symbol{
-      font-size:3em; display:flex; justify-content:center; align-items:center;
-      background:#ecf0f1; border-radius:5px; min-height:80px; box-shadow:inset 0 2px 4px rgba(0,0,0,.2);
-      transition:transform .1s ease-out;
-    }
-    .symbol.spinning{opacity:.6; filter:blur(2px); transform:scale(.9)}
+        #test-button {
+            background-color: #f39c12;
+            color: white;
+            display: none; 
+        }
+        #test-button:hover { background-color: #e67e22; }
 
-    /* Contrôles de mise */
-    #bet-controls{ text-align:center; margin:20px 0 10px; font-family:Arial, sans-serif; }
-    #bet-controls button{
-      font-size:1.5em; font-weight:700; width:45px; height:45px; border-radius:50%;
-      border:2px solid #007bff; background:#fff; color:#007bff; cursor:pointer; transition:.2s;
-      vertical-align:middle;
-    }
-    #bet-controls button:hover{ background:#007bff; color:#fff }
-    #bet-controls button:disabled{ background:#ccc; color:#888; border-color:#ccc; cursor:not-allowed }
-    #bet-input{
-      font-size:1.8em; font-weight:700; width:100px; text-align:center; margin:0 15px;
-      border:2px solid #ccc; border-radius:8px; vertical-align:middle; -moz-appearance:textfield;
-    }
-    #bet-input::-webkit-outer-spin-button, #bet-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
+        #spin-button {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #007bff;
+            color: white;
+            font-size: 2.5em;
+            font-weight: bold;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        #spin-button:hover { background-color: #0056b3; }
+        #spin-button:active { transform: translateX(-50%) scale(0.95); }
+        #spin-button:disabled { background-color: #555; cursor: not-allowed; box-shadow: none; transform: translateX(-50%); }
 
-    /* Résultat */
-    #result-display{
-      text-align:center; font:700 1.8em Arial, sans-serif; margin-top:20px; padding:15px; color:#333; transition:color .3s, transform .3s;
-    }
-    #result-display.win{ color:#2ecc71; transform:scale(1.1) }
-    #result-display.lose{ color:#95a5a6 }
-    #result-display.jackpot{ color:#f1c40f; transform:scale(1.2); font-size:2.2em }
+        #slot-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 80px auto 0 auto;
+            background: #2c3e50;
+            border: 10px solid #f1c40f;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5);
+        }
 
-    /* Body */
-    body{ height:200vh; margin:0; padding:0; background:#f4f4f9 }
-  </style>
+        #reels-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            border: 3px solid #7f8c8d;
+        }
+
+        .symbol {
+            font-size: 3em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            min-height: 80px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease-out;
+        }
+        
+        .symbol.spinning {
+            opacity: 0.6;
+            filter: blur(2px);
+            transform: scale(0.9);
+        }
+
+        #bet-controls {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-family: Arial, sans-serif;
+        }
+        #bet-controls button {
+            font-size: 1.5em;
+            font-weight: bold;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid #007bff;
+            background-color: white;
+            color: #007bff;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            vertical-align: middle;
+        }
+        #bet-controls button:hover { background-color: #007bff; color: white; }
+        #bet-controls button:disabled { background-color: #ccc; color: #888; border-color: #ccc; cursor: not-allowed; }
+        #bet-input {
+            font-size: 1.8em;
+            font-weight: bold;
+            width: 100px;
+            text-align: center;
+            margin: 0 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            vertical-align: middle;
+            -moz-appearance: textfield;
+        }
+        #bet-input::-webkit-outer-spin-button,
+        #bet-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        #result-display {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            color: #333;
+            transition: color 0.3s, transform 0.3s;
+        }
+        #result-display.win { color: #2ecc71; transform: scale(1.1); }
+        #result-display.lose { color: #95a5a6; }
+        #result-display.jackpot { color: #f1c40f; transform: scale(1.2); font-size: 2.2em; }
+
+        #test-log {
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: none;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            height: 200vh;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+    </style>
 </head>
 <body>
 
-  <div id="balance-container">
-    💰 Solde : <span id="balance-display">0.00</span> €
-    <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
-  </div>
-  
-  <div id="slot-container">
-    <div id="reels-container">
-      <div class="symbol" id="symbol-0-0">🍒</div>
-      <div class="symbol" id="symbol-1-0">🍒</div>
-      <div class="symbol" id="symbol-2-0">🍒</div>
-      <div class="symbol" id="symbol-3-0">🍒</div>
-      <div class="symbol" id="symbol-4-0">🍒</div>
-      <div class="symbol" id="symbol-0-1">7</div>
-      <div class="symbol" id="symbol-1-1">7</div>
-      <div class="symbol" id="symbol-2-1">7</div>
-      <div class="symbol" id="symbol-3-1">7</div>
-      <div class="symbol" id="symbol-4-1">7</div>
-      <div class="symbol" id="symbol-0-2">BAR</div>
-      <div class="symbol" id="symbol-1-2">BAR</div>
-      <div class="symbol" id="symbol-2-2">BAR</div>
-      <div class="symbol" id="symbol-3-2">BAR</div>
-      <div class="symbol" id="symbol-4-2">BAR</div>
+    <div id="balance-container">
+        💰 Solde : <span id="balance-display">0.00</span> €
+        <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
+        <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
+        <button id="test-button" onclick="runTests()">Test</button>
     </div>
-  </div>
+    
+    <div id="slot-container">
+        <div id="reels-container">
+            <div class="symbol" id="symbol-0-0">🍒</div>
+            <div class="symbol" id="symbol-1-0">🍒</div>
+            <div class="symbol" id="symbol-2-0">🍒</div>
+            <div class="symbol" id="symbol-3-0">🍒</div>
+            <div class="symbol" id="symbol-4-0">🍒</div>
+            <div class="symbol" id="symbol-0-1">7</div>
+            <div class="symbol" id="symbol-1-1">7</div>
+            <div class="symbol" id="symbol-2-1">7</div>
+            <div class="symbol" id="symbol-3-1">7</div>
+            <div class="symbol" id="symbol-4-1">7</div>
+            <div class="symbol" id="symbol-0-2">BAR</div>
+            <div class="symbol" id="symbol-1-2">BAR</div>
+            <div class="symbol" id="symbol-2-2">BAR</div>
+            <div class="symbol" id="symbol-3-2">BAR</div>
+            <div class="symbol" id="symbol-4-2">BAR</div>
+        </div>
+    </div>
 
-  <div id="bet-controls">
-    <button id="decrease-bet">-</button>
-    <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
-    <button id="increase-bet">+</button>
-  </div>
+    <div id="bet-controls">
+        <button id="decrease-bet">-</button>
+        <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
+        <button id="increase-bet">+</button>
+    </div>
 
-  <div id="result-display">Cliquez sur SPIN pour jouer !</div>
+    <div id="result-display">Cliquez sur SPIN pour jouer !</div>
 
-  <button id="spin-button" onclick="startSpin()">SPIN</button>
+    <button id="spin-button" onclick="startSpin()">SPIN</button>
 
-  <script>
-    /* ===== Partage du solde avec index.html via localStorage ===== */
-    const LS_KEY = 'credits';
-    function getStoredCredits(){
-      const v = parseFloat(localStorage.getItem(LS_KEY));
-      return Number.isFinite(v) ? v : 100;
-    }
-    function storeCredits(v){
-      localStorage.setItem(LS_KEY, String(v.toFixed(2)));
-    }
+    <div id="test-log">
+        <strong>Résultats des tests :</strong>
+        <ul id="test-results"></ul>
+    </div>
 
-    /* ===== Config jeu ===== */
-    const MAX_BALANCE = 100.00;
+    <script>
+        const MAX_BALANCE = 100.00;
+        const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
+        const SYMBOLS = ["🍒","🍒","🍒","🍒","🍒","🍒","🍋","🍋","🍋","🍋","🍋","🍊","🍊","🍊","🍊","🔔","🔔","🔔","BAR","BAR","7"];
+        const PAYOUTS = { "🍒":10, "🍋":20, "🍊":40, "🔔":100, "BAR":500, "7":5000 };
 
-    const MIN_BET = 1.00;
-    const MAX_BET = 25.00;
-    const BET_STEP = 1.00;
-    const DEFAULT_BET = 5.00;
+        let userBalance = MAX_BALANCE;
+        let currentBet = DEFAULT_BET;
+        let isCheatModeActive = false;
+        let animationInterval;
 
-    const SYMBOLS = [
-      "🍒","🍒","🍒","🍒","🍒","🍒",
-      "🍋","🍋","🍋","🍋","🍋",
-      "🍊","🍊","🍊","🍊",
-      "🔔","🔔","🔔",
-      "BAR","BAR",
-      "7"
-    ];
-    const PAYOUTS = { "🍒":10, "🍋":20, "🍊":40, "🔔":100, "BAR":500, "7":5000 };
+        const balanceDisplay = document.getElementById('balance-display');
+        const spinButton = document.getElementById('spin-button');
+        const resultDisplay = document.getElementById('result-display');
+        const betInput = document.getElementById('bet-input');
+        const decreaseBetButton = document.getElementById('decrease-bet');
+        const increaseBetButton = document.getElementById('increase-bet');
+        const testButton = document.getElementById('test-button');
 
-    /* ===== État ===== */
-    let userBalance = getStoredCredits();       // <-- chargé depuis localStorage
-    let currentBet = DEFAULT_BET;
-    let animationInterval;
-
-    /* ===== DOM ===== */
-    const balanceDisplay = document.getElementById('balance-display');
-    const spinButton = document.getElementById('spin-button');
-    const resultDisplay = document.getElementById('result-display');
-
-    const betInput = document.getElementById('bet-input');
-    const decreaseBetButton = document.getElementById('decrease-bet');
-    const increaseBetButton = document.getElementById('increase-bet');
-
-    /* ===== Solde ===== */
-    function updateBalanceDisplay(){
-      balanceDisplay.textContent = userBalance.toFixed(2);
-    }
-    function syncAndRender(){
-      storeCredits(userBalance);   // <-- synchronise avec index.html
-      updateBalanceDisplay();
-    }
-    function adjustBalance(amount){
-      userBalance += amount;
-      if(userBalance < 0) userBalance = 0;
-      syncAndRender();
-      updateBet(currentBet);
-      if(userBalance <= 0){
-        resultDisplay.textContent = "Solde épuisé ! Veuillez recharger.";
-        resultDisplay.classList.add('lose');
-      }
-    }
-    function rechargeBalance(){
-      if(userBalance <= 0){
-        userBalance = MAX_BALANCE;
-        resultDisplay.textContent = "Solde rechargé !";
-        resultDisplay.classList.add('win');
-      }else{
-        resultDisplay.textContent = "Vous avez encore " + userBalance.toFixed(2) + " €.";
-        resultDisplay.classList.remove('win','lose','jackpot');
-      }
-      syncAndRender();
-      updateBet(currentBet);
-    }
-
-    /* ===== Mise ===== */
-    function updateBet(newBet){
-      if(newBet < MIN_BET) newBet = MIN_BET;
-      if(newBet > MAX_BET) newBet = MAX_BET;
-      currentBet = newBet;
-      betInput.value = Math.round(currentBet);
-      decreaseBetButton.disabled = (currentBet <= MIN_BET);
-      increaseBetButton.disabled = (currentBet >= MAX_BET);
-    }
-    function changeBet(delta){ updateBet(currentBet + delta); }
-    decreaseBetButton.addEventListener('click', ()=> changeBet(-BET_STEP));
-    increaseBetButton.addEventListener('click', ()=> changeBet(BET_STEP));
-    betInput.addEventListener('change', ()=>{
-      let typed = parseFloat(betInput.value);
-      if(isNaN(typed)) typed = DEFAULT_BET;
-      updateBet(typed);
-    });
-
-    /* ===== Spin ===== */
-    function getRandomSymbol(){
-      const i = Math.floor(Math.random()*SYMBOLS.length);
-      return SYMBOLS[i];
-    }
-    function generateFinalGrid(){
-      const grid = [];
-      for(let r=0;r<3;r++){
-        const row = [];
-        for(let c=0;c<5;c++){ row.push(getRandomSymbol()); }
-        grid.push(row);
-      }
-      return grid;
-    }
-    function runSpinAnimation(cols){
-      for(const c of cols){
-        for(let r=0;r<3;r++){
-          document.getElementById(`symbol-${c}-${r}`).textContent = getRandomSymbol();
-        }
-      }
-    }
-    function stopColumn(colIndex, finalGrid, cols){
-      const p = cols.indexOf(colIndex);
-      if(p>-1) cols.splice(p,1);
-      for(let r=0;r<3;r++){
-        const el = document.getElementById(`symbol-${colIndex}-${r}`);
-        el.textContent = finalGrid[r][colIndex];
-        el.classList.remove('spinning');
-      }
-    }
-    function startSpin(){
-      if(userBalance < currentBet){
-        resultDisplay.textContent = "Solde insuffisant !";
-        resultDisplay.classList.add('lose');
-        return;
-      }
-
-      spinButton.disabled = true;
-      decreaseBetButton.disabled = true;
-      increaseBetButton.disabled = true;
-      betInput.disabled = true;
-
-      adjustBalance(-currentBet);
-      resultDisplay.textContent = "Les rouleaux tournent...";
-      resultDisplay.classList.remove('win','lose','jackpot');
-
-      const finalGrid = generateFinalGrid();
-
-      let spinningColumns = [0,1,2,3,4];
-      document.querySelectorAll('.symbol').forEach(s => s.classList.add('spinning'));
-      animationInterval = setInterval(()=> runSpinAnimation(spinningColumns), 100);
-
-      setTimeout(()=> stopColumn(0, finalGrid, spinningColumns), 1000);
-      setTimeout(()=> stopColumn(1, finalGrid, spinningColumns), 1500);
-      setTimeout(()=> stopColumn(2, finalGrid, spinningColumns), 2000);
-      setTimeout(()=> stopColumn(3, finalGrid, spinningColumns), 2500);
-
-      setTimeout(()=>{
-        stopColumn(4, finalGrid, spinningColumns);
-        clearInterval(animationInterval);
-
-        let winnings = 0;
-        const middleRow = finalGrid[1];
-        if(middleRow.every(s => s === middleRow[0])){
-          const sym = middleRow[0];
-          const mult = PAYOUTS[sym];
-          winnings = currentBet * mult;
+        function activateCheatMode() {
+            const cheatBtn = document.getElementById('cheat-button');
+            if (isCheatModeActive) {
+                isCheatModeActive = false;
+                cheatBtn.textContent = "Admin";
+                cheatBtn.style.backgroundColor = "#888";
+                testButton.style.display = "none";
+                document.getElementById('test-log').style.display = "none"; // cache le log
+                alert("Mode Jackpot désactivé.");
+                return;
+            }
+            const password = prompt("Entrez le mot de passe administrateur :");
+            const correctPassword = "938-555-0100";
+            if (password === correctPassword) {
+                isCheatModeActive = true;
+                cheatBtn.textContent = "CHEAT ON";
+                cheatBtn.style.backgroundColor = "#2ecc71";
+                testButton.style.display = "inline-block";
+                alert("Mode Jackpot activé ! Tous les spins seront des 77777.");
+            } else if (password) { alert("Mot de passe incorrect."); }
         }
 
-        if(winnings > 0){
-          adjustBalance(winnings);
-          if(middleRow[0]==="7"){
-            resultDisplay.textContent = `🎉 JACKPOT !!! +${winnings.toFixed(2)} € !`;
-            resultDisplay.classList.add('jackpot');
-          }else{
-            resultDisplay.textContent = `Bravo ! Vous gagnez ${winnings.toFixed(2)} € !`;
-            resultDisplay.classList.add('win');
-          }
-        }else{
-          resultDisplay.textContent = "Pas de chance... Essayez encore !";
-          resultDisplay.classList.add('lose');
+        function updateBet(newBet) {
+            if (newBet < MIN_BET) newBet = MIN_BET;
+            if (newBet > MAX_BET) newBet = MAX_BET;
+            currentBet = newBet;
+            betInput.value = Math.round(currentBet);
+            decreaseBetButton.disabled = (currentBet <= MIN_BET);
+            increaseBetButton.disabled = (currentBet >= MAX_BET);
+        }
+        function changeBet(amount) { updateBet(currentBet + amount); }
+        decreaseBetButton.addEventListener('click', () => changeBet(-BET_STEP));
+        increaseBetButton.addEventListener('click', () => changeBet(BET_STEP));
+        betInput.addEventListener('change', () => {
+            let typedBet = parseFloat(betInput.value);
+            if (isNaN(typedBet)) typedBet = DEFAULT_BET;
+            typedBet = Math.round(typedBet / BET_STEP) * BET_STEP;
+            updateBet(typedBet);
+        });
+
+        function updateBalanceDisplay() { balanceDisplay.textContent = userBalance.toFixed(2); }
+        function adjustBalance(amount) {
+            userBalance += amount;
+            if (userBalance < 0) userBalance = 0;
+            updateBalanceDisplay();
+            updateBet(currentBet);
+            if (userBalance <= 0) {
+                resultDisplay.textContent = "Solde épuisé ! Veuillez recharger.";
+                resultDisplay.classList.add('lose');
+            }
+        }
+        function rechargeBalance() {
+            if (userBalance <= 0) {
+                userBalance = MAX_BALANCE;
+                resultDisplay.textContent = "Solde rechargé !";
+                resultDisplay.classList.add('win');
+            } else {
+                resultDisplay.textContent = "Vous avez encore " + userBalance.toFixed(2) + " €.";
+                resultDisplay.classList.remove('win','lose','jackpot');
+            }
+            updateBalanceDisplay();
+            updateBet(currentBet);
         }
 
-        spinButton.disabled = false;
-        betInput.disabled = false;
-        updateBet(currentBet);
-      }, 3000);
-    }
+        function getRandomSymbol() { return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]; }
+        function generateFinalGrid() {
+            let grid=[];
+            for(let r=0;r<3;r++){
+                let row=[];
+                for(let c=0;c<5;c++){
+                    if(isCheatModeActive && r===1) row.push("7");
+                    else row.push(getRandomSymbol());
+                }
+                grid.push(row);
+            }
+            return grid;
+        }
+        function runSpinAnimation(spinningCols) {
+            for(const c of spinningCols)
+                for(let r=0;r<3;r++)
+                    document.getElementById(`symbol-${c}-${r}`).textContent=getRandomSymbol();
+        }
+        function stopColumn(colIndex, finalGrid, spinningCols){
+            const idx=spinningCols.indexOf(colIndex);
+            if(idx>-1) spinningCols.splice(idx,1);
+            for(let r=0;r<3;r++){
+                const s=document.getElementById(`symbol-${colIndex}-${r}`);
+                s.textContent=finalGrid[r][colIndex];
+                s.classList.remove('spinning');
+            }
+        }
 
-    /* ===== Init ===== */
-    syncAndRender();
-    updateBet(currentBet);
-  </script>
+        function startSpin() {
+            if(userBalance<currentBet){ resultDisplay.textContent="Solde insuffisant !"; resultDisplay.classList.add('lose'); return; }
+            spinButton.disabled=true;
+            decreaseBetButton.disabled=true; increaseBetButton.disabled=true; betInput.disabled=true;
+            adjustBalance(-currentBet);
+            resultDisplay.textContent="Les rouleaux tournent..."; resultDisplay.classList.remove('win','lose','jackpot');
+            const finalGrid=generateFinalGrid();
+            let spinningColumns=[0,1,2,3,4];
+            document.querySelectorAll('.symbol').forEach(s=>s.classList.add('spinning'));
+            animationInterval=setInterval(()=>runSpinAnimation(spinningColumns),100);
+            setTimeout(()=>stopColumn(0,finalGrid,spinningColumns),1000);
+            setTimeout(()=>stopColumn(1,finalGrid,spinningColumns),1500);
+            setTimeout(()=>stopColumn(2,finalGrid,spinningColumns),2000);
+            setTimeout(()=>stopColumn(3,finalGrid,spinningColumns),2500);
+            setTimeout(()=>{
+                stopColumn(4,finalGrid,spinningColumns);
+                clearInterval(animationInterval);
+                let winnings=0; const middleRow=finalGrid[1];
+                if(middleRow.every(s=>s===middleRow[0])){
+                    const winningSymbol=middleRow[0];
+                    const multiplier=PAYOUTS[winningSymbol];
+                    winnings=currentBet*multiplier;
+                }
+                if(winnings>0){
+                    adjustBalance(winnings);
+                    if(middleRow[0]==="7"){ resultDisplay.textContent=`🎉 JACKPOT !!! +${winnings.toFixed(2)} € !`; resultDisplay.classList.add('jackpot'); }
+                    else{ resultDisplay.textContent=`Bravo ! Vous gagnez ${winnings.toFixed(2)} € !`; resultDisplay.classList.add('win'); }
+                } else { resultDisplay.textContent="Pas de chance... Essayez encore !"; resultDisplay.classList.add('lose'); }
+                spinButton.disabled=false; betInput.disabled=false; updateBet(currentBet);
+            },3000);
+        }
+
+        function assert(desc, cond){
+            const li=document.createElement('li');
+            li.textContent=desc+' → '+(cond?'✅ OK':'❌ Échec');
+            li.style.color=cond?'green':'red';
+            document.getElementById('test-results').appendChild(li);
+        }
+
+        function runTests(){
+            const log=document.getElementById('test-log');
+            log.style.display='block';
+            document.getElementById('test-results').innerHTML='';
+            assert('Solde initial correct', userBalance===MAX_BALANCE);
+            assert('Mise par défaut correcte', currentBet===DEFAULT_BET);
+            assert('Bouton SPIN activé', !spinButton.disabled);
+            if(!isCheatModeActive) activateCheatMode();
+            const grid=generateFinalGrid();
+            const middleRow=grid[1];
+            assert('Mode Cheat génère 77777', middleRow.every(s=>'7'===s));
+        }
+
+        updateBalanceDisplay(); updateBet(currentBet);
+    </script>
 
 </body>
 </html>
