@@ -82,11 +82,9 @@
             border-radius: 5px;
             min-height: 80px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-            /* 💡 AJOUTÉ : Transition pour un arrêt en douceur */
             transition: transform 0.1s ease-out;
         }
         
-        /* 💡 AJOUTÉ : Classe pour l'effet de "spin" (flou) */
         .symbol.spinning {
             opacity: 0.6;
             filter: blur(2px);
@@ -94,7 +92,56 @@
         }
 
 
-        /* 💡 AJOUTÉ : CSS pour la zone de résultat (remplace l'alerte) */
+        /* 💡 AJOUTÉ : CSS pour les contrôles de mise */
+        #bet-controls {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-family: Arial, sans-serif;
+        }
+        #bet-controls button {
+            font-size: 1.5em;
+            font-weight: bold;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid #007bff;
+            background-color: white;
+            color: #007bff;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            vertical-align: middle;
+        }
+        #bet-controls button:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        #bet-controls button:disabled {
+            background-color: #ccc;
+            color: #888;
+            border-color: #ccc;
+            cursor: not-allowed;
+        }
+        #bet-input {
+            font-size: 1.8em;
+            font-weight: bold;
+            width: 100px;
+            text-align: center;
+            margin: 0 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            vertical-align: middle;
+            /* Masquer les flèches natives des champs "number" */
+            -moz-appearance: textfield;
+        }
+        #bet-input::-webkit-outer-spin-button,
+        #bet-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+
+        /* CSS pour la zone de résultat (inchangé) */
         #result-display {
             text-align: center;
             font-family: Arial, sans-serif;
@@ -103,23 +150,12 @@
             margin-top: 20px;
             padding: 15px;
             color: #333;
-            /* Animation de transition */
             transition: color 0.3s, transform 0.3s;
         }
         
-        /* Classes pour les états du résultat */
-        #result-display.win {
-            color: #2ecc71; /* Vert */
-            transform: scale(1.1);
-        }
-        #result-display.lose {
-            color: #95a5a6; /* Gris */
-        }
-        #result-display.jackpot {
-            color: #f1c40f; /* Or */
-            transform: scale(1.2);
-            font-size: 2.2em;
-        }
+        #result-display.win { color: #2ecc71; transform: scale(1.1); }
+        #result-display.lose { color: #95a5a6; }
+        #result-display.jackpot { color: #f1c40f; transform: scale(1.2); font-size: 2.2em; }
 
         /* CSS du body (inchangé) */
         body {
@@ -159,6 +195,13 @@
         </div>
     </div>
 
+    <div id="bet-controls">
+        <button id="decrease-bet">-</button>
+        <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
+        <button id="increase-bet">+</button>
+    </div>
+
+
     <div id="result-display">Cliquez sur SPIN pour jouer !</div>
 
 
@@ -167,49 +210,118 @@
     </button>
 
     <script>
-        // Constantes de jeu (inchangées)
+        // --- Constantes de jeu ---
         const MAX_BALANCE = 100.00; 
-        const BET_AMOUNT = 5.00; 
+
+        // 💡 AJOUTÉ : Constantes pour la gestion des mises
+        const MIN_BET = 1.00;
+        const MAX_BET = 25.00;
+        const BET_STEP = 1.00; // Incrément de mise
+        const DEFAULT_BET = 5.00;
+
+        // 💡 MODIFIÉ : BET_AMOUNT n'est plus une constante
+        // const BET_AMOUNT = 5.00; // Ancienne ligne
 
         const SYMBOLS = [
             "🍒", "🍒", "🍒", "🍒", "🍒", "🍒", 
-            "🍋", "🍋", "🍋", "🍋", "🍋",     
+            "🍋", "🍋", "🍋", "🍋", "🍋",    
             "🍊", "🍊", "🍊", "🍊",         
-            "🔔", "🔔", "🔔",             
-            "BAR", "BAR",                 
-            "7"                         
+            "🔔", "🔔", "🔔",            
+            "BAR", "BAR",                
+            "7"                          
         ];
 
         const PAYOUTS = {
+            // Les paiements sont maintenant des MULTIPLICATEURS
+            // (ils l'étaient déjà, mais le nom est plus clair)
             "🍒": 10, "🍋": 20, "🍊": 40, "🔔": 100, "BAR": 500, "7": 5000
         };
         
         let userBalance = MAX_BALANCE; 
         
-        // 💡 AJOUTÉ : Références aux éléments d'affichage
+        // 💡 AJOUTÉ : Variable pour la mise actuelle
+        let currentBet = DEFAULT_BET;
+
+        // --- Références aux éléments d'affichage ---
         const balanceDisplay = document.getElementById('balance-display');
         const spinButton = document.getElementById('spin-button');
         const resultDisplay = document.getElementById('result-display');
         
-        // 💡 AJOUTÉ : Variable pour l'intervalle d'animation
+        // 💡 AJOUTÉ : Références pour les contrôles de mise
+        const betInput = document.getElementById('bet-input');
+        const decreaseBetButton = document.getElementById('decrease-bet');
+        const increaseBetButton = document.getElementById('increase-bet');
+
         let animationInterval;
 
-        // Fonctions de solde (inchangées)
+        // --- 💡 NOUVELLES Fonctions de gestion de la mise ---
+
+        // Met à jour la variable currentBet et l'affichage, en respectant les limites
+        function updateBet(newBet) {
+            // 1. Appliquer les limites MIN/MAX
+            if (newBet < MIN_BET) {
+                newBet = MIN_BET;
+            } else if (newBet > MAX_BET) {
+                newBet = MAX_BET;
+            }
+
+            // 2. Mettre à jour la variable globale et l'input
+            currentBet = newBet;
+            betInput.value = Math.round(currentBet);
+
+
+            // 3. Mettre à jour l'état des boutons +/-
+            // (On ne peut pas descendre sous MIN ou monter au-dessus de MAX)
+            decreaseBetButton.disabled = (currentBet <= MIN_BET);
+            increaseBetButton.disabled = (currentBet >= MAX_BET);
+
+            // 4. Mettre à jour l'état du bouton SPIN
+            // (On ne peut pas miser plus que ce qu'on a)
+            // (Le check se fait aussi au clic, mais c'est bien de le griser avant)
+            if (userBalance < currentBet && !spinButton.disabled) {
+                // Ne pas griser le bouton s'il est déjà en cours de spin
+            }
+        }
+
+        // Appelée par les boutons + et -
+        function changeBet(amount) {
+            updateBet(currentBet + amount);
+        }
+
+        // 💡 AJOUTÉ : Écouteurs d'événements pour les nouveaux éléments
+        decreaseBetButton.addEventListener('click', () => changeBet(-BET_STEP));
+        increaseBetButton.addEventListener('click', () => changeBet(BET_STEP));
+
+        // Gérer la saisie manuelle dans le champ
+        betInput.addEventListener('change', () => {
+            let typedBet = parseFloat(betInput.value);
+            if (isNaN(typedBet)) {
+                typedBet = DEFAULT_BET; // Réinitialiser si l'entrée est invalide
+            }
+            updateBet(typedBet); // Valider la saisie
+        });
+
+
+        // --- Fonctions de solde (légèrement modifiées) ---
         function updateBalanceDisplay() {
             balanceDisplay.textContent = userBalance.toFixed(2);
         }
-        updateBalanceDisplay();
+
         function adjustBalance(amount) {
             userBalance += amount;
             if (userBalance < 0) userBalance = 0;
             updateBalanceDisplay();
             console.log("Nouveau solde : " + userBalance.toFixed(2));
+            
+            // 💡 MODIFIÉ : Vérifier si la mise actuelle est toujours possible
+            updateBet(currentBet); // Ré-évalue l'état des boutons par rapport au nouveau solde
+
             if (userBalance <= 0) {
-                // Remplacé l'alerte par un message
                 resultDisplay.textContent = "Solde épuisé ! Veuillez recharger.";
                 resultDisplay.classList.add('lose');
             }
         }
+
         function rechargeBalance() {
             if (userBalance <= 0) {
                 userBalance = MAX_BALANCE; 
@@ -220,56 +332,55 @@
                 resultDisplay.classList.remove('win', 'lose', 'jackpot');
             }
             updateBalanceDisplay();
+            // 💡 AJOUTÉ : Mettre à jour l'état des boutons de mise après recharge
+            updateBet(currentBet);
         }
+
         function getRandomSymbol() {
             const randomIndex = Math.floor(Math.random() * SYMBOLS.length);
             return SYMBOLS[randomIndex];
         }
 
-        // --- 💡 NOUVELLE LOGIQUE D'ANIMATION ET DE SPIN ---
+        // --- Logique d'animation et de Spin (MODIFIÉE) ---
 
-        // 💡 AJOUTÉ : Fonction pour générer la grille de résultat final
         function generateFinalGrid() {
-            let grid = []; // 3 rangées
+            let grid = []; 
             for (let r = 0; r < 3; r++) {
-                let row = []; // 5 colonnes
+                let row = []; 
                 for (let c = 0; c < 5; c++) {
                     row.push(getRandomSymbol());
                 }
                 grid.push(row);
             }
-            return grid; // Renvoie une grille 3x5 (ex: grid[rangée][colonne])
+            return grid; 
         }
 
-        // 💡 AJOUTÉ : Fonction qui anime les colonnes encore en train de tourner
         function runSpinAnimation(spinningCols) {
-            for (const c of spinningCols) { // Pour chaque colonne qui doit tourner
-                for (let r = 0; r < 3; r++) { // Animer les 3 symboles de la colonne
+            for (const c of spinningCols) { 
+                for (let r = 0; r < 3; r++) { 
                     document.getElementById(`symbol-${c}-${r}`).textContent = getRandomSymbol();
                 }
             }
         }
 
-        // 💡 AJOUTÉ : Fonction pour arrêter une colonne spécifique
         function stopColumn(colIndex, finalGrid, spinningCols) {
-            // 1. Retirer la colonne de la liste des colonnes à animer
             const indexToRemove = spinningCols.indexOf(colIndex);
             if (indexToRemove > -1) {
                 spinningCols.splice(indexToRemove, 1);
             }
 
-            // 2. Afficher les symboles finaux pour cette colonne
             for (let r = 0; r < 3; r++) {
                 const symbolElement = document.getElementById(`symbol-${colIndex}-${r}`);
                 symbolElement.textContent = finalGrid[r][colIndex];
-                symbolElement.classList.remove('spinning'); // Retirer l'effet de flou
+                symbolElement.classList.remove('spinning'); 
             }
         }
 
-        // 💡 MODIFIÉ : Fonction startSpin() complète
+        // 💡 MODIFIÉ : Fonction startSpin() pour utiliser currentBet
         function startSpin() {
             // 1. Vérifier le solde
-            if (userBalance < BET_AMOUNT) {
+            // 💡 MODIFIÉ : Utilise currentBet au lieu de BET_AMOUNT
+            if (userBalance < currentBet) {
                 resultDisplay.textContent = "Solde insuffisant !";
                 resultDisplay.classList.add('lose');
                 return; // Arrêter la fonction
@@ -277,44 +388,46 @@
             
             // 2. Préparer le spin
             spinButton.disabled = true;
-            adjustBalance(-BET_AMOUNT);
+            // 💡 AJOUTÉ : Désactiver aussi les contrôles de mise
+            decreaseBetButton.disabled = true;
+            increaseBetButton.disabled = true;
+            betInput.disabled = true;
+
+            // 💡 MODIFIÉ : Utilise currentBet au lieu de BET_AMOUNT
+            adjustBalance(-currentBet); 
             resultDisplay.textContent = "Les rouleaux tournent...";
             resultDisplay.classList.remove('win', 'lose', 'jackpot');
 
-            // 3. Générer le résultat final *avant* l'animation
+            // 3. Générer le résultat final
             const finalGrid = generateFinalGrid();
             
             // 4. Lancer l'animation
-            let spinningColumns = [0, 1, 2, 3, 4]; // Les 5 colonnes tournent
-            
-            // Appliquer l'effet visuel "spinning" à toutes les cases
+            let spinningColumns = [0, 1, 2, 3, 4]; 
             document.querySelectorAll('.symbol').forEach(s => s.classList.add('spinning'));
+            animationInterval = setInterval(() => runSpinAnimation(spinningColumns), 100);
 
-            // Démarrer l'intervalle d'animation (flou)
-            animationInterval = setInterval(() => runSpinAnimation(spinningColumns), 100); // 100ms = 10x/sec
-
-            // 5. Planifier l'arrêt en cascade des rouleaux
-            setTimeout(() => stopColumn(0, finalGrid, spinningColumns), 1000); // Stop col 0 après 1s
-            setTimeout(() => stopColumn(1, finalGrid, spinningColumns), 1500); // Stop col 1 après 1.5s
-            setTimeout(() => stopColumn(2, finalGrid, spinningColumns), 2000); // Stop col 2 après 2s
-            setTimeout(() => stopColumn(3, finalGrid, spinningColumns), 2500); // Stop col 3 après 2.5s
+            // 5. Planifier l'arrêt en cascade (inchangé)
+            setTimeout(() => stopColumn(0, finalGrid, spinningColumns), 1000); 
+            setTimeout(() => stopColumn(1, finalGrid, spinningColumns), 1500); 
+            setTimeout(() => stopColumn(2, finalGrid, spinningColumns), 2000); 
+            setTimeout(() => stopColumn(3, finalGrid, spinningColumns), 2500); 
             
             // 6. Planifier l'arrêt du dernier rouleau et la vérification des gains
             setTimeout(() => {
-                // Arrêter la dernière colonne
                 stopColumn(4, finalGrid, spinningColumns); 
-                
-                // Arrêter l'animation de flou
                 clearInterval(animationInterval); 
 
                 // --- Vérification des gains ---
                 let winnings = 0;
-                const middleRow = finalGrid[1]; // Rangée du milieu (index 1)
+                const middleRow = finalGrid[1]; 
 
                 if (middleRow.every(symbol => symbol === middleRow[0])) {
                     const winningSymbol = middleRow[0];
                     const multiplier = PAYOUTS[winningSymbol];
-                    winnings = BET_AMOUNT * multiplier;
+                    
+                    // 💡 MODIFIÉ : Gain proportionnel !
+                    // winnings = BET_AMOUNT * multiplier; // Ancienne ligne
+                    winnings = currentBet * multiplier; // Nouvelle ligne
                 }
 
                 // --- Afficher le résultat ---
@@ -333,12 +446,21 @@
                     resultDisplay.classList.add('lose');
                 }
                 
-                // 7. Réactiver le bouton
+                // 7. Réactiver le bouton SPIN
                 spinButton.disabled = false;
+                
+                // 💡 AJOUTÉ : Réactiver les contrôles de mise (et valider leur état)
+                betInput.disabled = false;
+                updateBet(currentBet); // Cela réactive les boutons +/- si nécessaire
 
-            }, 3000); // Stop col 4 après 3s et vérifie les gains
+            }, 3000); 
 
         }
+
+        // --- Initialisation au chargement ---
+        updateBalanceDisplay();
+        // 💡 AJOUTÉ : Initialiser l'affichage de la mise et l'état des boutons
+        updateBet(currentBet);
 
     </script>
 
