@@ -1,136 +1,122 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vérification</title>
-
-    <style>
-        /* Style de base pour la page */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            /* On laisse le fond vide */
-        }
-
-        /* 1. L'arrière-plan (overlay) du pop-up */
-        .modal-overlay {
-            /* Caché par défaut */
-            display: none; 
-            
-            /* Reste fixe sur l'écran */
-            position: fixed; 
-            z-index: 1000; /* Se place au-dessus de tout */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            
-            /* Fond noir semi-transparent */
-            background-color: rgba(0, 0, 0, 0.6); 
-            
-            /* Permet de centrer le contenu verticalement et horizontalement */
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Classe qui sera ajoutée par JavaScript pour AFFICHER le pop-up */
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        /* 2. La boîte (le contenu) du pop-up */
-        .modal-content {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            width: 90%;
-            max-width: 500px; /* Largeur maximale */
-            position: relative; /* Important pour positionner le bouton 'X' */
-            text-align: center;
-        }
-
-        /* 3. Le bouton de fermeture (le 'X') */
-        .close-btn {
-            color: #aaa;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close-btn:hover {
-            color: #333;
-        }
-
-        /* 4. Le bouton "J'ai compris" */
-        #accept-btn {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 15px;
-        }
-
-        #accept-btn:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Soltys Casino — Accueil</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="welcome-popup" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            
-            <h2>Bienvenue !</h2>
-            <p>Ce site est une SIMULATION de machine à sous.</p>
-            <p>Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir !</p>
-            <button id="accept-btn">J'ai compris !</button>
-        </div>
+  <!-- En-tête -->
+  <header class="page">
+    <h1 class="title">🪩 Casino</h1>
+    <div class="header-right">
+      <span class="badge" id="headerCredits">Crédits : 0</span>
     </div>
-    <script>
-        // On attend que tout le HTML soit chargé avant d'exécuter le script
-        document.addEventListener("DOMContentLoaded", function() {
+  </header>
 
-            // 1. On sélectionne les éléments dont on a besoin
-            const modal = document.getElementById("welcome-popup");
-            const closeButton = document.querySelector(".close-btn");
-            const acceptButton = document.getElementById("accept-btn");
+  <!-- Interface principale -->
+  <main class="container">
+    <h2 class="section-title">Jeux disponibles</h2>
 
-            // 2. AFFICHER LE POP-UP
-            // Dès que la page est prête, on ajoute la classe 'show' à l'overlay
-            modal.classList.add("show");
+    <div class="top-row">
+      <!-- Cartes cliquables -->
+      <button class="dropzone game-card" id="gameBJ" type="button" aria-label="Blackjack">
+        <img class="preview" src="secondary-thumb2x.jpg" alt="Blackjack">
+        <span class="game-label">Blackjack</span>
+      </button>
 
-            // 3. DÉFINIR LES ACTIONS DE FERMETURE
-            
-            // Fonction pour fermer le pop-up
-            function hideModal() {
-                modal.classList.remove("show");
-            }
+      <button class="dropzone game-card" id="gameRoulette" type="button" aria-label="Roulette">
+        <img class="preview" src="roulette-francaise-300x300.jpg" alt="Roulette">
+        <span class="game-label">Roulette</span>
+      </button>
+    </div>
 
-            // On ferme si on clique sur le 'X'
-            closeButton.addEventListener("click", hideModal);
+    <!-- Lien vers la machine à sous -->
+    <div class="click-area" id="clickArea" role="button" tabindex="0" aria-pressed="false">
+      <div class="click-inner">
+        <div class="click-title">Machine à sous</div>
+        <div class="click-sub">Clique ici — accéder à la machine à sous</div>
+        <button class="btn" id="actionBtn" aria-hidden="true">Ouvrir</button>
+      </div>
+    </div>
+  </main>
 
-            // On ferme si on clique sur le bouton "J'ai compris"
-            acceptButton.addEventListener("click", hideModal);
+  <!-- Pop-up d’avertissement -->
+  <div id="welcome-popup" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+      <span class="close-btn" aria-label="Fermer">&times;</span>
+      <h2 id="popup-title">Bienvenue</h2>
+      <p>Ce site est une SIMULATION de machine à sous.</p>
+      <p>Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir.</p>
+      <button id="accept-btn">J'ai compris</button>
+    </div>
+  </div>
 
-            // (Optionnel) On ferme aussi si on clique N'IMPORTE OÙ sur l'arrière-plan gris
-            modal.addEventListener("click", function(event) {
-                // On vérifie si on a cliqué sur l'overlay lui-même (et non sur la boîte blanche)
-                if (event.target === modal) {
-                    hideModal();
-                }
-            });
+  <!-- Overlay générique -->
+  <div id="overlay" class="overlay-msg" hidden>
+    <div class="overlay-card">
+      <pre id="overlayText"></pre>
+      <button class="btn" id="closeOverlay">Fermer</button>
+    </div>
+  </div>
 
-        });
-    </script>
+  <script>
+    // ===== Crédit partagé (localStorage) =====
+    const LS_KEY = 'credits';
+    function getCredits(){
+      const v = parseInt(localStorage.getItem(LS_KEY),10);
+      return Number.isFinite(v) ? v : 100; // défaut 100
+    }
+    function setCredits(v){
+      localStorage.setItem(LS_KEY, String(v));
+      document.getElementById('headerCredits').textContent = `Crédits : ${v}`;
+    }
+
+    // ===== Overlay simple =====
+    const overlay = document.getElementById('overlay');
+    const overlayText = document.getElementById('overlayText');
+    const closeOverlay = document.getElementById('closeOverlay');
+    function showOverlay(text){
+      overlayText.textContent = text;
+      overlay.hidden = false;
+    }
+    function hideOverlay(){ overlay.hidden = true; }
+    closeOverlay.addEventListener('click', hideOverlay);
+    overlay.addEventListener('click', e => { if(e.target === overlay) hideOverlay(); });
+
+    // ===== Pop-up d'accueil =====
+    document.addEventListener("DOMContentLoaded", function(){
+      const modal = document.getElementById("welcome-popup");
+      const closeButton = document.querySelector(".close-btn");
+      const acceptButton = document.getElementById("accept-btn");
+
+      function hideModal(){ modal.classList.remove("show"); modal.setAttribute('aria-hidden','true'); }
+      function showModal(){ modal.classList.add("show"); modal.setAttribute('aria-hidden','false'); }
+
+      // init crédits header
+      setCredits(getCredits());
+
+      showModal();
+      closeButton.addEventListener("click", hideModal);
+      acceptButton.addEventListener("click", hideModal);
+      modal.addEventListener("click", e => { if(e.target === modal) hideModal(); });
+    });
+
+    // ===== Cartes "en cours de développement" =====
+    document.getElementById('gameBJ').addEventListener('click', ()=> showOverlay('Jeu en cours de développement'));
+    document.getElementById('gameRoulette').addEventListener('click', ()=> showOverlay('Jeu en cours de développement'));
+
+    // ===== Redirection vers machine à sous =====
+    const clickArea = document.getElementById('clickArea');
+    const actionBtn = document.getElementById('actionBtn');
+    function redirectToMachine(){ window.location.href = "machine_a_sous.html"; }
+    clickArea.addEventListener('click', redirectToMachine);
+    clickArea.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); redirectToMachine(); }
+    });
+    actionBtn.addEventListener('click', e => { e.stopPropagation(); redirectToMachine(); });
+  </script>
 </body>
 </html>
