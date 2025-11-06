@@ -6,14 +6,22 @@
   <title>Soltys Casino — Accueil</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
+
 <body>
+<!-- Écran de chargement -->
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <div class="loading-text">Chargement...</div>
+  </div>
 
   <!-- En-tête -->
   <header class="page">
     <h1 class="title">🪩 Casino</h1>
-    <div class="header-right">
-      <span class="badge" id="headerCredits">Crédits : 0</span>
-    </div>
+  <div class="header-right">
+    <span class="badge" id="headerCredits">Crédits : 0</span>
+    <span id="balance-index-display" style="margin-left:10px;">0.00</span> €
+  </div>
   </header>
 
   <!-- Interface principale -->
@@ -62,61 +70,7 @@
     </div>
   </div>
 
-  <script>
-    // ===== Crédit partagé (localStorage) =====
-    const LS_KEY = 'credits';
-    function getCredits(){
-      const v = parseInt(localStorage.getItem(LS_KEY),10);
-      return Number.isFinite(v) ? v : 100; // défaut 100
-    }
-    function setCredits(v){
-      localStorage.setItem(LS_KEY, String(v));
-      document.getElementById('headerCredits').textContent = `Crédits : ${v}`;
-    }
+<script src="java_script.js"></script>
 
-    // ===== Overlay simple =====
-    const overlay = document.getElementById('overlay');
-    const overlayText = document.getElementById('overlayText');
-    const closeOverlay = document.getElementById('closeOverlay');
-    function showOverlay(text){
-      overlayText.textContent = text;
-      overlay.hidden = false;
-    }
-    function hideOverlay(){ overlay.hidden = true; }
-    closeOverlay.addEventListener('click', hideOverlay);
-    overlay.addEventListener('click', e => { if(e.target === overlay) hideOverlay(); });
-
-    // ===== Pop-up d'accueil =====
-    document.addEventListener("DOMContentLoaded", function(){
-      const modal = document.getElementById("welcome-popup");
-      const closeButton = document.querySelector(".close-btn");
-      const acceptButton = document.getElementById("accept-btn");
-
-      function hideModal(){ modal.classList.remove("show"); modal.setAttribute('aria-hidden','true'); }
-      function showModal(){ modal.classList.add("show"); modal.setAttribute('aria-hidden','false'); }
-
-      // init crédits header
-      setCredits(getCredits());
-
-      showModal();
-      closeButton.addEventListener("click", hideModal);
-      acceptButton.addEventListener("click", hideModal);
-      modal.addEventListener("click", e => { if(e.target === modal) hideModal(); });
-    });
-
-    // ===== Cartes "en cours de développement" =====
-    document.getElementById('gameBJ').addEventListener('click', ()=> showOverlay('Jeu en cours de développement'));
-    document.getElementById('gameRoulette').addEventListener('click', ()=> showOverlay('Jeu en cours de développement'));
-
-    // ===== Redirection vers machine à sous =====
-    const clickArea = document.getElementById('clickArea');
-    const actionBtn = document.getElementById('actionBtn');
-    function redirectToMachine(){ window.location.href = "machine_a_sous.html"; }
-    clickArea.addEventListener('click', redirectToMachine);
-    clickArea.addEventListener('keydown', e => {
-      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); redirectToMachine(); }
-    });
-    actionBtn.addEventListener('click', e => { e.stopPropagation(); redirectToMachine(); });
-  </script>
 </body>
 </html>
