@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solde de la Machine à Sous</title>
+
+    <style>
+        /* CSS pour positionner et styliser le solde */
+        #balance-container {
+            /* Positionnement fixe en haut à droite */
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            
+            /* Style visuel */
+            background-color: #007bff; /* Bleu standard */
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            font-size: 1.5em;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            z-index: 1000;
+        }
+
+        /* Le reste de votre page HTML */
+        body {
+            height: 200vh; /* Pour pouvoir tester le positionnement fixe */
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="balance-container">
+        💰 Solde : <span id="balance-display">0.00</span> €
+        <button id="recharge-button" onclick="rechargeBalance()">
+            Recharger (100 €)
+        </button>
+    </div>
+
+    <script>
+        // JavaScript pour gérer et afficher le solde
+        
+        let userBalance = 100.00; // Le solde initial
+        const balanceDisplay = document.getElementById('balance-display');
+
+        // Fonction pour mettre à jour l'affichage
+        function updateBalanceDisplay() {
+            balanceDisplay.textContent = userBalance.toFixed(2);
+        }
+
+        // Afficher le solde initial au chargement de la page
+        updateBalanceDisplay();
+
+        // --- EXEMPLE (à supprimer ou adapter pour votre usage) ---
+        // Vous pouvez appeler cette fonction pour modifier le solde : adjustBalance(montant)
+        function adjustBalance(amount) {
+            userBalance += amount;
+            updateBalanceDisplay();
+            console.log("Nouveau solde : " + userBalance.toFixed(2));
+        }
+        
+        // Simuler une mise de 5 € après 3 secondes
+        // setTimeout(() => adjustBalance(-5.00), 3000); 
+        function rechargeBalance() {
+            if (userBalance <= 0) {
+                userBalance = MAX_BALANCE; // Remettre le solde à 100.00
+                alert("Solde rechargé ! Vous avez de nouveau " + MAX_BALANCE.toFixed(2) + " €.");
+            }
+            // Si le solde n'est pas à zéro, ne rien faire
+            
+            updateBalanceDisplay();
+        }
+
+        // 4. Initialisation
+        updateBalanceDisplay();
+    </script>
+
+</body>
+</html>
