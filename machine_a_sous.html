@@ -267,7 +267,8 @@
 
             // 2. Mettre à jour la variable globale et l'input
             currentBet = newBet;
-            betInput.value = currentBet.toFixed(2);
+            betInput.value = Math.round(currentBet);
+
 
             // 3. Mettre à jour l'état des boutons +/-
             // (On ne peut pas descendre sous MIN ou monter au-dessus de MAX)
