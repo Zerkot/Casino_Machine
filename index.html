@@ -7,26 +7,26 @@
   <link rel="stylesheet" href="style.css">
 </head>
 
-
 <body>
-<!-- Écran de chargement -->
+  <!-- Écran de chargement -->
   <div id="loading-screen">
     <div class="spinner"></div>
-    <div class="loading-text">Chargement...</div>
+    <div class="loading-text" data-fr="Chargement..." data-en="Loading...">Chargement...</div>
   </div>
 
   <!-- En-tête -->
   <header class="page">
-    <h1 class="title">🪩 Casino</h1>
-  <div class="header-right">
-    <span class="badge" id="headerCredits">Crédits : 0</span>
-    <span id="balance-index-display" style="margin-left:10px;">0.00</span> €
-  </div>
+    <h1 class="title" data-fr="🪩 Casino" data-en="🪩 Casino">🪩 Casino</h1>
+    <div class="header-right">
+      <span class="badge" id="headerCredits" data-fr="Crédits : 0" data-en="Credits: 0">Crédits : 0</span>
+      <span id="balance-index-display" style="margin-left:10px;">0.00</span> €
+      <button id="settingsBtn" class="btn" style="margin-left:15px;" data-fr="Paramètres" data-en="Settings">Paramètres</button>
+    </div>
   </header>
 
   <!-- Interface principale -->
   <main class="container">
-    <h2 class="section-title">Jeux disponibles</h2>
+    <h2 class="section-title" data-fr="Jeux disponibles" data-en="Available Games">Jeux disponibles</h2>
 
     <div class="top-row">
       <!-- Cartes cliquables -->
@@ -44,9 +44,11 @@
     <!-- Lien vers la machine à sous -->
     <div class="click-area" id="clickArea" role="button" tabindex="0" aria-pressed="false">
       <div class="click-inner">
-        <div class="click-title">Machine à sous</div>
-        <div class="click-sub">Clique ici — accéder à la machine à sous</div>
-        <button class="btn" id="actionBtn" aria-hidden="true">Ouvrir</button>
+        <div class="click-title" data-fr="Machine à sous" data-en="Slot Machine">Machine à sous</div>
+        <div class="click-sub" data-fr="Clique ici — accéder à la machine à sous" data-en="Click here — access the slot machine">
+          Clique ici — accéder à la machine à sous
+        </div>
+        <button class="btn" id="actionBtn" aria-hidden="true" data-fr="Ouvrir" data-en="Open">Ouvrir</button>
       </div>
     </div>
   </main>
@@ -55,10 +57,28 @@
   <div id="welcome-popup" class="modal-overlay" aria-hidden="true">
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="popup-title">
       <span class="close-btn" aria-label="Fermer">&times;</span>
-      <h2 id="popup-title">Bienvenue</h2>
-      <p>Ce site est une SIMULATION de machine à sous.</p>
-      <p>Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir.</p>
-      <button id="accept-btn">J'ai compris</button>
+      <h2 id="popup-title" data-fr="Bienvenue" data-en="Welcome">Bienvenue</h2>
+      <p data-fr="Ce site est une SIMULATION de machine à sous." data-en="This site is a SLOT MACHINE SIMULATION.">
+        Ce site est une SIMULATION de machine à sous.
+      </p>
+      <p data-fr="Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir."
+         data-en="No real money is used or can be won. Play for fun.">
+         Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir.
+      </p>
+      <button id="accept-btn" data-fr="J'ai compris" data-en="I understand">J'ai compris</button>
+    </div>
+  </div>
+
+  <!-- Fenêtre Paramètres -->
+  <div id="settings-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <span class="close-btn" id="close-settings" aria-label="Fermer">&times;</span>
+      <h2 id="settings-title" data-fr="Paramètres" data-en="Settings">Paramètres</h2>
+      <p data-fr="Choisis ta langue :" data-en="Choose your language:">Choisis ta langue :</p>
+      <div class="lang-options">
+        <button class="btn lang-btn" data-lang="fr">🇫🇷 Français</button>
+        <button class="btn lang-btn" data-lang="en">🇬🇧 English</button>
+      </div>
     </div>
   </div>
 
@@ -66,11 +86,50 @@
   <div id="overlay" class="overlay-msg" hidden>
     <div class="overlay-card">
       <pre id="overlayText"></pre>
-      <button class="btn" id="closeOverlay">Fermer</button>
+      <button class="btn" id="closeOverlay" data-fr="Fermer" data-en="Close">Fermer</button>
     </div>
   </div>
 
-<script src="java_script.js"></script>
+<script>
+  // --- Gestion du changement de langue ---
+  function setLanguage(lang) {
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-fr]").forEach(el => {
+      el.textContent = el.getAttribute(`data-${lang}`) || el.textContent;
+    });
+  }
 
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const lang = btn.dataset.lang;
+      localStorage.setItem("siteLang", lang);
+      setLanguage(lang);
+      document.getElementById("settings-modal").style.display = "none";
+    });
+  });
+
+  // Charger la langue sauvegardée
+  const savedLang = localStorage.getItem("siteLang") || "fr";
+  setLanguage(savedLang);
+
+  // --- Gestion ouverture/fermeture du modal Paramètres ---
+  const settingsBtn = document.getElementById("settingsBtn");
+  const settingsModal = document.getElementById("settings-modal");
+  const closeSettings = document.getElementById("close-settings");
+
+  settingsBtn.addEventListener("click", () => {
+    settingsModal.style.display = "flex";
+  });
+
+  closeSettings.addEventListener("click", () => {
+    settingsModal.style.display = "none";
+  });
+
+  window.addEventListener("click", e => {
+    if (e.target === settingsModal) settingsModal.style.display = "none";
+  });
+</script>
+
+<script src="java_script.js"></script>
 </body>
 </html>
