@@ -6,15 +6,12 @@
     <title>Solde de la Machine à Sous</title>
 
     <style>
-        /* CSS pour positionner et styliser le solde */
+        /* CSS du solde (inchangé) */
         #balance-container {
-            /* Positionnement fixe en haut à droite */
             position: fixed;
             top: 20px;
             right: 20px;
-            
-            /* Style visuel */
-            background-color: #007bff; /* Bleu standard */
+            background-color: #007bff;
             color: white;
             padding: 10px 15px;
             border-radius: 8px;
@@ -24,44 +21,109 @@
             font-family: Arial, sans-serif;
             z-index: 1000;
         }
-        /* * 💡 AJOUT : Style pour le bouton SPIN
-         */
+
+        /* CSS du bouton SPIN (inchangé) */
         #spin-button {
-            position: fixed; /* Reste fixe au même endroit */
-            bottom: 40px;    /* À 40px du bas */
-            left: 50%;       /* Au centre horizontalement */
-            
-            /* Astuce pour centrer parfaitement un élément en position fixe */
-            transform: translateX(-50%); 
-            
-            /* Style visuel */
-            background-color: #007bff; /* Bleu voyant */
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #007bff;
             color: white;
-            font-size: 2.5em; /* Gros texte */
+            font-size: 2.5em;
             font-weight: bold;
-            padding: 20px 50px; /* Gros bouton */
+            padding: 20px 50px;
             border: none;
             border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Ombre portée */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
             z-index: 1000;
-            
-            /* Petite transition pour un effet au clic */
             transition: background-color 0.2s, transform 0.1s;
         }
 
-        /* Effet au survol et au clic */
-        #spin-button:hover {
-            background-color: #0056b3; /* Bleu plus foncé */
-        }
-        
-        #spin-button:active {
-            transform: translateX(-50%) scale(0.95); /* Effet d'enfoncement */
+        #spin-button:hover { background-color: #0056b3; }
+        #spin-button:active { transform: translateX(-50%) scale(0.95); }
+        #spin-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: translateX(-50%);
         }
 
-        /* Le reste de votre page HTML */
+        /* CSS de la machine (inchangé) */
+        #slot-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 80px auto 0 auto;
+            background: #2c3e50;
+            border: 10px solid #f1c40f;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        #reels-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            border: 3px solid #7f8c8d;
+        }
+
+        .symbol {
+            font-size: 3em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            min-height: 80px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            /* 💡 AJOUTÉ : Transition pour un arrêt en douceur */
+            transition: transform 0.1s ease-out;
+        }
+        
+        /* 💡 AJOUTÉ : Classe pour l'effet de "spin" (flou) */
+        .symbol.spinning {
+            opacity: 0.6;
+            filter: blur(2px);
+            transform: scale(0.9);
+        }
+
+
+        /* 💡 AJOUTÉ : CSS pour la zone de résultat (remplace l'alerte) */
+        #result-display {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            color: #333;
+            /* Animation de transition */
+            transition: color 0.3s, transform 0.3s;
+        }
+        
+        /* Classes pour les états du résultat */
+        #result-display.win {
+            color: #2ecc71; /* Vert */
+            transform: scale(1.1);
+        }
+        #result-display.lose {
+            color: #95a5a6; /* Gris */
+        }
+        #result-display.jackpot {
+            color: #f1c40f; /* Or */
+            transform: scale(1.2);
+            font-size: 2.2em;
+        }
+
+        /* CSS du body (inchangé) */
         body {
-            height: 200vh; /* Pour pouvoir tester le positionnement fixe */
+            height: 200vh;
             margin: 0;
             padding: 0;
             background-color: #f4f4f9;
@@ -76,75 +138,206 @@
             Recharger (100 €)
         </button>
     </div>
+    
+    <div id="slot-container">
+        <div id="reels-container">
+            <div class="symbol" id="symbol-0-0">🍒</div>
+            <div class="symbol" id="symbol-1-0">🍒</div>
+            <div class="symbol" id="symbol-2-0">🍒</div>
+            <div class="symbol" id="symbol-3-0">🍒</div>
+            <div class="symbol" id="symbol-4-0">🍒</div>
+            <div class="symbol"id="symbol-0-1">7</div>
+            <div class="symbol"id="symbol-1-1">7</div>
+            <div class="symbol"id="symbol-2-1">7</div>
+            <div class="symbol"id="symbol-3-1">7</div>
+            <div class="symbol"id="symbol-4-1">7</div>
+            <div class="symbol" id="symbol-0-2">BAR</div>
+            <div class="symbol" id="symbol-1-2">BAR</div>
+            <div class="symbol" id="symbol-2-2">BAR</div>
+            <div class="symbol" id="symbol-3-2">BAR</div>
+            <div class="symbol" id="symbol-4-2">BAR</div>
+        </div>
+    </div>
+
+    <div id="result-display">Cliquez sur SPIN pour jouer !</div>
+
+
     <button id="spin-button" onclick="startSpin()">
         SPIN
     </button>
 
     <script>
-        // JavaScript pour gérer et afficher le solde
-        
-        // Définir la constante pour la recharge
+        // Constantes de jeu (inchangées)
         const MAX_BALANCE = 100.00; 
-        
-        let userBalance = MAX_BALANCE; // Le solde initial
-        const balanceDisplay = document.getElementById('balance-display');
+        const BET_AMOUNT = 5.00; 
 
-        // Fonction pour mettre à jour l'affichage
+        const SYMBOLS = [
+            "🍒", "🍒", "🍒", "🍒", "🍒", "🍒", 
+            "🍋", "🍋", "🍋", "🍋", "🍋",     
+            "🍊", "🍊", "🍊", "🍊",         
+            "🔔", "🔔", "🔔",             
+            "BAR", "BAR",                 
+            "7"                         
+        ];
+
+        const PAYOUTS = {
+            "🍒": 10, "🍋": 20, "🍊": 40, "🔔": 100, "BAR": 500, "7": 5000
+        };
+        
+        let userBalance = MAX_BALANCE; 
+        
+        // 💡 AJOUTÉ : Références aux éléments d'affichage
+        const balanceDisplay = document.getElementById('balance-display');
+        const spinButton = document.getElementById('spin-button');
+        const resultDisplay = document.getElementById('result-display');
+        
+        // 💡 AJOUTÉ : Variable pour l'intervalle d'animation
+        let animationInterval;
+
+        // Fonctions de solde (inchangées)
         function updateBalanceDisplay() {
             balanceDisplay.textContent = userBalance.toFixed(2);
         }
-
-        // Afficher le solde initial au chargement de la page
         updateBalanceDisplay();
-
-        // Fonction pour modifier le solde (gains ou pertes)
         function adjustBalance(amount) {
             userBalance += amount;
-            
-            // S'assurer que le solde ne devienne pas négatif
-            if (userBalance < 0) {
-                userBalance = 0;
-            }
-            
+            if (userBalance < 0) userBalance = 0;
             updateBalanceDisplay();
             console.log("Nouveau solde : " + userBalance.toFixed(2));
-            
-            // VÉRIFICATION : C'est ici qu'on affiche le pop-up
             if (userBalance <= 0) {
-                // Afficher le pop-up demandé
-                alert("Solde épuisé ! Veuillez recharger.");
+                // Remplacé l'alerte par un message
+                resultDisplay.textContent = "Solde épuisé ! Veuillez recharger.";
+                resultDisplay.classList.add('lose');
             }
         }
-        
-
-        // Fonction pour le bouton "Recharger"
         function rechargeBalance() {
             if (userBalance <= 0) {
-                userBalance = MAX_BALANCE; // Remettre le solde à 100.00
-                alert("Solde rechargé ! Vous avez de nouveau " + MAX_BALANCE.toFixed(2) + " €.");
+                userBalance = MAX_BALANCE; 
+                resultDisplay.textContent = "Solde rechargé !";
+                resultDisplay.classList.add('win');
             } else {
-                alert("Vous avez encore " + userBalance.toFixed(2) + " €. Pas besoin de recharger !");
+                resultDisplay.textContent = "Vous avez encore " + userBalance.toFixed(2) + " €.";
+                resultDisplay.classList.remove('win', 'lose', 'jackpot');
             }
-            
             updateBalanceDisplay();
         }
-        function startSpin() {
-            // 1. Vérifier si le joueur a assez d'argent
-            if (userBalance >= BET_AMOUNT) {
-                
-                // 2. Déduire la mise
-                adjustBalance(-BET_AMOUNT);
-                
-                // 3. (Futur) Lancer l'animation de la machine à sous
-                console.log("Le spin est lancé ! (Coût : " + BET_AMOUNT.toFixed(2) + " €)");
-                
-                // (Ici, vous ajouterez votre logique de jeu, de gains, etc.)
+        function getRandomSymbol() {
+            const randomIndex = Math.floor(Math.random() * SYMBOLS.length);
+            return SYMBOLS[randomIndex];
+        }
 
-            } else {
-                // 4. Pas assez d'argent
-                alert("Solde insuffisant pour miser " + BET_AMOUNT.toFixed(2) + " € !");
+        // --- 💡 NOUVELLE LOGIQUE D'ANIMATION ET DE SPIN ---
+
+        // 💡 AJOUTÉ : Fonction pour générer la grille de résultat final
+        function generateFinalGrid() {
+            let grid = []; // 3 rangées
+            for (let r = 0; r < 3; r++) {
+                let row = []; // 5 colonnes
+                for (let c = 0; c < 5; c++) {
+                    row.push(getRandomSymbol());
+                }
+                grid.push(row);
             }
-            updateBalanceDisplay();
+            return grid; // Renvoie une grille 3x5 (ex: grid[rangée][colonne])
+        }
+
+        // 💡 AJOUTÉ : Fonction qui anime les colonnes encore en train de tourner
+        function runSpinAnimation(spinningCols) {
+            for (const c of spinningCols) { // Pour chaque colonne qui doit tourner
+                for (let r = 0; r < 3; r++) { // Animer les 3 symboles de la colonne
+                    document.getElementById(`symbol-${c}-${r}`).textContent = getRandomSymbol();
+                }
+            }
+        }
+
+        // 💡 AJOUTÉ : Fonction pour arrêter une colonne spécifique
+        function stopColumn(colIndex, finalGrid, spinningCols) {
+            // 1. Retirer la colonne de la liste des colonnes à animer
+            const indexToRemove = spinningCols.indexOf(colIndex);
+            if (indexToRemove > -1) {
+                spinningCols.splice(indexToRemove, 1);
+            }
+
+            // 2. Afficher les symboles finaux pour cette colonne
+            for (let r = 0; r < 3; r++) {
+                const symbolElement = document.getElementById(`symbol-${colIndex}-${r}`);
+                symbolElement.textContent = finalGrid[r][colIndex];
+                symbolElement.classList.remove('spinning'); // Retirer l'effet de flou
+            }
+        }
+
+        // 💡 MODIFIÉ : Fonction startSpin() complète
+        function startSpin() {
+            // 1. Vérifier le solde
+            if (userBalance < BET_AMOUNT) {
+                resultDisplay.textContent = "Solde insuffisant !";
+                resultDisplay.classList.add('lose');
+                return; // Arrêter la fonction
+            }
+            
+            // 2. Préparer le spin
+            spinButton.disabled = true;
+            adjustBalance(-BET_AMOUNT);
+            resultDisplay.textContent = "Les rouleaux tournent...";
+            resultDisplay.classList.remove('win', 'lose', 'jackpot');
+
+            // 3. Générer le résultat final *avant* l'animation
+            const finalGrid = generateFinalGrid();
+            
+            // 4. Lancer l'animation
+            let spinningColumns = [0, 1, 2, 3, 4]; // Les 5 colonnes tournent
+            
+            // Appliquer l'effet visuel "spinning" à toutes les cases
+            document.querySelectorAll('.symbol').forEach(s => s.classList.add('spinning'));
+
+            // Démarrer l'intervalle d'animation (flou)
+            animationInterval = setInterval(() => runSpinAnimation(spinningColumns), 100); // 100ms = 10x/sec
+
+            // 5. Planifier l'arrêt en cascade des rouleaux
+            setTimeout(() => stopColumn(0, finalGrid, spinningColumns), 1000); // Stop col 0 après 1s
+            setTimeout(() => stopColumn(1, finalGrid, spinningColumns), 1500); // Stop col 1 après 1.5s
+            setTimeout(() => stopColumn(2, finalGrid, spinningColumns), 2000); // Stop col 2 après 2s
+            setTimeout(() => stopColumn(3, finalGrid, spinningColumns), 2500); // Stop col 3 après 2.5s
+            
+            // 6. Planifier l'arrêt du dernier rouleau et la vérification des gains
+            setTimeout(() => {
+                // Arrêter la dernière colonne
+                stopColumn(4, finalGrid, spinningColumns); 
+                
+                // Arrêter l'animation de flou
+                clearInterval(animationInterval); 
+
+                // --- Vérification des gains ---
+                let winnings = 0;
+                const middleRow = finalGrid[1]; // Rangée du milieu (index 1)
+
+                if (middleRow.every(symbol => symbol === middleRow[0])) {
+                    const winningSymbol = middleRow[0];
+                    const multiplier = PAYOUTS[winningSymbol];
+                    winnings = BET_AMOUNT * multiplier;
+                }
+
+                // --- Afficher le résultat ---
+                if (winnings > 0) {
+                    adjustBalance(winnings); 
+                    
+                    if (middleRow[0] === "7") {
+                        resultDisplay.textContent = `🎉 JACKPOT !!! +${winnings.toFixed(2)} € !`;
+                        resultDisplay.classList.add('jackpot');
+                    } else {
+                        resultDisplay.textContent = `Bravo ! Vous gagnez ${winnings.toFixed(2)} € !`;
+                        resultDisplay.classList.add('win');
+                    }
+                } else {
+                    resultDisplay.textContent = "Pas de chance... Essayez encore !";
+                    resultDisplay.classList.add('lose');
+                }
+                
+                // 7. Réactiver le bouton
+                spinButton.disabled = false;
+
+            }, 3000); // Stop col 4 après 3s et vérifie les gains
+
         }
 
     </script>
