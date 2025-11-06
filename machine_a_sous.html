@@ -24,6 +24,40 @@
             font-family: Arial, sans-serif;
             z-index: 1000;
         }
+        /* * 💡 AJOUT : Style pour le bouton SPIN
+         */
+        #spin-button {
+            position: fixed; /* Reste fixe au même endroit */
+            bottom: 40px;    /* À 40px du bas */
+            left: 50%;       /* Au centre horizontalement */
+            
+            /* Astuce pour centrer parfaitement un élément en position fixe */
+            transform: translateX(-50%); 
+            
+            /* Style visuel */
+            background-color: #007bff; /* Bleu voyant */
+            color: white;
+            font-size: 2.5em; /* Gros texte */
+            font-weight: bold;
+            padding: 20px 50px; /* Gros bouton */
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Ombre portée */
+            z-index: 1000;
+            
+            /* Petite transition pour un effet au clic */
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        /* Effet au survol et au clic */
+        #spin-button:hover {
+            background-color: #0056b3; /* Bleu plus foncé */
+        }
+        
+        #spin-button:active {
+            transform: translateX(-50%) scale(0.95); /* Effet d'enfoncement */
+        }
 
         /* Le reste de votre page HTML */
         body {
@@ -42,12 +76,17 @@
             Recharger (100 €)
         </button>
     </div>
+    <button id="spin-button" onclick="startSpin()">
+        SPIN
+    </button>
 
     <script>
         // JavaScript pour gérer et afficher le solde
         
-        let userBalance = 100.00; // Le solde initial
-        const MAX_BALANCE = 100.00;
+        // Définir la constante pour la recharge
+        const MAX_BALANCE = 100.00; 
+        
+        let userBalance = MAX_BALANCE; // Le solde initial
         const balanceDisplay = document.getElementById('balance-display');
 
         // Fonction pour mettre à jour l'affichage
@@ -58,30 +97,57 @@
         // Afficher le solde initial au chargement de la page
         updateBalanceDisplay();
 
-        // --- EXEMPLE (à supprimer ou adapter pour votre usage) ---
-        // Vous pouvez appeler cette fonction pour modifier le solde : adjustBalance(montant)
+        // Fonction pour modifier le solde (gains ou pertes)
         function adjustBalance(amount) {
             userBalance += amount;
+            
+            // S'assurer que le solde ne devienne pas négatif
+            if (userBalance < 0) {
+                userBalance = 0;
+            }
+            
             updateBalanceDisplay();
             console.log("Nouveau solde : " + userBalance.toFixed(2));
+            
+            // VÉRIFICATION : C'est ici qu'on affiche le pop-up
+            if (userBalance <= 0) {
+                // Afficher le pop-up demandé
+                alert("Solde épuisé ! Veuillez recharger.");
+            }
         }
         
-        // Simuler une mise de 5 € après 3 secondes
-        // setTimeout(() => adjustBalance(-5.00), 3000); 
+
+        // Fonction pour le bouton "Recharger"
         function rechargeBalance() {
             if (userBalance <= 0) {
                 userBalance = MAX_BALANCE; // Remettre le solde à 100.00
                 alert("Solde rechargé ! Vous avez de nouveau " + MAX_BALANCE.toFixed(2) + " €.");
+            } else {
+                alert("Vous avez encore " + userBalance.toFixed(2) + " €. Pas besoin de recharger !");
             }
-            // Si le solde n'est pas à zéro, ne rien faire
             
             updateBalanceDisplay();
         }
+        function startSpin() {
+            // 1. Vérifier si le joueur a assez d'argent
+            if (userBalance >= BET_AMOUNT) {
+                
+                // 2. Déduire la mise
+                adjustBalance(-BET_AMOUNT);
+                
+                // 3. (Futur) Lancer l'animation de la machine à sous
+                console.log("Le spin est lancé ! (Coût : " + BET_AMOUNT.toFixed(2) + " €)");
+                
+                // (Ici, vous ajouterez votre logique de jeu, de gains, etc.)
 
-        // 4. Initialisation
-        updateBalanceDisplay();
+            } else {
+                // 4. Pas assez d'argent
+                alert("Solde insuffisant pour miser " + BET_AMOUNT.toFixed(2) + " € !");
+            }
+            updateBalanceDisplay();
+        }
+
     </script>
 
 </body>
-
 </html>
