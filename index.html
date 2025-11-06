@@ -1,122 +1,270 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Soltys Casino — Accueil</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Soltys Casino — Accueil</title>
+  <link rel="stylesheet" href="style.css">
+    <audio id="backgroundAudio" loop></audio>
 </head>
 <body>
 
-  <!-- En-tête -->
-  <header class="page">
-    <h1 class="title">🪩 Casino</h1>
-    <div class="header-right">
-      <span class="badge" id="headerCredits">Crédits : 0</span>
-    </div>
-  </header>
+    <header class="page">
+        <button class="badge" id="settingsBtn" type="button" aria-label="Paramètres">⚙️</button>
+    <h1 class="title">🪩 Casino</h1>
+    <div class="header-right">
+      <span class="badge" id="headerCredits">Crédits : 0</span>
+    </div>
+  </header>
 
-  <!-- Interface principale -->
-  <main class="container">
-    <h2 class="section-title">Jeux disponibles</h2>
+    <main class="container">
+    <h2 class="section-title" id="titleAvailableGames">Jeux disponibles</h2>
 
-    <div class="top-row">
-      <!-- Cartes cliquables -->
-      <button class="dropzone game-card" id="gameBJ" type="button" aria-label="Blackjack">
-        <img class="preview" src="secondary-thumb2x.jpg" alt="Blackjack">
-        <span class="game-label">Blackjack</span>
-      </button>
+    <div class="top-row">
+            <button class="dropzone game-card" id="gameBJ" type="button" aria-label="Blackjack">
+        <img class="preview" src="secondary-thumb2x.jpg" alt="Blackjack">
+        <span class="game-label">Blackjack</span>
+      </button>
 
-      <button class="dropzone game-card" id="gameRoulette" type="button" aria-label="Roulette">
-        <img class="preview" src="roulette-francaise-300x300.jpg" alt="Roulette">
-        <span class="game-label">Roulette</span>
-      </button>
-    </div>
+      <button class="dropzone game-card" id="gameRoulette" type="button" aria-label="Roulette">
+        <img class="preview" src="roulette-francaise-300x300.jpg" alt="Roulette">
+        <span class="game-label">Roulette</span>
+      </button>
+    </div>
 
-    <!-- Lien vers la machine à sous -->
-    <div class="click-area" id="clickArea" role="button" tabindex="0" aria-pressed="false">
-      <div class="click-inner">
-        <div class="click-title">Machine à sous</div>
-        <div class="click-sub">Clique ici — accéder à la machine à sous</div>
-        <button class="btn" id="actionBtn" aria-hidden="true">Ouvrir</button>
-      </div>
-    </div>
-  </main>
+        <div class="click-area" id="clickArea" role="button" tabindex="0" aria-pressed="false">
+      <div class="click-inner">
+        <div class="click-title" id="slotMachineTitle">Machine à sous</div>
+        <div class="click-sub" id="slotMachineSub">Clique ici — accéder à la machine à sous</div>
+        <button class="btn" id="actionBtn" aria-hidden="true">Ouvrir</button>
+      </div>
+    </div>
+  </main>
 
-  <!-- Pop-up d’avertissement -->
-  <div id="welcome-popup" class="modal-overlay" aria-hidden="true">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="popup-title">
-      <span class="close-btn" aria-label="Fermer">&times;</span>
-      <h2 id="popup-title">Bienvenue</h2>
-      <p>Ce site est une SIMULATION de machine à sous.</p>
-      <p>Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir.</p>
-      <button id="accept-btn">J'ai compris</button>
-    </div>
-  </div>
+    <div id="welcome-popup" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+      <span class="close-btn" aria-label="Fermer">&times;</span>
+      <h2 id="popup-title">Bienvenue</h2>
+      <p id="popup-text1">Ce site est une SIMULATION de machine à sous.</p>
+      <p id="popup-text2">Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir.</p>
+      <button id="accept-btn">J'ai compris</button>
+    </div>
+  </div>
 
-  <!-- Overlay générique -->
-  <div id="overlay" class="overlay-msg" hidden>
-    <div class="overlay-card">
-      <pre id="overlayText"></pre>
-      <button class="btn" id="closeOverlay">Fermer</button>
-    </div>
-  </div>
+    <div id="settings-popup" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <span class="close-btn" aria-label="Fermer">&times;</span>
+      <h2 id="settings-title">Paramètres</h2>
+      
+      <h3 id="volumeTitle">Volume</h3>
+      <input type="range" id="volumeSlider" min="0" max="100" value="100" step="1">
+      <span id="volumeValue">100%</span>
 
-  <script>
-    // ===== Crédit partagé (localStorage) =====
-    const LS_KEY = 'credits';
-    function getCredits(){
-      const v = parseInt(localStorage.getItem(LS_KEY),10);
-      return Number.isFinite(v) ? v : 100; // défaut 100
-    }
-    function setCredits(v){
-      localStorage.setItem(LS_KEY, String(v));
-      document.getElementById('headerCredits').textContent = `Crédits : ${v}`;
-    }
+      <h3 id="languageTitle">Langue</h3>
+      <select id="languageSelect">
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </div>
 
-    // ===== Overlay simple =====
-    const overlay = document.getElementById('overlay');
-    const overlayText = document.getElementById('overlayText');
-    const closeOverlay = document.getElementById('closeOverlay');
-    function showOverlay(text){
-      overlayText.textContent = text;
-      overlay.hidden = false;
-    }
-    function hideOverlay(){ overlay.hidden = true; }
-    closeOverlay.addEventListener('click', hideOverlay);
-    overlay.addEventListener('click', e => { if(e.target === overlay) hideOverlay(); });
+    <div id="overlay" class="overlay-msg" hidden>
+    <div class="overlay-card">
+      <pre id="overlayText"></pre>
+      <button class="btn" id="closeOverlay">Fermer</button>
+    </div>
+  </div>
 
-    // ===== Pop-up d'accueil =====
-    document.addEventListener("DOMContentLoaded", function(){
-      const modal = document.getElementById("welcome-popup");
-      const closeButton = document.querySelector(".close-btn");
-      const acceptButton = document.getElementById("accept-btn");
+  <script>
+    // ===== Traductions (NOUVEAU) =====
+    const translations = {
+      fr: {
+        credits: 'Crédits : ',
+        availableGames: 'Jeux disponibles',
+        slotMachineTitle: 'Machine à sous',
+        slotMachineSub: 'Clique ici — accéder à la machine à sous',
+        openBtn: 'Ouvrir',
+        gameDev: 'Jeu en cours de développement',
+        closeBtn: 'Fermer',
+        popupTitle: 'Bienvenue',
+        popupText1: 'Ce site est une SIMULATION de machine à sous.',
+        popupText2: 'Aucun argent réel n\'est utilisé ou ne peut être gagné. Jouez pour le plaisir.',
+        popupAccept: 'J\'ai compris',
+        settingsTitle: 'Paramètres',
+        volumeTitle: 'Volume',
+        languageTitle: 'Langue',
+        settingsAria: 'Paramètres',
+        closeAria: 'Fermer',
+        blackjackAria: 'Blackjack',
+        rouletteAria: 'Roulette',
+      },
+      en: {
+        credits: 'Credits: ',
+        availableGames: 'Available Games',
+        slotMachineTitle: 'Slot Machine',
+        slotMachineSub: 'Click here — access the slot machine',
+        openBtn: 'Open',
+        gameDev: 'Game under development',
+        closeBtn: 'Close',
+        popupTitle: 'Welcome',
+        popupText1: 'This site is a SLOT MACHINE SIMULATION.',
+        popupText2: 'No real money is used or can be won. Play for fun.',
+        popupAccept: 'I understood',
+        settingsTitle: 'Settings',
+        volumeTitle: 'Volume',
+        languageTitle: 'Language',
+        settingsAria: 'Settings',
+        closeAria: 'Close',
+        blackjackAria: 'Blackjack',
+        rouletteAria: 'Roulette',
+      }
+    };
 
-      function hideModal(){ modal.classList.remove("show"); modal.setAttribute('aria-hidden','true'); }
-      function showModal(){ modal.classList.add("show"); modal.setAttribute('aria-hidden','false'); }
+    const LS_KEY = 'credits';
+    const LS_LANG_KEY = 'lang'; // NOUVEAU: Clé pour la langue
+    const LS_VOLUME_KEY = 'volume'; // NOUVEAU: Clé pour le volume
+    
+    // Élément audio (NOUVEAU)
+    const backgroundAudio = document.getElementById('backgroundAudio');
+    // Pour que le contrôle fonctionne, il faut au moins mettre une source
+    // backgroundAudio.src = 'path/to/your/audio.mp3'; 
+    // backgroundAudio.play().catch(e => console.log("L'autoplay a été bloqué.")); // Tente de jouer
 
-      // init crédits header
-      setCredits(getCredits());
+    function getCurrentLang() {
+      return localStorage.getItem(LS_LANG_KEY) || 'fr'; // Défaut : français
+    }
 
-      showModal();
-      closeButton.addEventListener("click", hideModal);
-      acceptButton.addEventListener("click", hideModal);
-      modal.addEventListener("click", e => { if(e.target === modal) hideModal(); });
-    });
+    function updateContent(lang) {
+      const t = translations[lang];
+      
+      // Mettre à jour les textes
+      document.getElementById('headerCredits').textContent = t.credits + getCredits();
+      document.getElementById('titleAvailableGames').textContent = t.availableGames;
+      document.getElementById('slotMachineTitle').textContent = t.slotMachineTitle;
+      document.getElementById('slotMachineSub').textContent = t.slotMachineSub;
+      document.getElementById('actionBtn').textContent = t.openBtn;
+      document.getElementById('closeOverlay').textContent = t.closeBtn;
+      
+      // Pop-up Bienvenue
+      document.querySelector('#welcome-popup .close-btn').setAttribute('aria-label', t.closeAria);
+      document.getElementById('popup-title').textContent = t.popupTitle;
+      document.getElementById('popup-text1').textContent = t.popupText1;
+      document.getElementById('popup-text2').textContent = t.popupText2;
+      document.getElementById('accept-btn').textContent = t.popupAccept;
 
-    // ===== Cartes "en cours de développement" =====
-    document.getElementById('gameBJ').addEventListener('click', ()=> showOverlay('Jeu en cours de développement'));
-    document.getElementById('gameRoulette').addEventListener('click', ()=> showOverlay('Jeu en cours de développement'));
+      // Pop-up Paramètres
+      document.getElementById('settingsBtn').setAttribute('aria-label', t.settingsAria);
+      document.querySelector('#settings-popup .close-btn').setAttribute('aria-label', t.closeAria);
+      document.getElementById('settings-title').textContent = t.settingsTitle;
+      document.getElementById('volumeTitle').textContent = t.volumeTitle;
+      document.getElementById('languageTitle').textContent = t.languageTitle;
 
-    // ===== Redirection vers machine à sous =====
-    const clickArea = document.getElementById('clickArea');
-    const actionBtn = document.getElementById('actionBtn');
-    function redirectToMachine(){ window.location.href = "machine_a_sous.html"; }
-    clickArea.addEventListener('click', redirectToMachine);
-    clickArea.addEventListener('keydown', e => {
-      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); redirectToMachine(); }
-    });
-    actionBtn.addEventListener('click', e => { e.stopPropagation(); redirectToMachine(); });
-  </script>
+      // Cartes de jeu
+      document.getElementById('gameBJ').setAttribute('aria-label', t.blackjackAria);
+      document.getElementById('gameRoulette').setAttribute('aria-label', t.rouletteAria);
+    }
+
+    function setLanguage(lang) {
+      if (translations[lang]) {
+        localStorage.setItem(LS_LANG_KEY, lang);
+        document.documentElement.lang = lang; // Met à jour l'attribut lang de la balise <html>
+        updateContent(lang);
+        document.getElementById('languageSelect').value = lang;
+      }
+    }
+
+    function getCredits(){
+      const v = parseInt(localStorage.getItem(LS_KEY),10);
+      return Number.isFinite(v) ? v : 100; // défaut 100
+    }
+    function setCredits(v){
+      localStorage.setItem(LS_KEY, String(v));
+      document.getElementById('headerCredits').textContent = `${translations[getCurrentLang()].credits}${v}`;
+    }
+
+    // ===== Overlay simple =====
+    const overlay = document.getElementById('overlay');
+    const overlayText = document.getElementById('overlayText');
+    const closeOverlay = document.getElementById('closeOverlay');
+    function showOverlay(text){
+      overlayText.textContent = text;
+      overlay.hidden = false;
+    }
+    function hideOverlay(){ overlay.hidden = true; }
+    closeOverlay.addEventListener('click', hideOverlay);
+    overlay.addEventListener('click', e => { if(e.target === overlay) hideOverlay(); });
+
+    // ===== Gestion du Volume (NOUVEAU) =====
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeValueSpan = document.getElementById('volumeValue');
+
+    function getVolume() {
+      const v = parseInt(localStorage.getItem(LS_VOLUME_KEY), 10);
+      return Number.isFinite(v) ? v : 100; // Défaut : 100%
+    }
+
+    function setVolume(volume) {
+      const v = Math.min(100, Math.max(0, volume));
+      localStorage.setItem(LS_VOLUME_KEY, String(v));
+      volumeSlider.value = v;
+      volumeValueSpan.textContent = `${v}%`;
+      backgroundAudio.volume = v / 100; // Le volume de l'élément audio va de 0 à 1
+    }
+
+    volumeSlider.addEventListener('input', () => {
+      setVolume(parseInt(volumeSlider.value, 10));
+    });
+    
+    // Initialisation du volume
+    setVolume(getVolume());
+
+    // ===== Pop-up d'accueil et de paramètres (NOUVEAU) =====
+    document.addEventListener("DOMContentLoaded", function(){
+      const welcomeModal = document.getElementById("welcome-popup");
+      const welcomeCloseButton = welcomeModal.querySelector(".close-btn");
+      const acceptButton = document.getElementById("accept-btn");
+      
+      const settingsModal = document.getElementById("settings-popup"); // NOUVEAU
+      const settingsButton = document.getElementById("settingsBtn"); // NOUVEAU
+      const settingsCloseButton = settingsModal.querySelector(".close-btn"); // NOUVEAU
+      const languageSelect = document.getElementById('languageSelect'); // NOUVEAU
+
+      function hideModal(modal){ modal.classList.remove("show"); modal.setAttribute('aria-hidden','true'); }
+      function showModal(modal){ modal.classList.add("show"); modal.setAttribute('aria-hidden','false'); }
+
+      // init crédits, langue et volume
+      setCredits(getCredits());
+      setLanguage(getCurrentLang());
+      setVolume(getVolume());
+
+      // Pop-up Bienvenue
+      showModal(welcomeModal);
+      welcomeCloseButton.addEventListener("click", () => hideModal(welcomeModal));
+      acceptButton.addEventListener("click", () => hideModal(welcomeModal));
+      welcomeModal.addEventListener("click", e => { if(e.target === welcomeModal) hideModal(welcomeModal); });
+
+      // NOUVEAU: Pop-up Paramètres
+      settingsButton.addEventListener("click", () => showModal(settingsModal));
+      settingsCloseButton.addEventListener("click", () => hideModal(settingsModal));
+      settingsModal.addEventListener("click", e => { if(e.target === settingsModal) hideModal(settingsModal); });
+      
+      // Gestion du changement de langue
+      languageSelect.addEventListener('change', (e) => setLanguage(e.target.value));
+    });
+
+    // ===== Cartes "en cours de développement" =====
+    document.getElementById('gameBJ').addEventListener('click', ()=> showOverlay(translations[getCurrentLang()].gameDev));
+    document.getElementById('gameRoulette').addEventListener('click', ()=> showOverlay(translations[getCurrentLang()].gameDev));
+
+    // ===== Redirection vers machine à sous =====
+    const clickArea = document.getElementById('clickArea');
+    const actionBtn = document.getElementById('actionBtn');
+    function redirectToMachine(){ window.location.href = "machine_a_sous.html"; }
+    clickArea.addEventListener('click', redirectToMachine);
+    clickArea.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); redirectToMachine(); }
+    });
+    actionBtn.addEventListener('click', e => { e.stopPropagation(); redirectToMachine(); });
+  </script>
 </body>
 </html>
