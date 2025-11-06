@@ -22,16 +22,24 @@
         }
 
         #balance-container button {
-             margin-left: 10px;
-             font-size: 0.7em;
-             padding: 5px 8px;
-             vertical-align: middle;
-             border: none;
-             border-radius: 4px;
-             cursor: pointer;
-             color: #333;
+            margin-left: 10px;
+            font-size: 0.7em;
+            padding: 5px 8px;
+            vertical-align: middle;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #333;
         }
         
+        /* AJOUTÉ : Style pour le bouton Règles */
+        #rules-button {
+            background-color: #17a2b8;
+            color: white;
+            font-weight: bold;
+        }
+        #rules-button:hover { background-color: #117a8b; }
+
         #cheat-button {
             background-color: #888;
             color: white;
@@ -166,6 +174,86 @@
             font-family: Arial, sans-serif;
         }
 
+        /* AJOUTÉ : Section de styles pour le Modal des Règles */
+        .modal-overlay {
+            display: none; /* Caché par défaut */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000; /* Au-dessus de tout */
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            color: #333;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #333; }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #007bff;
+            border-bottom: 2px solid #f4f4f9;
+            padding-bottom: 10px;
+        }
+        
+        .modal-content h3 {
+            margin-top: 20px;
+            color: #2c3e50;
+        }
+        
+        .modal-content p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        #payout-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+
+        #payout-list li {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        
+        #payout-list li span {
+            font-size: 1.6em; /* Rend le symbole plus grand */
+            margin-right: 15px;
+            display: inline-block;
+            width: 40px; 
+            text-align: center;
+        }
+        /* --- Fin des styles du Modal --- */
+
         body {
             height: 200vh;
             margin: 0;
@@ -179,6 +267,7 @@
     <div id="balance-container">
         💰 Solde : <span id="balance-display">0.00</span> €
         <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
+        <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
         <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
         <button id="test-button" onclick="runTests()">Test</button>
     </div>
@@ -218,6 +307,18 @@
         <ul id="test-results"></ul>
     </div>
 
+    <div id="rules-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="hideRules()">&times;</span>
+            <h2>Règles du Jeu</h2>
+            <p>Alignez 5 symboles identiques sur la <strong>ligne du milieu</strong> (la deuxième rangée) pour gagner le montant de votre mise multiplié par la valeur du symbole.</p>
+            <h3>Multiplicateurs de Gains :</h3>
+            <ul id="payout-list">
+                </ul>
+        </div>
+    </div>
+
+
     <script>
         const MAX_BALANCE = 100.00;
         const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
@@ -236,6 +337,38 @@
         const decreaseBetButton = document.getElementById('decrease-bet');
         const increaseBetButton = document.getElementById('increase-bet');
         const testButton = document.getElementById('test-button');
+        
+        // AJOUTÉ : Constantes pour le Modal
+        const rulesModal = document.getElementById('rules-modal');
+        const payoutList = document.getElementById('payout-list');
+
+        // AJOUTÉ : Fonctions pour afficher/cacher le modal des règles
+        function showRules() {
+            payoutList.innerHTML = ''; // Vider la liste avant de la remplir
+            
+            // Trier les paiements du plus bas au plus haut
+            const sortedPayouts = Object.entries(PAYOUTS).sort(([,a], [,b]) => a - b);
+            
+            for (const [symbol, multiplier] of sortedPayouts) {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${symbol}</span> x 5 sur la ligne du milieu = <strong>${multiplier}x</strong> la mise`;
+                payoutList.appendChild(li);
+            }
+            
+            rulesModal.style.display = 'flex'; // Afficher le modal
+        }
+
+        function hideRules() {
+            rulesModal.style.display = 'none'; // Cacher le modal
+        }
+        
+        // Cacher le modal en cliquant sur l'arrière-plan
+        rulesModal.addEventListener('click', function(event) {
+            if (event.target === rulesModal) {
+                hideRules();
+            }
+        });
+        // --- Fin des ajouts pour le Modal ---
 
         function activateCheatMode() {
             const cheatBtn = document.getElementById('cheat-button');
