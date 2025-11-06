@@ -46,8 +46,10 @@
     <script>
         // JavaScript pour gérer et afficher le solde
         
-        let userBalance = 100.00; // Le solde initial
-        const MAX_BALANCE = 100.00;
+        // Définir la constante pour la recharge
+        const MAX_BALANCE = 100.00; 
+        
+        let userBalance = MAX_BALANCE; // Le solde initial
         const balanceDisplay = document.getElementById('balance-display');
 
         // Fonction pour mettre à jour l'affichage
@@ -58,30 +60,41 @@
         // Afficher le solde initial au chargement de la page
         updateBalanceDisplay();
 
-        // --- EXEMPLE (à supprimer ou adapter pour votre usage) ---
-        // Vous pouvez appeler cette fonction pour modifier le solde : adjustBalance(montant)
+        // Fonction pour modifier le solde (gains ou pertes)
         function adjustBalance(amount) {
             userBalance += amount;
+            
+            // S'assurer que le solde ne devienne pas négatif
+            if (userBalance < 0) {
+                userBalance = 0;
+            }
+            
             updateBalanceDisplay();
             console.log("Nouveau solde : " + userBalance.toFixed(2));
+            
+            // VÉRIFICATION : C'est ici qu'on affiche le pop-up
+            if (userBalance <= 0) {
+                // Afficher le pop-up demandé
+                alert("Solde épuisé ! Veuillez recharger.");
+            }
         }
         
-        // Simuler une mise de 5 € après 3 secondes
-        // setTimeout(() => adjustBalance(-5.00), 3000); 
+        // Simuler une mise de 100 € (pour tester le pop-up) après 3 secondes
+        setTimeout(() => adjustBalance(-100.00), 3000); 
+
+        // Fonction pour le bouton "Recharger"
         function rechargeBalance() {
             if (userBalance <= 0) {
                 userBalance = MAX_BALANCE; // Remettre le solde à 100.00
                 alert("Solde rechargé ! Vous avez de nouveau " + MAX_BALANCE.toFixed(2) + " €.");
+            } else {
+                alert("Vous avez encore " + userBalance.toFixed(2) + " €. Pas besoin de recharger !");
             }
-            // Si le solde n'est pas à zéro, ne rien faire
             
             updateBalanceDisplay();
         }
 
-        // 4. Initialisation
-        updateBalanceDisplay();
     </script>
 
 </body>
-
 </html>
