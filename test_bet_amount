@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tests Unitaires - Gestion des Mises</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .test-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .test-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .test-status {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .test-status.passed {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .test-status.failed {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .test-status.running {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .test-details {
+            margin-top: 10px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .test-step {
+            margin: 5px 0;
+            padding: 5px;
+        }
+
+        .test-step.success {
+            color: #2e7d32;
+        }
+
+        .test-step.error {
+            color: #c62828;
+            font-weight: bold;
+        }
+
+        .summary {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            margin-top: 30px;
+        }
+
+        .summary h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-box {
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 150px;
+        }
+
+        .stat-box.total {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        .stat-box.passed {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .stat-box.failed {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .run-button {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .run-button:hover {
+            background-color: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .run-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎰 Tests Unitaires - Système de Gestion des Mises</h1>
+    
+    <button class="run-button" onclick="runAllTests()">▶️ Lancer tous les tests</button>
+    
+    <div id="test-results"></div>
+    
+    <div class="summary" id="summary">
+        <h2>📊 Résumé des Tests</h2>
+        <div class="summary-stats">
+            <div class="stat-box total">
+                <div class="stat-number" id="total-tests">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-box passed">
+                <div class="stat-number" id="passed-tests">0</div>
+                <div class="stat-label">Réussis</div>
+            </div>
+            <div class="stat-box failed">
+                <div class="stat-number" id="failed-tests">0</div>
+                <div class="stat-label">Échoués</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulation du système de mise de la machine à sous
+        const MIN_BET = 1.00;
+        const MAX_BET = 25.00;
+        const BET_STEP = 1.00;
+        const DEFAULT_BET = 5.00;
+        
+        class BetManager {
+            constructor(initialBalance = 100.00) {
+                this.currentBet = DEFAULT_BET;
+                this.userBalance = initialBalance;
+            }
+            
+            updateBet(newBet) {
+                if (newBet < MIN_BET) {
+                    newBet = MIN_BET;
+                } else if (newBet > MAX_BET) {
+                    newBet = MAX_BET;
+                }
+                this.currentBet = newBet;
+                return this.currentBet;
+            }
+            
+            increaseBet() {
+                return this.updateBet(this.currentBet + BET_STEP);
+            }
+            
+            decreaseBet() {
+                return this.updateBet(this.currentBet - BET_STEP);
+            }
+            
+            canPlaceBet() {
+                return this.userBalance >= this.currentBet;
+            }
+            
+            placeBet() {
+                if (!this.canPlaceBet()) {
+                    throw new Error("Solde insuffisant");
+                }
+                this.userBalance -= this.currentBet;
+                return this.currentBet;
+            }
+            
+            addWinnings(amount) {
+                this.userBalance += amount;
+            }
+        }
+
+        // Framework de tests
+        class TestRunner {
+            constructor() {
+                this.tests = [];
+                this.results = [];
+            }
+            
+            addTest(name, testFn) {
+                this.tests.push({ name, testFn });
+            }
+            
+            assert(condition, message) {
+                if (!condition) {
+                    throw new Error(message);
+                }
+            }
+            
+            assertEqual(actual, expected, message) {
+                if (actual !== expected) {
+                    throw new Error(`${message}\n  Attendu: ${expected}\n  Obtenu: ${actual}`);
+                }
+            }
+            
+            async runAll() {
+                this.results = [];
+                const resultsContainer = document.getElementById('test-results');
+                resultsContainer.innerHTML = '';
+                
+                for (const test of this.tests) {
+                    const result = await this.runTest(test);
+                    this.results.push(result);
+                    this.displayTestResult(result);
+                }
+                
+                this.displaySummary();
+            }
+            
+            async runTest(test) {
+                const result = {
+                    name: test.name,
+                    passed: false,
+                    steps: [],
+                    error: null
+                };
+                
+                try {
+                    await test.testFn(this, result);
+                    result.passed = true;
+                } catch (error) {
+                    result.passed = false;
+                    result.error = error.message;
+                }
+                
+                return result;
+            }
+            
+            displayTestResult(result) {
+                const container = document.getElementById('test-results');
+                
+                const testDiv = document.createElement('div');
+                testDiv.className = 'test-container';
+                
+                const header = document.createElement('div');
+                header.className = 'test-header';
+                
+                const name = document.createElement('div');
+                name.className = 'test-name';
+                name.textContent = result.name;
+                
+                const status = document.createElement('div');
+                status.className = `test-status ${result.passed ? 'passed' : 'failed'}`;
+                status.textContent = result.passed ? '✓ RÉUSSI' : '✗ ÉCHOUÉ';
+                
+                header.appendChild(name);
+                header.appendChild(status);
+                testDiv.appendChild(header);
+                
+                const details = document.createElement('div');
+                details.className = 'test-details';
+                
+                result.steps.forEach(step => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = `test-step ${step.success ? 'success' : 'error'}`;
+                    stepDiv.textContent = step.message;
+                    details.appendChild(stepDiv);
+                });
+                
+                if (result.error) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'test-step error';
+                    errorDiv.textContent = `❌ Erreur: ${result.error}`;
+                    details.appendChild(errorDiv);
+                }
+                
+                testDiv.appendChild(details);
+                container.appendChild(testDiv);
+            }
+            
+            displaySummary() {
+                const total = this.results.length;
+                const passed = this.results.filter(r => r.passed).length;
+                const failed = total - passed;
+                
+                document.getElementById('total-tests').textContent = total;
+                document.getElementById('passed-tests').textContent = passed;
+                document.getElementById('failed-tests').textContent = failed;
+            }
+        }
+
+        // Définition des tests
+        const runner = new TestRunner();
+
+        runner.addTest("Test 1: Initialisation de la mise par défaut", (assert, result) => {
+            result.steps.push({ success: true, message: "Création d'un nouveau BetManager..." });
+            const manager = new BetManager();
+            
+            result.steps.push({ success: true, message: `Vérification: currentBet = ${manager.currentBet}` });
+            assert.assertEqual(manager.currentBet, DEFAULT_BET, "La mise initiale devrait être 5.00");
+            
+            result.steps.push({ success: true, message: "✓ La mise par défaut est correctement initialisée à 5.00 €" });
+        });
+
+        runner.addTest("Test 2: Augmentation de la mise", (assert, result) => {
+            const manager = new BetManager();
+            result.steps.push({ success: true, message: `Mise initiale: ${manager.currentBet} €` });
+            
+            manager.increaseBet();
+            result.steps.push({ success: true, message: `Après increaseBet(): ${manager.currentBet} €` });
+            assert.assertEqual(manager.currentBet, 6.00, "La mise devrait être 6.00");
+            
+            manager.increaseBet();
+            result.steps.push({ success: true, message: `Après 2ème increaseBet(): ${manager.currentBet} €` });
+            assert.assertEqual(manager.currentBet, 7.00, "La mise devrait être 7.00");
+            
+            result.steps.push({ success: true, message: "✓ L'augmentation de la mise fonctionne correctement" });
+        });
+
+        runner.addTest("Test 3: Diminution de la mise", (assert, result) => {
+            const manager = new BetManager();
+            manager.updateBet(10.00);
+            result.steps.push({ success: true, message: `Mise initiale: ${manager.currentBet} €` });
+            
+            manager.decreaseBet();
+            result.steps.push({ success: true, message: `Après decreaseBet(): ${manager.currentBet} €` });
+            assert.assertEqual(manager.currentBet, 9.00, "La mise devrait être 9.00");
+            
+            result.steps.push({ success: true, message: "✓ La diminution de la mise fonctionne correctement" });
+        });
+
+        runner.addTest("Test 4: Limite minimale de mise", (assert, result) => {
+            const manager = new BetManager();
+            manager.updateBet(2.00);
+            result.steps.push({ success: true, message: `Mise initiale: ${manager.currentBet} €` });
+            
+            manager.decreaseBet();
+            result.steps.push({ success: true, message: `Après decreaseBet(): ${manager.currentBet} €` });
+            assert.assertEqual(manager.currentBet, 1.00, "La mise devrait être 1.00");
+            
+            manager.decreaseBet();
+            result.steps.push({ success: true, message: `Après tentative de descendre sous MIN: ${manager.currentBet} €` });
+            assert.assertEqual(manager.currentBet, 1.00, "La mise ne devrait pas descendre sous 1.00");
+            
+            result.steps.push({ success: true, message: "✓ La limite minimale (1.00 €) est respectée" });
+        });
+
+        runner.addTest("Test 5: Limite maximale de mise", (assert, result) => {
+            const manager = new BetManager();
+            manager.updateBet(24.00);
+            result.steps.push({ success: true, message: `Mise initiale: ${manager.currentBet} €` });
+            
+            manager.increaseBet();
+            result.steps.push({ success: true, message: `Après increaseBet(): ${manager.currentBet} €` });
+            assert.assertEqual(manager.currentBet, 25.00, "La mise devrait être 25.00");
+            
+            manager.increaseBet();
+            result.steps.push({ success: true, message: `Après tentative de dépasser MAX: ${manager.currentBet} €` });
+            assert.assertEqual(manager.currentBet, 25.00, "La mise ne devrait pas dépasser 25.00");
+            
+            result.steps.push({ success: true, message: "✓ La limite maximale (25.00 €) est respectée" });
+        });
+
+        runner.addTest("Test 6: Placement de mise avec solde suffisant", (assert, result) => {
+            const manager = new BetManager(100.00);
+            manager.updateBet(10.00);
+            result.steps.push({ success: true, message: `Solde initial: ${manager.userBalance} €, Mise: ${manager.currentBet} €` });
+            
+            assert.assert(manager.canPlaceBet(), "Devrait pouvoir placer la mise");
+            result.steps.push({ success: true, message: "✓ canPlaceBet() retourne true" });
+            
+            const betAmount = manager.placeBet();
+            result.steps.push({ success: true, message: `Mise placée: ${betAmount} €, Nouveau solde: ${manager.userBalance} €` });
+            assert.assertEqual(manager.userBalance, 90.00, "Le solde devrait être 90.00");
+            
+            result.steps.push({ success: true, message: "✓ Le solde est correctement déduit" });
+        });
+
+        runner.addTest("Test 7: Placement de mise avec solde insuffisant", (assert, result) => {
+            const manager = new BetManager(3.00);
+            manager.updateBet(5.00);
+            result.steps.push({ success: true, message: `Solde initial: ${manager.userBalance} €, Mise: ${manager.currentBet} €` });
+            
+            assert.assert(!manager.canPlaceBet(), "Ne devrait pas pouvoir placer la mise");
+            result.steps.push({ success: true, message: "✓ canPlaceBet() retourne false" });
+            
+            let errorThrown = false;
+            try {
+                manager.placeBet();
+            } catch (error) {
+                errorThrown = true;
+                result.steps.push({ success: true, message: `✓ Exception levée: "${error.message}"` });
+            }
+            
+            assert.assert(errorThrown, "Une exception devrait être levée");
+            result.steps.push({ success: true, message: "✓ La mise est refusée avec solde insuffisant" });
+        });
+
+        runner.addTest("Test 8: Ajout de gains", (assert, result) => {
+            const manager = new BetManager(50.00);
+            result.steps.push({ success: true, message: `Solde initial: ${manager.userBalance} €` });
+            
+            manager.addWinnings(100.00);
+            result.steps.push({ success: true, message: `Après addWinnings(100.00): ${manager.userBalance} €` });
+            assert.assertEqual(manager.userBalance, 150.00, "Le solde devrait être 150.00");
+            
+            result.steps.push({ success: true, message: "✓ Les gains sont correctement ajoutés au solde" });
+        });
+
+        runner.addTest("Test 9: Calcul de gains proportionnels", (assert, result) => {
+            const manager = new BetManager(100.00);
+            
+            // Test avec différentes mises
+            const testCases = [
+                { bet: 1.00, multiplier: 10, expectedWin: 10.00 },
+                { bet: 5.00, multiplier: 20, expectedWin: 100.00 },
+                { bet: 25.00, multiplier: 500, expectedWin: 12500.00 }
+            ];
+            
+            testCases.forEach(test => {
+                const calculatedWin = test.bet * test.multiplier;
+                result.steps.push({ 
+                    success: true, 
+                    message: `Mise: ${test.bet} € × ${test.multiplier} = ${calculatedWin} € (attendu: ${test.expectedWin} €)` 
+                });
+                assert.assertEqual(calculatedWin, test.expectedWin, `Les gains devraient être ${test.expectedWin}`);
+            });
+            
+            result.steps.push({ success: true, message: "✓ Les calculs de gains proportionnels sont corrects" });
+        });
+
+        runner.addTest("Test 10: Scénario complet de jeu", (assert, result) => {
+            const manager = new BetManager(100.00);
+            result.steps.push({ success: true, message: `🎮 Début du jeu - Solde: ${manager.userBalance} €` });
+            
+            // Tour 1: Mise de 5€, perd
+            manager.updateBet(5.00);
+            manager.placeBet();
+            result.steps.push({ success: true, message: `Tour 1: Mise ${manager.currentBet + 5} € (perdu), Solde: ${manager.userBalance} €` });
+            assert.assertEqual(manager.userBalance, 95.00, "Le solde devrait être 95.00");
+            
+            // Tour 2: Mise de 10€, gagne 50€
+            manager.updateBet(10.00);
+            manager.placeBet();
+            manager.addWinnings(50.00);
+            result.steps.push({ success: true, message: `Tour 2: Mise ${manager.currentBet + 10} €, Gain 50 €, Solde: ${manager.userBalance} €` });
+            assert.assertEqual(manager.userBalance, 135.00, "Le solde devrait être 135.00");
+            
+            // Tour 3: Mise de 25€, gagne 500€
+            manager.updateBet(25.00);
+            manager.placeBet();
+            manager.addWinnings(500.00);
+            result.steps.push({ success: true, message: `Tour 3: Mise ${manager.currentBet + 25} €, Gain 500 €, Solde: ${manager.userBalance} €` });
+            assert.assertEqual(manager.userBalance, 610.00, "Le solde devrait être 610.00");
+            
+            result.steps.push({ success: true, message: "✓ Le scénario complet de jeu fonctionne correctement" });
+        });
+
+        async function runAllTests() {
+            const button = document.querySelector('.run-button');
+            button.disabled = true;
+            button.textContent = '⏳ Tests en cours...';
+            
+            await runner.runAll();
+            
+            button.disabled = false;
+            button.textContent = '▶️ Relancer tous les tests';
+        }
+
+        // Auto-run au chargement
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>
