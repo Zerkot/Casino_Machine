@@ -6,19 +6,27 @@
   <title>Soltys Casino — Accueil</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+  <!-- Écran de chargement -->
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <div class="loading-text" data-fr="Chargement..." data-en="Loading...">Chargement...</div>
+  </div>
 
   <!-- En-tête -->
   <header class="page">
-    <h1 class="title">🪩 Casino</h1>
+    <h1 class="title" data-fr="🪩 Casino" data-en="🪩 Casino">🪩 Casino</h1>
     <div class="header-right">
-      <span class="badge" id="headerCredits">Crédits : 0</span>
+      <span class="badge" id="headerCredits" data-fr="Crédits : 0" data-en="Credits: 0">Crédits : 0</span>
+      <span id="balance-index-display" style="margin-left:10px;">0.00</span> €
+      <button id="settingsBtn" class="btn" style="margin-left:15px;" data-fr="Paramètres" data-en="Settings">Paramètres</button>
     </div>
   </header>
 
   <!-- Interface principale -->
   <main class="container">
-    <h2 class="section-title">Jeux disponibles</h2>
+    <h2 class="section-title" data-fr="Jeux disponibles" data-en="Available Games">Jeux disponibles</h2>
 
     <div class="top-row">
       <!-- Cartes cliquables -->
@@ -36,9 +44,11 @@
     <!-- Lien vers la machine à sous -->
     <div class="click-area" id="clickArea" role="button" tabindex="0" aria-pressed="false">
       <div class="click-inner">
-        <div class="click-title">Machine à sous</div>
-        <div class="click-sub">Clique ici — accéder à la machine à sous</div>
-        <button class="btn" id="actionBtn" aria-hidden="true">Ouvrir</button>
+        <div class="click-title" data-fr="Machine à sous" data-en="Slot Machine">Machine à sous</div>
+        <div class="click-sub" data-fr="Clique ici — accéder à la machine à sous" data-en="Click here — access the slot machine">
+          Clique ici — accéder à la machine à sous
+        </div>
+        <button class="btn" id="actionBtn" aria-hidden="true" data-fr="Ouvrir" data-en="Open">Ouvrir</button>
       </div>
     </div>
   </main>
@@ -47,10 +57,48 @@
   <div id="welcome-popup" class="modal-overlay" aria-hidden="true">
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="popup-title">
       <span class="close-btn" aria-label="Fermer">&times;</span>
-      <h2 id="popup-title">Bienvenue</h2>
-      <p>Ce site est une SIMULATION de machine à sous.</p>
-      <p>Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir.</p>
-      <button id="accept-btn">J'ai compris</button>
+      <h2 id="popup-title" data-fr="Bienvenue" data-en="Welcome">Bienvenue</h2>
+      <p data-fr="Ce site est une SIMULATION de machine à sous." data-en="This site is a SLOT MACHINE SIMULATION.">
+        Ce site est une SIMULATION de machine à sous.
+      </p>
+      <p data-fr="Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir."
+         data-en="No real money is used or can be won. Play for fun.">
+         Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir.
+      </p>
+      <button id="accept-btn" data-fr="J'ai compris" data-en="I understand">J'ai compris</button>
+    </div>
+  </div>
+
+  <!-- Fenêtre Paramètres (mise à jour) -->
+  <div id="settings-modal" class="modal-overlay" aria-hidden="true" style="display:none;">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <span class="close-btn" id="close-settings" aria-label="Fermer">&times;</span>
+      <h2 id="settings-title" data-fr="Paramètres" data-en="Settings">Paramètres</h2>
+
+      <!-- LANGUE -->
+      <div class="settings-section" style="margin-bottom:18px;">
+        <p data-fr="Choisis ta langue :" data-en="Choose your language:" style="margin:0 0 8px 0;">
+          Choisis ta langue :
+        </p>
+        <div class="lang-options" style="display:flex;gap:8px;">
+          <button class="btn lang-btn" data-lang="fr">🇫🇷 Français</button>
+          <button class="btn lang-btn" data-lang="en">🇬🇧 English</button>
+        </div>
+      </div>
+
+      <hr style="margin:16px 0; border:0; border-top:1px solid rgba(0,0,0,0.08);" />
+
+      <!-- VOLUME -->
+      <div class="settings-section">
+        <p data-fr="Volume du son :" data-en="Sound volume:" style="margin:0 0 8px 0;">
+          Volume du son :
+        </p>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <input type="range" id="volumeControl" min="0" max="1" step="0.01" style="flex:1;">
+          <button id="muteBtn" class="btn" aria-pressed="false" title="Couper le son">🔊</button>
+          <span id="volumeValue" style="min-width:48px; text-align:right;">100%</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -58,65 +106,110 @@
   <div id="overlay" class="overlay-msg" hidden>
     <div class="overlay-card">
       <pre id="overlayText"></pre>
-      <button class="btn" id="closeOverlay">Fermer</button>
+      <button class="btn" id="closeOverlay" data-fr="Fermer" data-en="Close">Fermer</button>
     </div>
   </div>
 
-  <script>
-    // ===== Crédit partagé (localStorage) =====
-    const LS_KEY = 'credits';
-    function getCredits(){
-      const v = parseInt(localStorage.getItem(LS_KEY),10);
-      return Number.isFinite(v) ? v : 100; // défaut 100
-    }
-    function setCredits(v){
-      localStorage.setItem(LS_KEY, String(v));
-      document.getElementById('headerCredits').textContent = `Crédits : ${v}`;
-    }
-
-    // ===== Overlay simple =====
-    const overlay = document.getElementById('overlay');
-    const overlayText = document.getElementById('overlayText');
-    const closeOverlay = document.getElementById('closeOverlay');
-    function showOverlay(text){
-      overlayText.textContent = text;
-      overlay.hidden = false;
-    }
-    function hideOverlay(){ overlay.hidden = true; }
-    closeOverlay.addEventListener('click', hideOverlay);
-    overlay.addEventListener('click', e => { if(e.target === overlay) hideOverlay(); });
-
-    // ===== Pop-up d'accueil =====
-    document.addEventListener("DOMContentLoaded", function(){
-      const modal = document.getElementById("welcome-popup");
-      const closeButton = document.querySelector(".close-btn");
-      const acceptButton = document.getElementById("accept-btn");
-
-      function hideModal(){ modal.classList.remove("show"); modal.setAttribute('aria-hidden','true'); }
-      function showModal(){ modal.classList.add("show"); modal.setAttribute('aria-hidden','false'); }
-
-      // init crédits header
-      setCredits(getCredits());
-
-      showModal();
-      closeButton.addEventListener("click", hideModal);
-      acceptButton.addEventListener("click", hideModal);
-      modal.addEventListener("click", e => { if(e.target === modal) hideModal(); });
+<script>
+  // --- Gestion du changement de langue ---
+  function setLanguage(lang) {
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-fr]").forEach(el => {
+      el.textContent = el.getAttribute(`data-${lang}`) || el.textContent;
     });
+  }
 
-    // ===== Cartes "en cours de développement" =====
-    document.getElementById('gameBJ').addEventListener('click', ()=> showOverlay('Jeu en cours de développement'));
-    document.getElementById('gameRoulette').addEventListener('click', ()=> showOverlay('Jeu en cours de développement'));
-
-    // ===== Redirection vers machine à sous =====
-    const clickArea = document.getElementById('clickArea');
-    const actionBtn = document.getElementById('actionBtn');
-    function redirectToMachine(){ window.location.href = "machine_a_sous.html"; }
-    clickArea.addEventListener('click', redirectToMachine);
-    clickArea.addEventListener('keydown', e => {
-      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); redirectToMachine(); }
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const lang = btn.dataset.lang;
+      localStorage.setItem("siteLang", lang);
+      setLanguage(lang);
+      document.getElementById("settings-modal").style.display = "none";
     });
-    actionBtn.addEventListener('click', e => { e.stopPropagation(); redirectToMachine(); });
-  </script>
+  });
+
+  // Charger la langue sauvegardée
+  const savedLang = localStorage.getItem("siteLang") || "fr";
+  setLanguage(savedLang);
+
+  // --- Gestion ouverture/fermeture du modal Paramètres ---
+  const settingsBtn = document.getElementById("settingsBtn");
+  const settingsModal = document.getElementById("settings-modal");
+  const closeSettings = document.getElementById("close-settings");
+
+  settingsBtn.addEventListener("click", () => {
+    settingsModal.style.display = "flex";
+  });
+
+  closeSettings.addEventListener("click", () => {
+    settingsModal.style.display = "none";
+  });
+
+  window.addEventListener("click", e => {
+    if (e.target === settingsModal) settingsModal.style.display = "none";
+  });
+
+  // --- Gestion du volume (avec Mute) ---
+  const volumeControl = document.getElementById("volumeControl");
+  const volumeValue = document.getElementById("volumeValue");
+  const muteBtn = document.getElementById("muteBtn");
+
+  let savedVolume = parseFloat(localStorage.getItem("siteVolume"));
+  if (isNaN(savedVolume)) savedVolume = 1;
+
+  volumeControl.value = savedVolume;
+  volumeValue.textContent = Math.round(savedVolume * 100) + "%";
+  muteBtn.textContent = savedVolume === 0 ? "🔇" : "🔊";
+  muteBtn.setAttribute("aria-pressed", savedVolume === 0 ? "true" : "false");
+
+  function setGlobalVolume(vol) {
+    document.querySelectorAll("audio, video").forEach(a => {
+      try { a.volume = vol; } catch(e) {}
+    });
+    localStorage.setItem("siteVolume", vol);
+  }
+
+  setGlobalVolume(savedVolume);
+
+  volumeControl.addEventListener("input", e => {
+    const newVolume = parseFloat(e.target.value);
+    volumeValue.textContent = Math.round(newVolume * 100) + "%";
+    muteBtn.textContent = newVolume === 0 ? "🔇" : "🔊";
+    muteBtn.setAttribute("aria-pressed", newVolume === 0 ? "true" : "false");
+    setGlobalVolume(newVolume);
+  });
+
+  muteBtn.addEventListener("click", () => {
+    let current = parseFloat(localStorage.getItem("siteVolume"));
+    if (isNaN(current)) current = parseFloat(volumeControl.value) || 1;
+    if (current > 0) {
+      localStorage.setItem("siteVolumeBeforeMute", current);
+      setGlobalVolume(0);
+      volumeControl.value = 0;
+      volumeValue.textContent = "0%";
+      muteBtn.textContent = "🔇";
+      muteBtn.setAttribute("aria-pressed", "true");
+    } else {
+      let prev = parseFloat(localStorage.getItem("siteVolumeBeforeMute"));
+      if (isNaN(prev)) prev = 1;
+      setGlobalVolume(prev);
+      volumeControl.value = prev;
+      volumeValue.textContent = Math.round(prev * 100) + "%";
+      muteBtn.textContent = "🔊";
+      muteBtn.setAttribute("aria-pressed", "false");
+    }
+  });
+
+  const observer = new MutationObserver(() => {
+    const volNow = parseFloat(localStorage.getItem("siteVolume")) || 1;
+    document.querySelectorAll("audio, video").forEach(a => {
+      try { a.volume = volNow; } catch(e) {}
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+</script>
+
+<script src="java_script.js"></script>
 </body>
 </html>
