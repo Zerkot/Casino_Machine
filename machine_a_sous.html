@@ -743,6 +743,94 @@
 <span id="user-info"></span>
             💰 Solde : <span id="balance-display">0.00</span> €
             <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
+            <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
+            <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
+            <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
+            <button id="test-button" onclick="runTests()">Test</button>
+            <button id="manage-users-button">Gérer Comptes</button>
+            <button id="logout-button">Déconnexion</button>
+        </div>
+
+        <a id="back-button" href="Index.html">⬅ Retour</a>
+
+        <div id="slot-container">
+            <div id="reels-container">
+                <div class="symbol" id="symbol-0-0">🍒</div>
+                <div class="symbol" id="symbol-1-0">🍒</div>
+                <div class="symbol" id="symbol-2-0">🍒</div>
+                <div class="symbol" id="symbol-3-0">🍒</div>
+                <div class="symbol" id="symbol-4-0">🍒</div>
+                <div class="symbol" id="symbol-0-1">7</div>
+                <div class="symbol" id="symbol-1-1">7</div>
+                <div class="symbol" id="symbol-2-1">7</div>
+                <div class="symbol" id="symbol-3-1">7</div>
+                <div class="symbol" id="symbol-4-1">7</div>
+                <div class="symbol" id="symbol-0-2">BAR</div>
+                <div class="symbol" id="symbol-1-2">BAR</div>
+                <div class="symbol" id="symbol-2-2">BAR</div>
+                <div class="symbol" id="symbol-3-2">BAR</div>
+                <div class="symbol" id="symbol-4-2">BAR</div>
+            </div>
+        </div>
+
+        <div id="bet-controls">
+            <button id="decrease-bet">-</button>
+            <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
+            <button id="increase-bet">+</button>
+        </div>
+
+        <div id="result-display">Cliquez sur SPIN pour jouer !</div>
+
+        <div id="frenzy-display"></div>
+
+        <button id="spin-button" onclick="startSpin()">SPIN</button>
+
+        <div id="test-log">
+            <strong>Résultats des tests :</strong>
+            <ul id="test-results"></ul>
+        </div>
+
+    </div>
+
+    <div id="rules-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="hideRules()">&times;</span>
+            <h2>Règles du Jeu</h2>
+            <p>Alignez des symboles identiques sur les <strong>lignes horizontales (5x)</strong>, les <strong>colonnes (3x)</strong>, ou en <strong>formes (V, Z, A)</strong> pour gagner !</p>
+            <p>Obtenez 3 symboles 🌟 (Scatter) ou plus n'importe où sur la grille pour déclencher <strong>10 Tours Gratuits</strong> en Mode Frénésie !</p>
+            <h3>Multiplicateurs de Gains :</h3>
+            <ul id="payout-list"></ul>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="hideSettings()">&times;</span>
+            <h2>Paramètres</h2>
+            <h3>Thème</h3>
+            <button id="dark-mode-toggle">Activer le Mode Sombre</button>
+        </div>
+    </div>
+
+    <div id="user-management-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="hideUserManagement()">&times;</span>
+            <h2>Gestion des Utilisateurs</h2>
+            <p>Modifier le solde des utilisateurs. Les modifications sont sauvegardées immédiatement.</p>
+            <ul id="user-list">
+                </ul>
+        </div>
+    </div>
+
+
+    <script>
+        // --- CONSTANTES DU JEU ---
+        const MAX_BALANCE = 100.00;
+        const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
+        const SYMBOLS = ["🍒", "🍒", "🍒", "🍒", "🍒", "🍒", "🍋", "🍋", "🍋", "🍋", "🍋", "🍊", "🍊", "🍊", "🍊", "🔔", "🔔", "🔔", "BAR", "BAR", "7", "🌟", "🌟"];
+        const SYMBOLS_FRENZY = ["🍒", "🍒", "🍋", "🍋", "🍋", "🍊", "🍊", "🍊", "🔔", "🔔", "🔔", "🔔", "BAR", "BAR", "BAR", "7", "7", "🌟"];
+        const PAYOUTS = { "🍒": 10, "🍋": 20, "🍊": 40, "🔔": 100, "BAR": 500, "7": 5000 };
+        const PAYOUTS_3 = { "🍒": 1, "🍋": 2, "🍊": 4, "🔔": 10, "BAR": 25, "7": 100, "🌟": 0 }; // Gains pour 3 symboles (colonnes)
 <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
 <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
 <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
@@ -1219,6 +1307,7 @@
                     totalWinnings += bet * multiplier;
                     const lineName = (r === 0) ? "Ligne Haut" : (r === 1) ? "Ligne Milieu" : "Ligne Bas";
                     winningLinesDesc.push(`${lineName} (${firstSymbol})`);
+                    if (firstSymbol === "7") isJackpotWin = true;
                     
                     // MODIFIÉ : Vérifie le Jackpot S10
                     if (firstSymbol === "S10") isJackpotWin = true;
@@ -1262,6 +1351,7 @@
             if (PAYOUTS[firstVSymbol] && vSymbols.every(s => s === firstVSymbol)) {
                 totalWinnings += bet * PAYOUTS[firstVSymbol];
                 winningLinesDesc.push(`Forme V (${firstVSymbol})`);
+                if (firstVSymbol === "7") isJackpotWin = true;
                 
                 // MODIFIÉ : Vérifie le Jackpot S10
                 if (firstVSymbol === "S10") isJackpotWin = true;
@@ -1276,6 +1366,7 @@
             if (PAYOUTS[firstZSymbol] && zSymbols.every(s => s === firstZSymbol)) {
                 totalWinnings += bet * PAYOUTS[firstZSymbol];
                 winningLinesDesc.push(`Forme Z (${firstZSymbol})`);
+                if (firstZSymbol === "7") isJackpotWin = true;
                 
                 // MODIFIÉ : Vérifie le Jackpot S10
                 if (firstZSymbol === "S10") isJackpotWin = true;
@@ -1290,6 +1381,7 @@
             if (PAYOUTS[firstRevZSymbol] && revZSymbols.every(s => s === firstRevZSymbol)) {
                 totalWinnings += bet * PAYOUTS[firstRevZSymbol];
                 winningLinesDesc.push(`Forme Z-inv (${firstRevZSymbol})`);
+                if (firstRevZSymbol === "7") isJackpotWin = true;
                 
                 // MODIFIÉ : Vérifie le Jackpot S10
                 if (firstRevZSymbol === "S10") isJackpotWin = true;
@@ -1299,11 +1391,13 @@
             }
 
             // Forme A (V inversé): [2,0], [1,1], [0,2], [1,3], [2,4]
+            // CORRIGÉ : Bug dans la définition du tableau aSymbols
             const aSymbols = [grid[2][0], grid[1][1], grid[0][2], grid[1][3], grid[2][4]]; 
             const firstASymbol = aSymbols[0];
             if (PAYOUTS[firstASymbol] && aSymbols.every(s => s === firstASymbol)) {
                 totalWinnings += bet * PAYOUTS[firstASymbol];
                 winningLinesDesc.push(`Forme A (${firstASymbol})`);
+                if (firstASymbol === "7") isJackpotWin = true;
                 
                 // MODIFIÉ : Vérifie le Jackpot S10
                 if (firstASymbol === "S10") isJackpotWin = true;
@@ -1335,6 +1429,7 @@
             payoutList.appendChild(h5x);
 
             // Affiche les gains 5x (PAYOUTS)
+            const sortedPayouts = Object.entries(PAYOUTS).sort(([, a], [, b]) => a - b);
             // MODIFIÉ : Tri par symbole (S1, S2...) au lieu de valeur
             const sortedPayouts = Object.entries(PAYOUTS).sort(([keyA], [keyB]) => {
                 const numA = parseInt(keyA.substring(1));
@@ -1355,6 +1450,9 @@
             payoutList.appendChild(h3x);
 
             // Affiche les gains 3x (PAYOUTS_3)
+            const sortedPayouts3 = Object.entries(PAYOUTS_3)
+                .filter(([, multiplier]) => multiplier > 0) // Ne pas montrer 🌟
+                .sort(([, a], [, b]) => a - b);
             // MODIFIÉ : Tri par symbole
             const sortedPayouts3 = Object.entries(PAYOUTS_3)
                 .filter(([key, multiplier]) => multiplier > 0 && key !== '🌟') // Ne pas montrer 🌟 ici
@@ -1539,6 +1637,7 @@
                         [0,4].includes(c) || // Colonnes V/Z
                         (r === 2 && c === 2) // Centre V
                     )) {
+                        row.push("7");
                         row.push("S10");
                     } else if (activeCheatMode === "scatter" && ((r === 0 && c === 0) || (r === 1 && c === 2) || (r === 2 && c === 4))) {
                         row.push("🌟");
@@ -1551,6 +1650,9 @@
 
             // Assurer que le Jackpot s'applique à TOUTES les lignes si demandé (pour test)
             if (activeCheatMode === "jackpot") {
+                grid[0] = ["7", "7", "7", "7", "7"];
+                grid[1] = ["7", "7", "7", "7", "7"];
+                grid[2] = ["7", "7", "7", "7", "7"];
                 // MODIFIÉ : Utilise S10 au lieu de 7
                 grid[0] = ["S10", "S10", "S10", "S10", "S10"];
                 grid[1] = ["S10", "S10", "S10", "S10", "S10"];
@@ -1799,6 +1901,9 @@
 
             activeCheatMode = "jackpot";
             const gridJackpot = generateFinalGrid();
+            assert('Mode Cheat [Jackpot] génère 77777 Ligne 1', gridJackpot[0].every(s => '7' === s));
+            assert('Mode Cheat [Jackpot] génère 77777 Ligne 2', gridJackpot[1].every(s => '7' === s));
+            assert('Mode Cheat [Jackpot] génère 77777 Ligne 3', gridJackpot[2].every(s => '7' === s));
             // MODIFIÉ : Teste S10 au lieu de 7
             assert('Mode Cheat [Jackpot] génère S10x5 Ligne 1', gridJackpot[0].every(s => 'S10' === s));
             assert('Mode Cheat [Jackpot] génère S10x5 Ligne 2', gridJackpot[1].every(s => 'S10' === s));
