@@ -489,6 +489,56 @@
         }
 
         #back-button {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        font-size: 1em;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    #back-button:hover {
+        background: linear-gradient(135deg, #2980b9, #3498db);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.35);
+    }
+    #audio-gate {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.6);
+      z-index: 3000;
+    }
+    #audio-gate .card {
+      background: #07132a;
+      color: #e6eef8;
+      padding: 18px 22px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    #audio-gate button {
+      margin-top: 10px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      background: #00aaff;
+      color: #07132a;
+    }
+    #audio-gate button:hover { filter: brightness(0.95); }
             position: fixed;
             top: 20px;
             left: 20px;
@@ -639,691 +689,342 @@
     </style>
     <script src="database.js"></script>
 </head>
+
 <body>
 
-    <div id="auth-container">
-        <h2>Bienvenue sur la Machine à Sous</h2>
-        <p>Veuillez vous connecter ou créer un compte pour jouer.</p>
-        <button id="login-button">Connexion</button>
-        <button id="register-button">Créer un compte</button>
+      <!-- Musiques / sons -->
+  <audio id="bg-music" src="sounds/casino-music-jazz-las-vegas-monaco-background-intro-theme-294408.mp3" preload="auto" loop autoplay></audio>
+  <audio id="s-spin"    src="sounds/slot-machine-reels-sound-30276_ZFxVLP0I.mp3" preload="auto"></audio>
+  <audio id="s-stop"    src="sounds/.mp3"  preload="auto"></audio>
+  <audio id="s-win"     src="sounds/Slot Machine Jackpot Sound Effect.mp3"  preload="auto"></audio>
+
+     <!-- ====== TON HTML EXISTANT (barre solde, machine, modales, etc.) ====== -->
+  <div id="balance-container">
+    💰 Solde : <span id="balance-display">0.00</span> €
+    <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
+    <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
+    <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
+    <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
+    <button id="test-button" onclick="runTests()" style="display:none">Test</button>
+  </div>
+
+  <a id="back-button" href="index.html">⬅ Retour</a>
+
+  <div id="slot-container">
+    <div id="reels-container">
+      <div class="symbol" id="symbol-0-0">🍒</div>
+      <div class="symbol" id="symbol-1-0">🍒</div>
+      <div class="symbol" id="symbol-2-0">🍒</div>
+      <div class="symbol" id="symbol-3-0">🍒</div>
+      <div class="symbol" id="symbol-4-0">🍒</div>
+      <div class="symbol" id="symbol-0-1">7</div>
+      <div class="symbol" id="symbol-1-1">7</div>
+      <div class="symbol" id="symbol-2-1">7</div>
+      <div class="symbol" id="symbol-3-1">7</div>
+      <div class="symbol" id="symbol-4-1">7</div>
+      <div class="symbol" id="symbol-0-2">BAR</div>
+      <div class="symbol" id="symbol-1-2">BAR</div>
+      <div class="symbol" id="symbol-2-2">BAR</div>
+      <div class="symbol" id="symbol-3-2">BAR</div>
+      <div class="symbol" id="symbol-4-2">BAR</div>
     </div>
+  </div>
 
-    <div id="game-container" style="display: none;">
+  <div id="bet-controls">
+    <button id="decrease-bet">-</button>
+    <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
+    <button id="increase-bet">+</button>
+  </div>
 
-        <div id="balance-container">
-            <span id="user-info"></span>
-            💰 Solde : <span id="balance-display">0.00</span> €
-            <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
-            <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
-            <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
-            <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
-            <button id="test-button" onclick="runTests()">Test</button>
-            <button id="manage-users-button">Gérer Comptes</button> <button id="logout-button">Déconnexion</button>
-        </div>
+  <div id="result-display">Cliquez sur SPIN pour jouer !</div>
+  <div id="frenzy-display"></div>
+  <button id="spin-button" onclick="startSpin()">SPIN</button>
 
-        <a id="back-button" href="Index.html">⬅ Retour</a>
+  <div id="test-log">
+    <strong>Résultats des tests :</strong>
+    <ul id="test-results"></ul>
+  </div>
 
-        <div id="slot-container">
-            <div id="reels-container">
-                <div class="symbol" id="symbol-0-0">🍒</div>
-                <div class="symbol" id="symbol-1-0">🍒</div>
-                <div class="symbol" id="symbol-2-0">🍒</div>
-                <div class="symbol" id="symbol-3-0">🍒</div>
-                <div class="symbol" id="symbol-4-0">🍒</div>
-                <div class="symbol" id="symbol-0-1">7</div>
-                <div class="symbol" id="symbol-1-1">7</div>
-                <div class="symbol" id="symbol-2-1">7</div>
-                <div class="symbol" id="symbol-3-1">7</div>
-                <div class="symbol" id="symbol-4-1">7</div>
-                <div class="symbol" id="symbol-0-2">BAR</div>
-                <div class="symbol" id="symbol-1-2">BAR</div>
-                <div class="symbol" id="symbol-2-2">BAR</div>
-                <div class="symbol" id="symbol-3-2">BAR</div>
-                <div class="symbol" id="symbol-4-2">BAR</div>
-            </div>
-        </div>
-
-        <div id="bet-controls">
-            <button id="decrease-bet">-</button>
-            <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
-            <button id="increase-bet">+</button>
-        </div>
-
-        <div id="result-display">Cliquez sur SPIN pour jouer !</div>
-
-        <div id="frenzy-display"></div>
-
-        <button id="spin-button" onclick="startSpin()">SPIN</button>
-
-        <div id="test-log">
-            <strong>Résultats des tests :</strong>
-            <ul id="test-results"></ul>
-        </div>
-
-    </div> <div id="rules-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="hideRules()">&times;</span>
-            <h2>Règles du Jeu</h2>
-            <p>Alignez 5 symboles identiques sur la <strong>ligne du milieu</strong> (la deuxième rangée) pour gagner le montant de votre mise multiplié par la valeur du symbole.</p>
-            <p>Obtenez 3 symboles 🌟 (Scatter) ou plus n'importe où sur la grille pour déclencher <strong>10 Tours Gratuits</strong> en Mode Frénésie !</p>
-            <h3>Multiplicateurs de Gains :</h3>
-            <ul id="payout-list"></ul>
-        </div>
+  <div id="rules-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="modal-close" onclick="hideRules()">&times;</span>
+      <h2>Règles du Jeu</h2>
+      <p>Alignez 5 symboles identiques sur la <strong>ligne du milieu</strong>.</p>
+      <p>3 🌟 ou plus n’importe où = <strong>10 Tours Frénésie</strong>.</p>
+      <h3>Multiplicateurs :</h3>
+      <ul id="payout-list"></ul>
     </div>
+  </div>
 
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="hideSettings()">&times;</span>
-            <h2>Paramètres</h2>
-            <h3>Thème</h3>
-            <button id="dark-mode-toggle">Activer le Mode Sombre</button>
-        </div>
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="modal-close" onclick="hideSettings()">&times;</span>
+      <h2>Paramètres</h2>
+      <h3>Thème</h3>
+      <button id="dark-mode-toggle">Activer le Mode Sombre</button>
     </div>
-
-    <div id="user-management-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="hideUserManagement()">&times;</span>
-            <h2>Gestion des Utilisateurs</h2>
-            <p>Modifier le solde des utilisateurs. Les modifications sont sauvegardées immédiatement.</p>
-            <ul id="user-list">
-                </ul>
-        </div>
-    </div>
-
-
-    <script>
-        // --- CONSTANTES DU JEU ---
-        const MAX_BALANCE = 100.00;
-        const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
-        const SYMBOLS = ["🍒", "🍒", "🍒", "🍒", "🍒", "🍒", "🍋", "🍋", "🍋", "🍋", "🍋", "🍊", "🍊", "🍊", "🍊", "🔔", "🔔", "🔔", "BAR", "BAR", "7", "🌟", "🌟"];
-        const SYMBOLS_FRENZY = ["🍒", "🍒", "🍋", "🍋", "🍋", "🍊", "🍊", "🍊", "🔔", "🔔", "🔔", "🔔", "BAR", "BAR", "BAR", "7", "7", "🌟"];
-        const PAYOUTS = { "🍒": 10, "🍋": 20, "🍊": 40, "🔔": 100, "BAR": 500, "7": 5000 };
-
-        // --- CONSTANTES D'AUTH ---
-        // (Note: ADMIN_EMAIL est maintenant défini dans database.js)
-        const STORAGE_USERS_KEY = "slot_users";
-        const STORAGE_CURRENT_USER_KEY = "slot_currentUserEmail";
-
-        // --- VARIABLES D'ÉTAT DU JEU ---
-        let userBalance = 0.00;
-        let currentBet = DEFAULT_BET;
-        let activeCheatMode = "none"; // "none", "jackpot", "scatter"
-        let animationInterval;
-        let isFrenzyModeActive = false;
-        let frenzySpinsRemaining = 0;
-        const FRENZY_SPINS_AWARDED = 10;
-
-        // --- VARIABLES D'ÉTAT D'AUTH ---
-        let allUsers = [];
-        let currentUser = null;
-
-        // --- SÉLECTION DES ÉLÉMENTS DU DOM ---
-        const balanceDisplay = document.getElementById('balance-display');
-        const spinButton = document.getElementById('spin-button');
-        const resultDisplay = document.getElementById('result-display');
-        const betInput = document.getElementById('bet-input');
-        const decreaseBetButton = document.getElementById('decrease-bet');
-        const increaseBetButton = document.getElementById('increase-bet');
-        const testButton = document.getElementById('test-button');
-        const rulesModal = document.getElementById('rules-modal');
-        const payoutList = document.getElementById('payout-list');
-        const frenzyDisplay = document.getElementById('frenzy-display');
-
-        const settingsModal = document.getElementById('settings-modal');
-        const darkModeToggleButton = document.getElementById('dark-mode-toggle');
-        const authContainer = document.getElementById('auth-container');
-        const gameContainer = document.getElementById('game-container');
-        const loginButton = document.getElementById('login-button');
-        const registerButton = document.getElementById('register-button');
-        const logoutButton = document.getElementById('logout-button');
-        const userInfoDisplay = document.getElementById('user-info');
-        const cheatButton = document.getElementById('cheat-button');
-        // NOUVELLES SÉLECTIONS ADMIN
-        const manageUsersButton = document.getElementById('manage-users-button');
-        const userManagementModal = document.getElementById('user-management-modal');
-        const userList = document.getElementById('user-list');
-
-        // ===============================================
-        // FONCTIONS D'AUTHENTIFICATION
-        // ===============================================
-
-        function initializeApp() {
-            loadAllUsers();
-            checkLoginState();
-            updateUI();
-            applySavedTheme();
-
-            loginButton.addEventListener('click', login);
-            registerButton.addEventListener('click', register);
-            logoutButton.addEventListener('click', logout);
-            darkModeToggleButton.addEventListener('click', toggleDarkMode);
-
-            // NOUVEAUX ÉVÉNEMENTS ADMIN
-            manageUsersButton.addEventListener('click', showUserManagement);
-            userManagementModal.addEventListener('click', function (event) {
-                if (event.target === userManagementModal) { hideUserManagement(); }
-            });
-            // Utiliser la délégation d'événements pour la liste
-            userList.addEventListener('click', handleUserListClick);
-        }
-
-        /**
-         * Charge la liste des utilisateurs depuis localStorage.
-         * Si localStorage est vide, utilise DEFAULT_USERS (de database.js).
-         */
-        function loadAllUsers() {
-            const usersJSON = localStorage.getItem(STORAGE_USERS_KEY);
-            if (usersJSON) {
-                allUsers = JSON.parse(usersJSON);
-            } else {
-                allUsers = DEFAULT_USERS;
-                saveAllUsers(); 
-            }
-        }
-
-        function checkLoginState() {
-            const currentUserEmail = localStorage.getItem(STORAGE_CURRENT_USER_KEY);
-            if (currentUserEmail) {
-                currentUser = allUsers.find(user => user.email === currentUserEmail) || null;
-            }
-        }
-
-        function updateUI() {
-            if (currentUser) {
-                authContainer.style.display = 'none';
-                gameContainer.style.display = 'block';
-                userBalance = currentUser.balance;
-                updateBalanceDisplay();
-                updateBet(currentBet);
-                userInfoDisplay.textContent = currentUser.name;
-
-                // 'ADMIN_EMAIL' est disponible car database.js a été chargé
-                // MODIFIÉ pour inclure le bouton de gestion
-                if (currentUser.email === ADMIN_EMAIL) {
-                    cheatButton.style.display = 'inline-block';
-                    manageUsersButton.style.display = 'inline-block';
-                } else {
-                    cheatButton.style.display = 'none';
-                    manageUsersButton.style.display = 'none';
-                }
-
-            } else {
-                authContainer.style.display = 'block';
-                gameContainer.style.display = 'none';
-                userBalance = 0;
-                currentUser = null;
-            }
-        }
-
-        function saveAllUsers() {
-            localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(allUsers));
-        }
-
-        function saveCurrentUserBalance() {
-            if (currentUser) {
-                currentUser.balance = userBalance;
-                const userIndex = allUsers.findIndex(u => u.email === currentUser.email);
-                if (userIndex > -1) {
-                    allUsers[userIndex].balance = userBalance;
-                    saveAllUsers();
-                }
-            }
-        }
-
-        function login() {
-            const email = prompt("Entrez votre e-mail pour vous connecter :");
-            if (!email) return;
-
-            const user = allUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-
-            if (user) {
-                localStorage.setItem(STORAGE_CURRENT_USER_KEY, user.email);
-                location.reload();
-            } else {
-                alert("Compte non trouvé. Veuillez créer un compte.");
-            }
-        }
-
-        function register() {
-            const name = prompt("Entrez votre nom :");
-            if (!name) return;
-            const email = prompt("Entrez votre e-mail :");
-            if (!email) return;
-
-            const emailExists = allUsers.some(u => u.email.toLowerCase() === email.toLowerCase());
-
-            if (emailExists) {
-                alert("Cet e-mail est déjà utilisé. Veuillez vous connecter.");
-                return;
-            }
-
-            const newUser = {
-                name: name,
-                email: email,
-                balance: MAX_BALANCE
-            };
-            allUsers.push(newUser);
-            saveAllUsers(); 
-
-            localStorage.setItem(STORAGE_CURRENT_USER_KEY, newUser.email);
-            location.reload();
-        }
-
-        function logout() {
-            localStorage.removeItem(STORAGE_CURRENT_USER_KEY);
-            location.reload();
-        }
-
-        // ===============================================
-        // NOUVELLES FONCTIONS DE GESTION ADMIN
-        // ===============================================
-
-        function showUserManagement() {
-            userList.innerHTML = ''; // Vider la liste précédente
-
-            // Parcourir tous les utilisateurs
-            allUsers.forEach(user => {
-                // Ne pas afficher l'admin lui-même dans la liste
-                if (user.email === ADMIN_EMAIL) return;
-
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <strong>${user.name}</strong> (${user.email})<br>
-                    Solde actuel : <strong>${user.balance.toFixed(2)} €</strong>
-                    <div>
-                        <input type="number" class="balance-input" value="${user.balance.toFixed(2)}" step="10" min="0">
-                        <button class="set-balance-btn" data-email="${user.email}">Définir Solde</button>
-                    </div>
-                `;
-                userList.appendChild(li);
-            });
-
-            userManagementModal.style.display = 'flex';
-        }
-
-        function hideUserManagement() {
-            userManagementModal.style.display = 'none';
-        }
-
-        /**
-         * Gère le clic sur un bouton "Définir Solde" dans la modale de gestion
-         */
-        function handleUserListClick(e) {
-            // Vérifier si on a cliqué sur un bouton de sauvegarde
-            if (e.target.classList.contains('set-balance-btn')) {
-                const email = e.target.dataset.email;
-                // Trouver l'input associé à ce bouton
-                const input = e.target.previousElementSibling;
-                const newBalance = parseFloat(input.value);
-
-                if (isNaN(newBalance) || newBalance < 0) {
-                    alert("Veuillez entrer un solde valide (nombre positif).");
-                    return;
-                }
-
-                // Mettre à jour le solde et sauvegarder
-                updateUserBalance(email, newBalance);
-            }
-        }
-
-        /**
-         * Met à jour le solde d'un utilisateur spécifique et sauvegarde
-         */
-        function updateUserBalance(email, newBalance) {
-            const userToUpdate = allUsers.find(u => u.email === email);
-            if (userToUpdate) {
-                userToUpdate.balance = newBalance;
-                saveAllUsers(); // Sauvegarde la liste complète mise à jour dans localStorage
-                
-                // Optionnel : rafraîchir la liste pour confirmer visuellement
-                const btn = userList.querySelector(`button[data-email="${email}"]`);
-                if (btn) {
-                    const balanceDisplay = btn.closest('li').querySelector('strong:last-of-type');
-                    balanceDisplay.textContent = `${newBalance.toFixed(2)} €`;
-                    btn.previousElementSibling.value = newBalance.toFixed(2);
-                }
-                
-                alert(`Le solde de ${userToUpdate.name} a été mis à jour.`);
-
-            } else {
-                alert("Erreur : Utilisateur non trouvé.");
-            }
-        }
-
-        // ===============================================
-        // FONCTIONS DU JEU (Inchangées)
-        // ===============================================
-
-        function showRules() {
-            payoutList.innerHTML = '';
-            const sortedPayouts = Object.entries(PAYOUTS).sort(([, a], [, b]) => a - b);
-            for (const [symbol, multiplier] of sortedPayouts) {
-                const li = document.createElement('li');
-                li.innerHTML = `<span>${symbol}</span> x 5 sur la ligne du milieu = <strong>${multiplier}x</strong> la mise`;
-                payoutList.appendChild(li);
-            }
-            const li = document.createElement('li');
-            li.innerHTML = `<span>🌟</span> x 3 (ou plus) n'importe où = <strong>${FRENZY_SPINS_AWARDED} Tours Frénésie</strong>`;
-            payoutList.appendChild(li);
-            rulesModal.style.display = 'flex';
-        }
-        function hideRules() { rulesModal.style.display = 'none'; }
-        rulesModal.addEventListener('click', function (event) {
-            if (event.target === rulesModal) { hideRules(); }
-        });
-
-        function showSettings() { settingsModal.style.display = 'flex'; }
-        function hideSettings() { settingsModal.style.display = 'none'; }
-        settingsModal.addEventListener('click', function (event) {
-            if (event.target === settingsModal) { hideSettings(); }
-        });
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            
-            if (document.body.classList.contains('dark-mode')) {
-                darkModeToggleButton.textContent = "Désactiver le Mode Sombre";
-                localStorage.setItem('slotMachineTheme', 'dark');
-            } else {
-                darkModeToggleButton.textContent = "Activer le Mode Sombre";
-                localStorage.setItem('slotMachineTheme', 'light');
-            }
-        }
-
-        function applySavedTheme() {
-            const savedTheme = localStorage.getItem('slotMachineTheme');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-                darkModeToggleButton.textContent = "Désactiver le Mode Sombre";
-            } else {
-                document.body.classList.remove('dark-mode');
-                darkModeToggleButton.textContent = "Activer le Mode Sombre";
-            }
-        }
-
-        function activateCheatMode() {
-            const cheatBtn = document.getElementById('cheat-button');
-
-            if (activeCheatMode !== "none") {
-                activeCheatMode = "none";
-                cheatBtn.textContent = "Admin";
-                cheatBtn.style.backgroundColor = "#888";
-                testButton.style.display = "none";
-                document.getElementById('test-log').style.display = "none";
-                alert("Mode Cheat désactivé.");
-                return;
-            }
-
-            const password = prompt("Entrez le mot de passe administrateur :");
-            const correctPassword = "938-555-0100";
-
-            if (password === correctPassword) {
-                const choice = prompt("Quel cheat activer ?\n1 = Jackpot (77777)\n2 = Scatter (Frénésie 100%)\n\nEntrez 1 ou 2 :");
-
-                if (choice === "1") {
-                    activeCheatMode = "jackpot";
-                    cheatBtn.textContent = "CHEAT: 777";
-                    cheatBtn.style.backgroundColor = "#2ecc71";
-                    testButton.style.display = "inline-block";
-                    alert("Mode Jackpot activé ! Tous les spins seront des 77777.");
-                } else if (choice === "2") {
-                    activeCheatMode = "scatter";
-                    cheatBtn.textContent = "CHEAT: 🌟";
-                    cheatBtn.style.backgroundColor = "#2ecc71";
-                    testButton.style.display = "inline-block";
-                    alert("Mode Scatter activé ! 3+ Scatters garantis.");
-                } else {
-                    alert("Choix invalide.");
-                }
-            } else if (password) {
-                alert("Mot de passe incorrect.");
-            }
-        }
-
-        function updateBet(newBet) {
-            if (newBet < MIN_BET) newBet = MIN_BET;
-            if (newBet > MAX_BET) newBet = MAX_BET;
-            if (!isFrenzyModeActive) {
-                currentBet = newBet;
-            }
-            betInput.value = Math.round(currentBet);
-            decreaseBetButton.disabled = (currentBet <= MIN_BET) || isFrenzyModeActive;
-            increaseBetButton.disabled = (currentBet >= MAX_BET) || isFrenzyModeActive;
-        }
-
-        function changeBet(amount) { updateBet(currentBet + amount); }
-        decreaseBetButton.addEventListener('click', () => changeBet(-BET_STEP));
-        increaseBetButton.addEventListener('click', () => changeBet(BET_STEP));
-        betInput.addEventListener('change', () => {
-            let typedBet = parseFloat(betInput.value);
-            if (isNaN(typedBet)) typedBet = DEFAULT_BET;
-            typedBet = Math.round(typedBet / BET_STEP) * BET_STEP;
-            updateBet(typedBet);
-        });
-
-        function updateBalanceDisplay() { balanceDisplay.textContent = userBalance.toFixed(2); }
-
-        function adjustBalance(amount) {
-            userBalance += amount;
-            if (userBalance < 0) userBalance = 0;
-            updateBalanceDisplay();
-            saveCurrentUserBalance();
-            updateBet(currentBet);
-            if (userBalance <= 0 && !isFrenzyModeActive) {
-                resultDisplay.textContent = "Solde épuisé ! Veuillez recharger.";
-                resultDisplay.classList.add('lose');
-            }
-        }
-
-        function rechargeBalance() {
-            if (userBalance <= 0) {
-                let amountToRecharge = MAX_BALANCE - userBalance;
-                adjustBalance(amountToRecharge);
-                resultDisplay.textContent = "Solde rechargé !";
-                resultDisplay.classList.add('win');
-            } else {
-                resultDisplay.textContent = "Vous avez encore " + userBalance.toFixed(2) + " €.";
-                resultDisplay.classList.remove('win', 'lose', 'jackpot');
-            }
-            updateBalanceDisplay();
-            updateBet(currentBet);
-        }
-
-        function getRandomSymbol() {
-            const symbolList = isFrenzyModeActive ? SYMBOLS_FRENZY : SYMBOLS;
-            return symbolList[Math.floor(Math.random() * symbolList.length)];
-        }
-
-        function generateFinalGrid() {
-            let grid = [];
-            for (let r = 0; r < 3; r++) {
-                let row = [];
-                for (let c = 0; c < 5; c++) {
-                    if (activeCheatMode === "jackpot" && r === 1) {
-                        row.push("7");
-                    } else if (activeCheatMode === "scatter" && ((r === 0 && c === 0) || (r === 1 && c === 2) || (r === 2 && c === 4))) {
-                        row.push("🌟");
-                    } else {
-                        row.push(getRandomSymbol());
-                    }
-                }
-                grid.push(row);
-            }
-            return grid;
-        }
-
-        function stopColumn(colIndex, finalGrid, spinningColumns) {
-            spinningColumns.shift();
-            for (let r = 0; r < 3; r++) {
-                const symbolEl = document.getElementById(`symbol-${colIndex}-${r}`);
-                symbolEl.textContent = finalGrid[r][colIndex];
-                symbolEl.classList.remove('spinning');
-            }
-        }
-
-        function runSpinAnimation(spinningColumns) {
-            for (const colIndex of spinningColumns) {
-                for (let r = 0; r < 3; r++) {
-                    const symbolEl = document.getElementById(`symbol-${colIndex}-${r}`);
-                    symbolEl.textContent = getRandomSymbol();
-                }
-            }
-        }
-
-        function countScatters(grid) {
-            let count = 0;
-            for (let r = 0; r < 3; r++) {
-                for (let c = 0; c < 5; c++) {
-                    if (grid[r][c] === "🌟") {
-                        count++;
-                    }
-                }
-            }
-            return count;
-        }
-
-        function startFrenzyMode() {
-            if (!isFrenzyModeActive) {
-                isFrenzyModeActive = true;
-            }
-            frenzySpinsRemaining += FRENZY_SPINS_AWARDED;
-            document.body.classList.add('frenzy-mode');
-            updateFrenzyDisplay();
-            decreaseBetButton.disabled = true;
-            increaseBetButton.disabled = true;
-            betInput.disabled = true;
-        }
-
-        function endFrenzyMode() {
-            isFrenzyModeActive = false;
-            frenzySpinsRemaining = 0;
-            document.body.classList.remove('frenzy-mode');
-            updateFrenzyDisplay();
-            betInput.disabled = false;
-            updateBet(currentBet);
-        }
-
-        function updateFrenzyDisplay() {
-            if (isFrenzyModeActive && frenzySpinsRemaining > 0) {
-                frenzyDisplay.textContent = `Tours Frénésie : ${frenzySpinsRemaining}`;
-                frenzyDisplay.style.display = 'block';
-            } else {
-                frenzyDisplay.style.display = 'none';
-            }
-        }
-
-        function startSpin() {
-            if (!isFrenzyModeActive) {
-                if (userBalance < currentBet) { resultDisplay.textContent = "Solde insuffisant !"; resultDisplay.classList.add('lose'); return; }
-                adjustBalance(-currentBet);
-                resultDisplay.textContent = "Les rouleaux tournent...";
-            } else {
-                frenzySpinsRemaining--;
-                updateFrenzyDisplay();
-                resultDisplay.textContent = "Tour Frénésie !";
-            }
-
-            spinButton.disabled = true;
-            if (!isFrenzyModeActive) {
-                decreaseBetButton.disabled = true;
-                increaseBetButton.disabled = true;
-                betInput.disabled = true;
-            }
-            resultDisplay.classList.remove('win', 'lose', 'jackpot');
-
-            const finalGrid = generateFinalGrid();
-            let spinningColumns = [0, 1, 2, 3, 4];
-
-            document.querySelectorAll('.symbol').forEach(s => s.classList.add('spinning'));
-            animationInterval = setInterval(() => runSpinAnimation(spinningColumns), 100);
-
-            setTimeout(() => stopColumn(0, finalGrid, spinningColumns), 1000);
-            setTimeout(() => stopColumn(1, finalGrid, spinningColumns), 1500);
-            setTimeout(() => stopColumn(2, finalGrid, spinningColumns), 2000);
-            setTimeout(() => stopColumn(3, finalGrid, spinningColumns), 2500);
-            setTimeout(() => {
-                stopColumn(4, finalGrid, spinningColumns);
-                clearInterval(animationInterval);
-
-                let winnings = 0;
-                const middleRow = finalGrid[1];
-                let hasWon = false;
-
-                if (middleRow.every(s => s === middleRow[0])) {
-                    const winningSymbol = middleRow[0];
-                    if (PAYOUTS[winningSymbol]) {
-                        const multiplier = PAYOUTS[winningSymbol];
-                        winnings = currentBet * multiplier;
-                    }
-                }
-
-                if (winnings > 0) {
-                    adjustBalance(winnings);
-                    hasWon = true;
-                    if (middleRow[0] === "7") {
-                        resultDisplay.textContent = `🎉 JACKPOT !!! +${winnings.toFixed(2)} € !`;
-                        resultDisplay.classList.add('jackpot');
-                    } else {
-                        resultDisplay.textContent = `Bravo ! Vous gagnez ${winnings.toFixed(2)} € !`;
-                        resultDisplay.classList.add('win');
-                    }
-                } else {
-                    resultDisplay.textContent = "Pas de chance... Essayez encore !";
-                    resultDisplay.classList.add('lose');
-                }
-
-                const scatterCount = countScatters(finalGrid);
-                if (scatterCount >= 3) {
-                    resultDisplay.textContent = `🌟 ${scatterCount} SCATTERS ! 🌟 +${FRENZY_SPINS_AWARDED} Tours Frénésie !`;
-                    resultDisplay.classList.add('win');
-                    startFrenzyMode();
-                }
-
-                if (isFrenzyModeActive && frenzySpinsRemaining <= 0) {
-                    endFrenzyMode();
-                    if (!hasWon && scatterCount < 3) {
-                        resultDisplay.textContent = "Mode Frénésie terminé !";
-                    }
-                }
-
-                spinButton.disabled = false;
-                if (!isFrenzyModeActive) {
-                    betInput.disabled = false;
-                    updateBet(currentBet);
-                }
-            }, 3000);
-        }
-
-        function assert(desc, cond) {
-            const li = document.createElement('li');
-            li.textContent = desc + ' → ' + (cond ? '✅ OK' : '❌ Échec');
-            li.style.color = cond ? 'green' : 'red';
-            document.getElementById('test-results').appendChild(li);
-        }
-
-        function runTests() {
-            const log = document.getElementById('test-log');
-            log.style.display = 'block';
-            document.getElementById('test-results').innerHTML = '';
-
-            assert('Solde initial chargé', userBalance > 0);
-            assert('Mise par défaut correcte', currentBet === DEFAULT_BET);
-            assert('Bouton SPIN activé', !spinButton.disabled);
-
-            activeCheatMode = "jackpot";
-            const gridJackpot = generateFinalGrid();
-            const middleRow = gridJackpot[1];
-            assert('Mode Cheat [Jackpot] génère 77777', middleRow.every(s => '7' === s));
-
-            activeCheatMode = "scatter";
-            const gridScatter = generateFinalGrid();
-            const scatterCount = countScatters(gridScatter);
-            assert('Mode Cheat [Scatter] génère >= 3 scatters', scatterCount >= 3);
-            activeCheatMode = "none";
-        }
-
-        // --- Point d'entrée ---
-        document.addEventListener('DOMContentLoaded', initializeApp);
-    </script>
+  </div>
+
+  <script>
+  /* ============================
+     VARIABLES & CONFIG
+  ============================ */
+  const MAX_BALANCE = 100.00;
+  const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
+  const SYMBOLS = ["🍒","🍒","🍒","🍋","🍋","🍊","🔔","🔔","BAR","7","🌟"];
+  const SYMBOLS_FRENZY = ["🍒","🍋","🍋","🍊","🔔","BAR","7","🌟"];
+  const PAYOUTS = { "🍒":10, "🍋":20, "🍊":40, "🔔":100, "BAR":500, "7":5000 };
+
+  let userBalance = MAX_BALANCE;
+  let currentBet = DEFAULT_BET;
+  let activeCheatMode = "none";
+  let animationInterval;
+  let isFrenzyModeActive = false;
+  let frenzySpinsRemaining = 0;
+  const FRENZY_SPINS_AWARDED = 10;
+
+  /* ============================
+     DOM
+  ============================ */
+  const balanceDisplay = document.getElementById('balance-display');
+  const spinButton = document.getElementById('spin-button');
+  const resultDisplay = document.getElementById('result-display');
+  const betInput = document.getElementById('bet-input');
+  const decreaseBetButton = document.getElementById('decrease-bet');
+  const increaseBetButton = document.getElementById('increase-bet');
+  const rulesModal = document.getElementById('rules-modal');
+  const payoutList = document.getElementById('payout-list');
+  const frenzyDisplay = document.getElementById('frenzy-display');
+  const settingsModal = document.getElementById('settings-modal');
+  const darkModeToggleButton = document.getElementById('dark-mode-toggle');
+
+  /* ============================
+   AUDIO
+============================ */
+const A = {
+  bg:  document.getElementById('bg-music'),
+  spin:document.getElementById('s-spin'),
+  stop:document.getElementById('s-stop'),
+  win: document.getElementById('s-win')
+};
+
+// Réglages de volume
+A.bg.volume   = 0.25;
+A.spin.volume = 0.5;
+A.stop.volume = 0.35;
+A.win.volume  = 0.6;
+
+// Fonction pour lancer la musique après une interaction
+function startBackgroundMusic() {
+  A.bg.play().catch(() => {
+    console.warn("Lecture audio bloquée par le navigateur");
+  });
+  // On supprime les écouteurs pour éviter plusieurs lectures
+  document.removeEventListener('click', startBackgroundMusic);
+  document.removeEventListener('keydown', startBackgroundMusic);
+}
+
+// L’utilisateur doit cliquer ou appuyer une touche une fois
+document.addEventListener('click', startBackgroundMusic);
+document.addEventListener('keydown', startBackgroundMusic);
+
+
+  /* ============================
+     THEME
+  ============================ */
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    if (document.body.classList.contains('dark-mode')) {
+      darkModeToggleButton.textContent = "Désactiver le Mode Sombre";
+      localStorage.setItem('slotMachineTheme', 'dark');
+    } else {
+      darkModeToggleButton.textContent = "Activer le Mode Sombre";
+      localStorage.setItem('slotMachineTheme', 'light');
+    }
+  }
+  darkModeToggleButton.addEventListener('click', toggleDarkMode);
+
+  function applySavedTheme() {
+    const saved = localStorage.getItem('slotMachineTheme');
+    if (saved === 'dark') {
+      document.body.classList.add('dark-mode');
+      darkModeToggleButton.textContent = "Désactiver le Mode Sombre";
+    }
+  }
+
+  /* ============================
+     SOLDE & MISES
+  ============================ */
+  function updateBalanceDisplay(){ balanceDisplay.textContent = userBalance.toFixed(2); }
+  function adjustBalance(a){
+    userBalance += a;
+    if (userBalance < 0) userBalance = 0;
+    updateBalanceDisplay();
+  }
+  function rechargeBalance(){
+    userBalance = MAX_BALANCE;
+    resultDisplay.textContent = "Solde rechargé !";
+    updateBalanceDisplay();
+  }
+  function updateBet(newBet){
+    newBet = Math.min(MAX_BET, Math.max(MIN_BET, newBet));
+    currentBet = newBet;
+    betInput.value = currentBet.toFixed(2);
+  }
+  function changeBet(delta){ updateBet(currentBet + delta); }
+  decreaseBetButton.addEventListener('click', () => changeBet(-BET_STEP));
+  increaseBetButton.addEventListener('click', () => changeBet(BET_STEP));
+
+  /* ============================
+     MACHINE
+  ============================ */
+  function getRandomSymbol(){
+    const list = isFrenzyModeActive ? SYMBOLS_FRENZY : SYMBOLS;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+  function generateFinalGrid(){
+    const grid = [];
+    for (let r=0; r<3; r++){
+      const row=[];
+      for (let c=0; c<5; c++){
+        if (activeCheatMode === "jackpot" && r===1) row.push("7");
+        else row.push(getRandomSymbol());
+      }
+      grid.push(row);
+    }
+    return grid;
+  }
+  function runSpinAnimation(cols){
+    for (const c of cols)
+      for (let r=0; r<3; r++)
+        document.getElementById(`symbol-${c}-${r}`).textContent = getRandomSymbol();
+  }
+  function stopColumn(col, finalGrid, cols){
+    const i = cols.indexOf(col);
+    if (i>-1) cols.splice(i,1);
+    for (let r=0; r<3; r++){
+      const el = document.getElementById(`symbol-${col}-${r}`);
+      el.textContent = finalGrid[r][col];
+      el.classList.remove('spinning');
+    }
+    A.stop.currentTime = 0;
+    A.stop.play().catch(()=>{});
+  }
+  function countScatters(grid){
+    let n=0; grid.flat().forEach(x => { if (x==="🌟") n++; });
+    return n;
+  }
+
+  /* ============================
+     SPIN + AUDIO
+  ============================ */
+  function startSpin(){
+    if (userBalance < currentBet && !isFrenzyModeActive){
+      resultDisplay.textContent = "Solde insuffisant !";
+      resultDisplay.classList.add('lose');
+      return;
+    }
+
+    // son spin à chaque clic
+    A.spin.currentTime = 0;
+    A.spin.play().catch(()=>{});
+
+    // couper un jingle de gain en cours
+    if (!A.win.paused){ A.win.pause(); A.win.currentTime = 0; }
+
+    adjustBalance(-currentBet);
+    resultDisplay.textContent = "Les rouleaux tournent...";
+    spinButton.disabled = true;
+    resultDisplay.classList.remove('win','lose','jackpot');
+
+    const finalGrid = generateFinalGrid();
+    let spinningColumns = [0,1,2,3,4];
+    document.querySelectorAll('.symbol').forEach(s => s.classList.add('spinning'));
+    animationInterval = setInterval(()=>runSpinAnimation(spinningColumns), 100);
+
+    setTimeout(()=>stopColumn(0, finalGrid, spinningColumns), 1000);
+    setTimeout(()=>stopColumn(1, finalGrid, spinningColumns), 1500);
+    setTimeout(()=>stopColumn(2, finalGrid, spinningColumns), 2000);
+    setTimeout(()=>stopColumn(3, finalGrid, spinningColumns), 2500);
+
+    setTimeout(()=>{
+      stopColumn(4, finalGrid, spinningColumns);
+      clearInterval(animationInterval);
+
+      let winnings = 0;
+      const middle = finalGrid[1];
+      if (middle.every(s => s === middle[0])){
+        const sym = middle[0];
+        if (PAYOUTS[sym]) winnings = currentBet * PAYOUTS[sym];
+      }
+
+      if (winnings > 0){
+        adjustBalance(winnings);
+        resultDisplay.textContent = `Bravo ! Vous gagnez ${winnings.toFixed(2)} € !`;
+        resultDisplay.classList.add('win');
+
+        // jingle de gain
+        A.win.currentTime = 0;
+        A.win.play().catch(()=>{});
+      } else {
+        resultDisplay.textContent = "Pas de chance... Essayez encore !";
+        resultDisplay.classList.add('lose');
+      }
+
+      // scatters
+      const scat = countScatters(finalGrid);
+      if (scat >= 3){
+        resultDisplay.textContent = `🌟 ${scat} SCATTERS ! 🌟 +${FRENZY_SPINS_AWARDED} Tours Frénésie !`;
+        resultDisplay.classList.add('win');
+        // à toi de brancher ton mode frénésie ici si besoin
+      }
+
+      spinButton.disabled = false;
+    }, 3000);
+  }
+
+  /* ============================
+     RÈGLES / PARAMS (stubs)
+  ============================ */
+  function showRules(){
+    payoutList.innerHTML = '';
+    const sorted = Object.entries(PAYOUTS).sort(([,a],[,b]) => a-b);
+    for (const [symbol, mult] of sorted){
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${symbol}</span> x5 milieu = <strong>${mult}x</strong>`;
+      payoutList.appendChild(li);
+    }
+    rulesModal.style.display = 'flex';
+  }
+  function hideRules(){ rulesModal.style.display = 'none'; }
+  rulesModal.addEventListener('click', e => { if (e.target===rulesModal) hideRules(); });
+
+  function showSettings(){ settingsModal.style.display = 'flex'; }
+  function hideSettings(){ settingsModal.style.display = 'none'; }
+  settingsModal.addEventListener('click', e => { if (e.target===settingsModal) hideSettings(); });
+
+  function activateCheatMode(){
+    const btn = document.getElementById('cheat-button');
+    if (activeCheatMode !== 'none'){
+      activeCheatMode = 'none';
+      btn.textContent = 'Admin';
+      btn.style.backgroundColor = '#888';
+      alert('Mode Cheat désactivé.');
+      return;
+    }
+    const pw = prompt('Mot de passe admin :');
+    if (pw === '938-555-0100'){
+      const c = prompt('1=Jackpot 77777');
+      if (c === '1'){ activeCheatMode='jackpot'; btn.textContent='CHEAT: 777'; btn.style.backgroundColor='#2ecc71'; alert('Jackpot forcé.'); }
+    } else if (pw) { alert('Mot de passe incorrect.'); }
+  }
+
+  /* ============================
+     INIT
+  ============================ */
+  updateBalanceDisplay();
+  updateBet(currentBet);
+  applySavedTheme();
+  </script>
 </body>
 </html>
