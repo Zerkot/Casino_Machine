@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solde de la Machine à Sous</title>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Solde de la Machine à Sous</title>
+<style>
         /* ... (Styles CSS identiques à la version précédente) ... */
         body {
             height: 200vh;
@@ -709,128 +710,112 @@
         /* ---------- fin panel démo ---------- */
 
     </style>
-    <script src="database.js"></script>
+<script src="database.js"></script>
 </head>
-<body>
-
-    <div id="auth-container">
-        <h2>Bienvenue sur la Machine à Sous</h2>
-        <p>Veuillez vous connecter ou créer un compte pour jouer.</p>
-        <button id="login-button">Connexion</button>
-        <button id="register-button">Créer un compte</button>
-    </div>
-
-    <div id="game-container" style="display: none;">
-
-        <div id="balance-container">
-            <span id="user-info"></span>
+<body><audio autoplay="" id="bg-music" loop="" preload="auto" src="sounds/casino-music-jazz-las-vegas-monaco-background-intro-theme-294408.mp3"></audio><audio id="s-spin" preload="auto" src="sounds/slot-machine-reels-sound-30276_ZFxVLP0I.mp3"></audio><audio id="s-stop" preload="auto" src="sounds/.mp3"></audio><audio id="s-win" preload="auto" src="sounds/Slot Machine Jackpot Sound Effect.mp3"></audio><div id="audio-gate" style="position: fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.6); z-index:3000;">
+<div class="card" style="background:#07132a; color:#e6eef8; padding:18px 22px; border-radius:12px; text-align:center; max-width:90%; box-shadow:0 10px 30px rgba(0,0,0,.35);">
+<div>Appuyez pour activer les sons</div>
+<button id="enable-audio-btn" style="margin-top:10px; padding:10px 16px; border:none; border-radius:8px; cursor:pointer; font-weight:700; background:#00aaff; color:#07132a;">Activer le son</button>
+</div>
+</div>
+<div id="auth-container">
+<h2>Bienvenue sur la Machine à Sous</h2>
+<p>Veuillez vous connecter ou créer un compte pour jouer.</p>
+<button id="login-button">Connexion</button>
+<button id="register-button">Créer un compte</button>
+</div>
+<div id="game-container" style="display: none;">
+<div id="balance-container">
+<span id="user-info"></span>
             💰 Solde : <span id="balance-display">0.00</span> €
             <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
-            <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
-            <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
-            <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
-            <button id="test-button" onclick="runTests()">Test</button>
-            <button id="manage-users-button">Gérer Comptes</button>
-            <button id="logout-button">Déconnexion</button>
-        </div>
-
-        <a id="back-button" href="Index.html">⬅ Retour</a>
-
-        <div id="slot-container">
-            <div id="reels-container">
-                <div class="symbol" id="symbol-0-0">🍒</div>
-                <div class="symbol" id="symbol-1-0">🍒</div>
-                <div class="symbol" id="symbol-2-0">🍒</div>
-                <div class="symbol" id="symbol-3-0">🍒</div>
-                <div class="symbol" id="symbol-4-0">🍒</div>
-                <div class="symbol" id="symbol-0-1">7</div>
-                <div class="symbol" id="symbol-1-1">7</div>
-                <div class="symbol" id="symbol-2-1">7</div>
-                <div class="symbol" id="symbol-3-1">7</div>
-                <div class="symbol" id="symbol-4-1">7</div>
-                <div class="symbol" id="symbol-0-2">BAR</div>
-                <div class="symbol" id="symbol-1-2">BAR</div>
-                <div class="symbol" id="symbol-2-2">BAR</div>
-                <div class="symbol" id="symbol-3-2">BAR</div>
-                <div class="symbol" id="symbol-4-2">BAR</div>
-            </div>
-        </div>
-
-        <div id="bet-controls">
-            <button id="decrease-bet">-</button>
-            <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
-            <button id="increase-bet">+</button>
-        </div>
-
-        <div id="result-display">Cliquez sur SPIN pour jouer !</div>
-
-        <div id="frenzy-display"></div>
-
-        <button id="spin-button" onclick="startSpin()">SPIN</button>
-
-        <div id="test-log">
-            <strong>Résultats des tests :</strong>
-            <ul id="test-results"></ul>
-        </div>
-
-    </div>
-
-    <div id="rules-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="hideRules()">&times;</span>
-            <h2>Règles du Jeu</h2>
-            <p>Alignez des symboles identiques sur les <strong>lignes horizontales (5x)</strong>, les <strong>colonnes (3x)</strong>, ou en <strong>formes (V, Z, A)</strong> pour gagner !</p>
-            <p>Obtenez 3 symboles 🌟 (Scatter) ou plus n'importe où sur la grille pour déclencher <strong>10 Tours Gratuits</strong> en Mode Frénésie !</p>
-            <h3>Multiplicateurs de Gains :</h3>
-            <ul id="payout-list"></ul>
-        </div>
-    </div>
-
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="hideSettings()">&times;</span>
-            <h2>Paramètres</h2>
-            <h3>Thème</h3>
-            <button id="dark-mode-toggle">Activer le Mode Sombre</button>
-        </div>
-    </div>
-
-    <div id="user-management-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="hideUserManagement()">&times;</span>
-            <h2>Gestion des Utilisateurs</h2>
-            <p>Modifier le solde des utilisateurs. Les modifications sont sauvegardées immédiatement.</p>
-            <ul id="user-list">
-                </ul>
-        </div>
-    </div>
-
-    <!-- Panel de démo rétractable -->
-    <button id="demo-toggle-btn" title="Ouvrir le panneau démo">DEMO</button>
-
-    <div id="demo-panel" class="hidden" aria-hidden="true">
-        <h3>Panel Démo</h3>
-        <p>Outils pour tester rapidement (invité, crédits, spin garanti).</p>
-
-        <div class="demo-row">
-            <button class="demo-btn small" onclick="guestLogin()">Se connecter en Invité</button>
-            <button class="demo-btn small secondary" onclick="guestLogout()">Quitter Invité</button>
-        </div>
-
-        <div class="demo-row">
-            <button class="demo-btn small" onclick="demoAdjustBalance(10)">+10 €</button>
-            <button class="demo-btn small" onclick="demoAdjustBalance(50)">+50 €</button>
-            <button class="demo-btn small warn" onclick="demoAdjustBalance(-10)">-10 €</button>
-        </div>
-
-        <div class="demo-row">
-            <button class="demo-btn small" onclick="setGuaranteedWin()">Spin gagnant garanti (prochain spin)</button>
-        </div>
-
-        <p><small>Le spin garanti rendra la ligne du milieu gagnante (77777) au prochain SPIN.</small></p>
-    </div>
-
-    <script>
+<button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
+<button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
+<button id="cheat-button" onclick="activateCheatMode()">Admin</button>
+<button id="test-button" onclick="runTests()">Test</button>
+<button id="manage-users-button">Gérer Comptes</button>
+<button id="logout-button">Déconnexion</button>
+</div>
+<a href="Index.html" id="back-button">⬅ Retour</a>
+<div id="slot-container">
+<div id="reels-container">
+<div class="symbol" id="symbol-0-0">🍒</div>
+<div class="symbol" id="symbol-1-0">🍒</div>
+<div class="symbol" id="symbol-2-0">🍒</div>
+<div class="symbol" id="symbol-3-0">🍒</div>
+<div class="symbol" id="symbol-4-0">🍒</div>
+<div class="symbol" id="symbol-0-1">7</div>
+<div class="symbol" id="symbol-1-1">7</div>
+<div class="symbol" id="symbol-2-1">7</div>
+<div class="symbol" id="symbol-3-1">7</div>
+<div class="symbol" id="symbol-4-1">7</div>
+<div class="symbol" id="symbol-0-2">BAR</div>
+<div class="symbol" id="symbol-1-2">BAR</div>
+<div class="symbol" id="symbol-2-2">BAR</div>
+<div class="symbol" id="symbol-3-2">BAR</div>
+<div class="symbol" id="symbol-4-2">BAR</div>
+</div>
+</div>
+<div id="bet-controls">
+<button id="decrease-bet">-</button>
+<input id="bet-input" max="25.00" min="1.00" step="1.00" type="number" value="5.00"/>
+<button id="increase-bet">+</button>
+</div>
+<div id="result-display">Cliquez sur SPIN pour jouer !</div>
+<div id="frenzy-display"></div>
+<button id="spin-button" onclick="startSpin()">SPIN</button>
+<div id="test-log">
+<strong>Résultats des tests :</strong>
+<ul id="test-results"></ul>
+</div>
+</div>
+<div class="modal-overlay" id="rules-modal">
+<div class="modal-content">
+<span class="modal-close" onclick="hideRules()">×</span>
+<h2>Règles du Jeu</h2>
+<p>Alignez des symboles identiques sur les <strong>lignes horizontales (5x)</strong>, les <strong>colonnes (3x)</strong>, ou en <strong>formes (V, Z, A)</strong> pour gagner !</p>
+<p>Obtenez 3 symboles 🌟 (Scatter) ou plus n'importe où sur la grille pour déclencher <strong>10 Tours Gratuits</strong> en Mode Frénésie !</p>
+<h3>Multiplicateurs de Gains :</h3>
+<ul id="payout-list"></ul>
+</div>
+</div>
+<div class="modal-overlay" id="settings-modal">
+<div class="modal-content">
+<span class="modal-close" onclick="hideSettings()">×</span>
+<h2>Paramètres</h2>
+<h3>Thème</h3>
+<button id="dark-mode-toggle">Activer le Mode Sombre</button>
+</div>
+</div>
+<div class="modal-overlay" id="user-management-modal">
+<div class="modal-content">
+<span class="modal-close" onclick="hideUserManagement()">×</span>
+<h2>Gestion des Utilisateurs</h2>
+<p>Modifier le solde des utilisateurs. Les modifications sont sauvegardées immédiatement.</p>
+<ul id="user-list">
+</ul>
+</div>
+</div>
+<!-- Panel de démo rétractable -->
+<button id="demo-toggle-btn" title="Ouvrir le panneau démo">DEMO</button>
+<div aria-hidden="true" class="hidden" id="demo-panel">
+<h3>Panel Démo</h3>
+<p>Outils pour tester rapidement (invité, crédits, spin garanti).</p>
+<div class="demo-row">
+<button class="demo-btn small" onclick="guestLogin()">Se connecter en Invité</button>
+<button class="demo-btn small secondary" onclick="guestLogout()">Quitter Invité</button>
+</div>
+<div class="demo-row">
+<button class="demo-btn small" onclick="demoAdjustBalance(10)">+10 €</button>
+<button class="demo-btn small" onclick="demoAdjustBalance(50)">+50 €</button>
+<button class="demo-btn small warn" onclick="demoAdjustBalance(-10)">-10 €</button>
+</div>
+<div class="demo-row">
+<button class="demo-btn small" onclick="setGuaranteedWin()">Spin gagnant garanti (prochain spin)</button>
+</div>
+<p><small>Le spin garanti rendra la ligne du milieu gagnante (77777) au prochain SPIN.</small></p>
+</div>
+<script>
         // --- CONSTANTES DU JEU ---
         const MAX_BALANCE = 100.00;
         const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
@@ -1747,6 +1732,112 @@
 
         // --- Point d'entrée ---
         document.addEventListener('DOMContentLoaded', initializeApp);
-    </script>
+    </script><script>
+// === AUDIO INTEGRATION ADDED AUTOMATICALLY ===
+(function(){
+  try {
+    const bgMusic = document.getElementById('bg-music');
+    const sSpin = document.getElementById('s-spin');
+    const sStop = document.getElementById('s-stop');
+    const sWin = document.getElementById('s-win');
+    const gate = document.getElementById('audio-gate');
+    const enableBtn = gate ? gate.querySelector('#enable-audio-btn') : null;
+    let audioUnlocked = false;
+
+    function unlockAudio() {
+      audioUnlocked = true;
+      if (bgMusic) {
+        bgMusic.volume = 0.6;
+        // try play but ignore errors
+        bgMusic.play().catch(()=>{});
+      }
+      if (gate) gate.style.display = 'none';
+    }
+
+    // If there is an enable button, wire it
+    if (enableBtn) {
+      enableBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        unlockAudio();
+      });
+    }
+
+    // fallback: unlock on first user gesture (click/keydown/touchstart) once
+    function gestureUnlock() {
+      if (!audioUnlocked) unlockAudio();
+      removeListeners();
+    }
+    function removeListeners() {
+      document.removeEventListener('click', gestureUnlock);
+      document.removeEventListener('keydown', gestureUnlock);
+      document.removeEventListener('touchstart', gestureUnlock);
+    }
+    document.addEventListener('click', gestureUnlock, { once: true });
+    document.addEventListener('keydown', gestureUnlock, { once: true });
+    document.addEventListener('touchstart', gestureUnlock, { once: true });
+
+    // Wrap startSpin if it exists
+    if (typeof startSpin === 'function') {
+      const _oldStartSpin = startSpin;
+      startSpin = function() {
+        try { if (sSpin) { sSpin.currentTime = 0; sSpin.play().catch(()=>{}); } } catch(e){}
+        return _oldStartSpin.apply(this, arguments);
+      };
+    }
+
+    // If there is an endSpin function, call sStop there
+    if (typeof endSpin === 'function') {
+      const _oldEndSpin = endSpin;
+      endSpin = function() {
+        try { if (sStop) { sStop.currentTime = 0; sStop.play().catch(()=>{}); } } catch(e){}
+        return _oldEndSpin.apply(this, arguments);
+      };
+    }
+
+    // MutationObserver on #result-display to detect win/lose classes
+    const resultEl = document.getElementById('result-display');
+    if (resultEl && (sStop || sWin)) {
+      const mo = new MutationObserver((list) => {
+        list.forEach(m => {
+          if (m.attributeName === 'class') {
+            const cls = resultEl.className || '';
+            if (/jackpot|win/i.test(cls)) {
+              try { if (sWin) { sWin.currentTime = 0; sWin.play().catch(()=>{}); } } catch(e){}
+            } else if (/lose/i.test(cls)) {
+              try { if (sStop) { sStop.currentTime = 0; sStop.play().catch(()=>{}); } } catch(e){}
+            }
+          }
+        });
+      });
+      mo.observe(resultEl, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    // Additionally, observe text changes for phrases "gagn" (gagne/gagné) to play win
+    if (resultEl && sWin && sStop) {
+      const mo2 = new MutationObserver((list) => {
+        list.forEach(m => {
+          if (m.type === 'childList' || m.type === 'characterData') {
+            const txt = resultEl.textContent || '';
+            if (/gagn/i.test(txt) || /jackpot/i.test(txt)) {
+              try { sWin.currentTime = 0; sWin.play().catch(()=>{}); } catch(e){}
+            } else if (/perd/i.test(txt) || /désolé/i.test(txt)) {
+              try { sStop.currentTime = 0; sStop.play().catch(()=>{}); } catch(e){}
+            }
+          }
+        });
+      });
+      mo2.observe(resultEl, { childList: true, characterData: true, subtree: true });
+    }
+
+    // Expose small helper functions in window to allow manual calls from game code
+    window.__playStopSound = function(){ try{ if (sStop) sStop.play().catch(()=>{});}catch(e){} };
+    window.__playWinSound = function(){ try{ if (sWin) sWin.play().catch(()=>{});}catch(e){} };
+    window.__playSpinSound = function(){ try{ if (sSpin) sSpin.play().catch(()=>{});}catch(e){} };
+
+  } catch (e) {
+    console.error('Audio integration failed', e);
+  }
+})();
+</script>
 </body>
 </html>
