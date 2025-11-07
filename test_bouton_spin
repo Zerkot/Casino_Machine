@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Unitaire - Bouton SPIN</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .pass { color: green; }
+        .fail { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Tests Unitaires du bouton SPIN</h1>
+    <ul id="test-results"></ul>
+
+    <script>
+        // 💡 Version simplifiée de ton code pour tester startSpin()
+        let userBalance = 100.00;
+        const BET_AMOUNT = 10.00;
+
+        function adjustBalance(amount) {
+            userBalance += amount;
+            if (userBalance < 0) userBalance = 0;
+        }
+
+        function startSpin() {
+            if (userBalance >= BET_AMOUNT) {
+                adjustBalance(-BET_AMOUNT);
+                return "spin lancé";
+            } else {
+                return "solde insuffisant";
+            }
+        }
+
+        // Fonction pour afficher les résultats de tests
+        function assertEquals(actual, expected, testName) {
+            const li = document.createElement('li');
+            if (actual === expected) {
+                li.textContent = `✅ ${testName}`;
+                li.className = 'pass';
+            } else {
+                li.textContent = `❌ ${testName} — attendu: ${expected}, obtenu: ${actual}`;
+                li.className = 'fail';
+            }
+            document.getElementById('test-results').appendChild(li);
+        }
+
+        // ------------------------
+        // Tests automatiques
+        // ------------------------
+        // Test 1 : Le spin réduit le solde
+        userBalance = 100.00;
+        let result1 = startSpin();
+        assertEquals(userBalance, 90.00, "Le spin diminue le solde de 10 €");
+        assertEquals(result1, "spin lancé", "Spin lancé avec solde suffisant");
+
+        // Test 2 : Le spin ne peut pas être lancé si le solde est insuffisant
+        userBalance = 5.00;
+        let result2 = startSpin();
+        assertEquals(userBalance, 5.00, "Le solde reste inchangé si insuffisant");
+        assertEquals(result2, "solde insuffisant", "Spin bloqué si solde insuffisant");
+
+        // Test 3 : Solde exact pour un spin
+        userBalance = 10.00;
+        let result3 = startSpin();
+        assertEquals(userBalance, 0.00, "Solde tombe à zéro si mise égale au solde");
+        assertEquals(result3, "spin lancé", "Spin lancé si solde exact");
+    </script>
+</body>
+</html>
