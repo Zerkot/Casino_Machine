@@ -830,6 +830,8 @@
         const SYMBOLS = ["🍒", "🍒", "🍒", "🍒", "🍒", "🍒", "🍋", "🍋", "🍋", "🍋", "🍋", "🍊", "🍊", "🍊", "🍊", "🔔", "🔔", "🔔", "BAR", "BAR", "7", "🌟", "🌟"];
         const SYMBOLS_FRENZY = ["🍒", "🍒", "🍋", "🍋", "🍋", "🍊", "🍊", "🍊", "🔔", "🔔", "🔔", "🔔", "BAR", "BAR", "BAR", "7", "7", "🌟"];
         const PAYOUTS = { "🍒": 10, "🍋": 20, "🍊": 40, "🔔": 100, "BAR": 500, "7": 5000 };
+        // NOUVELLE CONSTANTE
+        const PAYOUTS_3 = { "🍒": 1, "🍋": 2, "🍊": 4, "🔔": 10, "BAR": 25, "7": 100, "🌟": 0 }; // Gains pour 3 symboles (colonnes)
         const PAYOUTS_3 = { "🍒": 1, "🍋": 2, "🍊": 4, "🔔": 10, "BAR": 25, "7": 100, "🌟": 0 }; // Gains pour 3 symboles (colonnes)
 <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
 <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
@@ -1274,6 +1276,9 @@
         // ===============================================
 
         /**
+         * NOUVELLE FONCTION DE CALCUL DES GAINS
+         * Calcule la totalité des gains pour une grille donnée.
+         * Vérifie les lignes, colonnes et formes spéciales (V, Z, A).
          * NOUVELLE FONCTION DE CALCUL DES GAINS (MODIFIÉE)
          * Calcule la totalité des gains pour une grille donnée.
          * Vérifie les lignes, colonnes et formes spéciales (V, Z, A).
@@ -1282,6 +1287,14 @@
         function calculateTotalWinnings(grid, bet) {
             let totalWinnings = 0;
             let winningLinesDesc = [];
+            let isJackpotWin = false; // Flag pour le message spécial Jackpot
+            const R = 3; // rows
+            const C = 5; // columns
+
+            // 1. Vérification des Lignes Horizontales (Gains 5x)
+            for (let r = 0; r < R; r++) {
+                const firstSymbol = grid[r][0];
+                // Continue si le symbole n'a pas de gain 5x (ex: '🌟')
             let isJackpotWin = false;
             let winningCoords = new Set(); // NOUVEAU: Stocke les coordonnées "r-c"
             const R = 3; // rows
@@ -1322,6 +1335,7 @@
             // 2. Vérification des Colonnes Verticales (Gains 3x)
             for (let c = 0; c < C; c++) {
                 const firstSymbol = grid[0][c];
+                // Continue si le symbole n'a pas de gain 3x
                 if (PAYOUTS_3[firstSymbol] === undefined || PAYOUTS_3[firstSymbol] === 0) continue; 
 
                 let isFullColumn = true;
@@ -1382,6 +1396,10 @@
                 totalWinnings += bet * PAYOUTS[firstRevZSymbol];
                 winningLinesDesc.push(`Forme Z-inv (${firstRevZSymbol})`);
                 if (firstRevZSymbol === "7") isJackpotWin = true;
+            }
+
+            // Forme A (V inversé): [2,0], [1,1], [0,2], [1,3], [2,4]
+            const aSymbols = [grid[2][0], grid[1][1], grid[0][2], grid[1][3], grid[2][4]];
                 
                 // MODIFIÉ : Vérifie le Jackpot S10
                 if (firstRevZSymbol === "S10") isJackpotWin = true;
@@ -1398,6 +1416,10 @@
                 totalWinnings += bet * PAYOUTS[firstASymbol];
                 winningLinesDesc.push(`Forme A (${firstASymbol})`);
                 if (firstASymbol === "7") isJackpotWin = true;
+            }
+
+            // Retourne le total et les descriptions
+            return { totalWinnings, winningLinesDesc: [...new Set(winningLinesDesc)], isJackpotWin };
                 
                 // MODIFIÉ : Vérifie le Jackpot S10
                 if (firstASymbol === "S10") isJackpotWin = true;
@@ -1439,6 +1461,26 @@
             for (const [symbol, multiplier] of sortedPayouts) {
                 const li = document.createElement('li');
                 li.innerHTML = `<span>${symbol}</span> x 5 (Lignes, V, Z, A) = <strong>${multiplier}x</strong> la mise`;
+                payoutList.appendChild(li);
+            }
+            
+            // Ajoute un titre pour les gains 3x
+            const h3x = document.createElement('li');
+            h3x.innerHTML = "<strong>--- Gains (3 symboles) ---</strong>";
+            h3x.style.background = "none";
+            h3x.style.marginTop = "10px";
+            payoutList.appendChild(h3x);
+
+            // Affiche les gains 3x (PAYOUTS_3)
+            const sortedPayouts3 = Object.entries(PAYOUTS_3)
+                .filter(([, multiplier]) => multiplier > 0) // Ne pas montrer 🌟
+                .sort(([, a], [, b]) => a - b);
+                
+            for (const [symbol, multiplier] of sortedPayouts3) {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${symbol}</span> x 3 (Colonnes) = <strong>${multiplier}x</strong> la mise`;
+                payoutList.appendChild(li);
+            }
                 payoutList.appendChild(li);
             }
             
@@ -1754,6 +1796,7 @@
         }
 
         /**
+         * FONCTION startSpin MISE A JOUR
          * FONCTION startSpin (MODIFIÉE)
          */
         function startSpin() {
@@ -1795,6 +1838,16 @@
                 clearInterval(animationInterval);
 
                 // ==================================
+                // NOUVELLE LOGIQUE DE GAINS
+                // ==================================
+
+                // Appel de la nouvelle fonction de calcul des gains
+                const { totalWinnings, winningLinesDesc, isJackpotWin } = calculateTotalWinnings(finalGrid, currentBet);
+                let hasWon = totalWinnings > 0; // Flag pour la logique d'affichage
+
+                // Compter les scatters
+                const scatterCount = countScatters(finalGrid);
+
                 // LOGIQUE DE GAINS (MODIFIÉE)
                 // ==================================
 
@@ -1810,6 +1863,13 @@
                     adjustBalance(totalWinnings);
                     
                     if (isJackpotWin) {
+                        // Message spécial Jackpot
+                        resultDisplay.textContent = `🎉 JACKPOT !!! +${totalWinnings.toFixed(2)} € !`;
+                        resultDisplay.classList.add('jackpot');
+                    } else {
+                        // Message de gain standard
+                        let desc = winningLinesDesc.join(', ');
+                        // Raccourcir la description si elle est trop longue (trop de lignes gagnantes)
                         resultDisplay.textContent = `🎉 JACKPOT !!! +${totalWinnings.toFixed(2)} € !`;
                         resultDisplay.classList.add('jackpot');
                     } else {
@@ -1820,6 +1880,8 @@
                         resultDisplay.textContent = `Gagné ! +${totalWinnings.toFixed(2)} € (${desc})`;
                         resultDisplay.classList.add('win');
                     }
+                } else if (scatterCount < 3) { 
+                    // Afficher "Perdu" SEULEMENT s'il n'y a NI gain de ligne, NI gain de scatter
                     
                     // NOUVEAU : Appliquer le surbrillance pour les lignes/formes
                     winningCoords.forEach(coord => {
@@ -1839,6 +1901,14 @@
                 if (scatterCount >= 3) {
                     let scatterMsg = `🌟 ${scatterCount} SCATTERS ! 🌟 +${FRENZY_SPINS_AWARDED} Tours Frénésie !`;
                     if (hasWon) {
+                        // Ajoute le message de scatter au message de gain existant
+                        resultDisplay.textContent += " " + scatterMsg;
+                    } else {
+                        // Affiche uniquement le message de scatter
+                        resultDisplay.textContent = scatterMsg;
+                        resultDisplay.classList.remove('lose'); // Assure-toi que "lose" est retiré
+                        resultDisplay.classList.add('win'); // Le scatter est une victoire
+                    }
                         resultDisplay.textContent += " " + scatterMsg;
                     } else {
                         resultDisplay.textContent = scatterMsg;
@@ -1862,6 +1932,7 @@
                 }
 
                 // ==================================
+                // FIN DE LA NOUVELLE LOGIQUE
                 // FIN DE LA LOGIQUE
                 // ==================================
 
