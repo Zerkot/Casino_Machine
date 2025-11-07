@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solde de la Machine à Sous</title>
-
     <style>
         /* ... (Styles CSS identiques à la version précédente) ... */
-        
+        /* ... (Tous vos styles CSS restent identiques) ... */
+        body {
+            height: 200vh;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            transition: background-color 0.5s;
+        }
+
         #balance-container {
             position: fixed;
             top: 20px;
@@ -24,6 +29,7 @@
             font-family: Arial, sans-serif;
             z-index: 1000;
         }
+
         #balance-container button {
             margin-left: 10px;
             font-size: 0.7em;
@@ -34,13 +40,14 @@
             cursor: pointer;
             color: #333;
         }
+
         #rules-button {
             background-color: #17a2b8;
             color: white;
             font-weight: bold;
         }
         #rules-button:hover { background-color: #117a8b; }
-        
+
         #settings-button {
             background-color: #6c757d;
             color: white;
@@ -51,14 +58,24 @@
         #cheat-button {
             background-color: #888;
             color: white;
+            display: none;
         }
         #cheat-button:hover { background-color: #666; }
+
+        #logout-button {
+            background-color: #dc3545;
+            color: white;
+            font-weight: bold;
+        }
+        #logout-button:hover { background-color: #c82333; }
+
         #test-button {
             background-color: #f39c12;
             color: white;
             display: none;
         }
         #test-button:hover { background-color: #e67e22; }
+
         #spin-button {
             position: fixed;
             bottom: 40px;
@@ -79,6 +96,7 @@
         #spin-button:hover { background-color: #0056b3; }
         #spin-button:active { transform: translateX(-50%) scale(0.95); }
         #spin-button:disabled { background-color: #555; cursor: not-allowed; box-shadow: none; transform: translateX(-50%); }
+
         #slot-container {
             width: 90%;
             max-width: 600px;
@@ -90,6 +108,7 @@
             box-shadow: inset 0 0 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5);
             transition: border-color 0.5s, background-color 0.5s;
         }
+
         #reels-container {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -100,6 +119,7 @@
             border-radius: 5px;
             border: 3px solid #7f8c8d;
         }
+
         .symbol {
             font-size: 3em;
             display: flex;
@@ -116,6 +136,7 @@
             filter: blur(2px);
             transform: scale(0.9);
         }
+
         #bet-controls {
             text-align: center;
             margin-top: 20px;
@@ -137,6 +158,7 @@
         }
         #bet-controls button:hover { background-color: #007bff; color: white; }
         #bet-controls button:disabled { background-color: #ccc; color: #888; border-color: #ccc; cursor: not-allowed; }
+
         #bet-input {
             font-size: 1.8em;
             font-weight: bold;
@@ -151,6 +173,7 @@
         }
         #bet-input::-webkit-outer-spin-button,
         #bet-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
         #result-display {
             text-align: center;
             font-family: Arial, sans-serif;
@@ -164,6 +187,7 @@
         #result-display.win { color: #2ecc71; transform: scale(1.1); }
         #result-display.lose { color: #95a5a6; }
         #result-display.jackpot { color: #f1c40f; transform: scale(1.2); font-size: 2.2em; }
+
         #test-log {
             margin: 20px auto;
             max-width: 600px;
@@ -175,6 +199,7 @@
             font-family: Arial, sans-serif;
             transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -188,6 +213,7 @@
             align-items: center;
             font-family: Arial, sans-serif;
         }
+
         .modal-content {
             background-color: #fff;
             padding: 20px 30px;
@@ -199,6 +225,7 @@
             color: #333;
             transition: background-color 0.3s, color 0.3s;
         }
+
         .modal-close {
             position: absolute;
             top: 10px;
@@ -211,6 +238,7 @@
             transition: color 0.2s;
         }
         .modal-close:hover { color: #333; }
+
         .modal-content h2 {
             margin-top: 0;
             color: #007bff;
@@ -218,20 +246,24 @@
             padding-bottom: 10px;
             transition: color 0.3s, border-color 0.3s;
         }
+
         .modal-content h3 {
             margin-top: 20px;
             color: #2c3e50;
             transition: color 0.3s;
         }
+
         .modal-content p {
             font-size: 1.1em;
             line-height: 1.6;
         }
+
         #payout-list {
             list-style-type: none;
             padding-left: 0;
             margin-top: 15px;
         }
+
         #payout-list li {
             font-size: 1.2em;
             margin-bottom: 12px;
@@ -242,6 +274,7 @@
             border-radius: 5px;
             transition: background-color 0.3s;
         }
+
         #payout-list li span {
             font-size: 1.6em;
             margin-right: 15px;
@@ -249,7 +282,7 @@
             width: 40px;
             text-align: center;
         }
-        
+
         #dark-mode-toggle {
             font-size: 1em;
             padding: 10px 15px;
@@ -263,25 +296,29 @@
         }
         #dark-mode-toggle:hover { background-color: #0056b3; }
 
-
         @keyframes frenzy-border-flash {
             0% { border-color: #e74c3c; }
             50% { border-color: #f39c12; }
             100% { border-color: #e74c3c; }
         }
+
         body.frenzy-mode {
             background-color: #4A235A;
         }
+
         .frenzy-mode #slot-container {
             background: #6C3483;
             animation: frenzy-border-flash 0.8s infinite linear;
         }
+
         .frenzy-mode #spin-button {
             background-color: #e74c3c;
         }
+
         .frenzy-mode #spin-button:hover {
             background-color: #c0392b;
         }
+
         #frenzy-display {
             position: fixed;
             bottom: 150px;
@@ -299,50 +336,42 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
-        body {
-            height: 200vh;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            /* La transition est appliquée ici */
-            transition: background-color 0.5s; 
-        }
-
         /*
         ==============================================
         CORRIGÉ : STYLES DU MODE SOMBRE
         ==============================================
         */
-        
-        /* CORRIGÉ : Utilisation de 'body.dark-mode' au lieu de '.dark-mode body' */
         body.dark-mode {
             background-color: #1a1a2e;
         }
+
         body.dark-mode #balance-container {
             background-color: #004a99;
             color: #e0e0e0;
         }
+
         body.dark-mode #balance-container button {
             color: #ddd;
         }
+
         body.dark-mode #rules-button {
             background-color: #106a7a;
             color: white;
         }
         body.dark-mode #rules-button:hover { background-color: #0d5663; }
-        
+
         body.dark-mode #settings-button {
             background-color: #4a5157;
             color: white;
         }
         body.dark-mode #settings-button:hover { background-color: #383d41; }
-        
+
         body.dark-mode #cheat-button {
             background-color: #444;
             color: white;
         }
         body.dark-mode #cheat-button:hover { background-color: #222; }
-        
+
         body.dark-mode #test-button {
             background-color: #a0680a;
             color: white;
@@ -361,34 +390,41 @@
             border-color: #b88a0b;
             box-shadow: inset 0 0 15px rgba(0,0,0,0.7), 0 10px 20px rgba(0,0,0,0.7);
         }
+
         body.dark-mode #reels-container {
             background: #333;
             border-color: #555;
         }
+
         body.dark-mode .symbol {
             background-color: #5a6a7a;
             color: #fff;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
+
         body.dark-mode #bet-controls button {
             background-color: #444;
             color: #00aaff;
             border-color: #00aaff;
         }
+
         body.dark-mode #bet-controls button:hover {
             background-color: #00aaff;
             color: #111;
         }
+
         body.dark-mode #bet-controls button:disabled {
             background-color: #222;
             color: #555;
             border-color: #444;
         }
+
         body.dark-mode #bet-input {
             background-color: #555;
             color: #fff;
             border-color: #777;
         }
+
         body.dark-mode #result-display {
             color: #ddd;
         }
@@ -401,28 +437,32 @@
             color: #ddd;
             border-color: #555;
         }
-        
+
         body.dark-mode .modal-content {
             background-color: #2c3e50;
             color: #ddd;
         }
+
         body.dark-mode .modal-close {
             color: #777;
         }
         body.dark-mode .modal-close:hover {
             color: #fff;
         }
+
         body.dark-mode .modal-content h2 {
             color: #00aaff;
             border-bottom-color: #445;
         }
+
         body.dark-mode .modal-content h3 {
             color: #aaa;
         }
+
         body.dark-mode #payout-list li {
             background: #3a4b5c;
         }
-        
+
         body.dark-mode #dark-mode-toggle {
             background-color: #00aaff;
             color: #111;
@@ -435,15 +475,19 @@
         body.dark-mode.frenzy-mode {
             background-color: #2a133a;
         }
+
         body.dark-mode.frenzy-mode #slot-container {
-            background: #4b245a;
+            background: #4a1e5c;
         }
+
         body.dark-mode.frenzy-mode #spin-button {
-            background-color: #b32a1b;
+            background-color: #b02a1b;
         }
+
         body.dark-mode.frenzy-mode #spin-button:hover {
             background-color: #902115;
         }
+
         #back-button {
         position: fixed;
         top: 20px;
@@ -466,71 +510,293 @@
         transform: translateY(-2px);
         box-shadow: 0 6px 12px rgba(0,0,0,0.35);
     }
+    #audio-gate {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.6);
+      z-index: 3000;
+    }
+    #audio-gate .card {
+      background: #07132a;
+      color: #e6eef8;
+      padding: 18px 22px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    #audio-gate button {
+      margin-top: 10px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      background: #00aaff;
+      color: #07132a;
+    }
+    #audio-gate button:hover { filter: brightness(0.95); }
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        #back-button:hover {
+            background: linear-gradient(135deg, #2980b9, #3498db);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.35);
+        }
+
+        #auth-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        #auth-container h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        #auth-container button {
+            font-size: 1.2em;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #login-button { background-color: #007bff; color: white; }
+        #login-button:hover { background-color: #0056b3; }
+        #register-button { background-color: #28a745; color: white; }
+        #register-button:hover { background-color: #1e7e34; }
+
+        body.dark-mode #auth-container {
+            background: #2c3e50;
+        }
+        body.dark-mode #auth-container h2 {
+            color: #f4f4f9;
+        }
+        body.dark-mode #login-button { background-color: #0056b3; }
+        body.dark-mode #login-button:hover { background-color: #003d80; }
+        body.dark-mode #register-button { background-color: #1e7e34; }
+        body.dark-mode #register-button:hover { background-color: #155724; }
+
+        #user-info {
+            font-size: 0.7em;
+            font-weight: normal;
+            margin-right: 15px;
+            padding-right: 15px;
+            border-right: 2px solid rgba(255,255,255,0.5);
+            vertical-align: middle;
+        }
+        body.dark-mode #user-info {
+            border-right-color: rgba(255,255,255,0.3);
+        }
+
+        /* --- STYLES ADMIN GESTION UTILISATEURS --- */
+        #manage-users-button {
+            background-color: #ffc107; /* Jaune distinctif */
+            color: #333;
+            font-weight: bold;
+            display: none; /* Masqué par défaut */
+        }
+        #manage-users-button:hover { background-color: #e0a800; }
+
+        body.dark-mode #manage-users-button {
+            background-color: #b38600;
+            color: white;
+        }
+        body.dark-mode #manage-users-button:hover { background-color: #997300; }
+
+        /* Styles pour la liste dans la modale de gestion */
+        #user-list {
+            list-style-type: none;
+            padding-left: 0;
+            max-height: 400px; /* Limite la hauteur si bcp d'utilisateurs */
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        #user-list li {
+            background: #f4f4f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        #user-list li strong {
+            font-size: 1.1em;
+            color: #333;
+        }
+        #user-list li div {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #user-list .balance-input {
+            width: 100px;
+            font-size: 1em;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #user-list .set-balance-btn {
+            padding: 5px 10px;
+            font-size: 0.9em;
+            cursor: pointer;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        #user-list .set-balance-btn:hover { background: #1e7e34; }
+
+        /* Mode sombre pour la liste */
+        body.dark-mode #user-list li {
+            background: #3a4b5c;
+            border-color: #555;
+        }
+        body.dark-mode #user-list li strong {
+            color: #fff;
+        }
+        body.dark-mode #user-list .balance-input {
+            background: #555;
+            color: #fff;
+            border-color: #777;
+        }
+        /* --- FIN STYLES ADMIN --- */
+
     </style>
+    <script src="database.js"></script>
 </head>
+
 <body>
 
-    <div id="balance-container">
-        💰 Solde : <span id="balance-display">0.00</span> €
-        <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
-        <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
-        <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
-        <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
-        <button id="test-button" onclick="runTests()">Test</button>
-    </div>
-    <a id="back-button" href="Index.html">⬅ Retour</a>
-    <div id="slot-container">
-        <div id="reels-container">
-            <div class="symbol" id="symbol-0-0">🍒</div>
-            <div class="symbol" id="symbol-1-0">🍒</div>
-            <div class="symbol" id="symbol-2-0">🍒</div>
-            <div class="symbol" id="symbol-3-0">🍒</div>
-            <div class="symbol" id="symbol-4-0">🍒</div>
-            <div class="symbol" id="symbol-0-1">7</div>
-            <div class="symbol" id="symbol-1-1">7</div>
-            <div class="symbol" id="symbol-2-1">7</div>
-            <div class="symbol" id="symbol-3-1">7</div>
-            <div class="symbol" id="symbol-4-1">7</div>
-            <div class="symbol" id="symbol-0-2">BAR</div>
-            <div class="symbol" id="symbol-1-2">BAR</div>
-            <div class="symbol" id="symbol-2-2">BAR</div>
-            <div class="symbol" id="symbol-3-2">BAR</div>
-            <div class="symbol" id="symbol-4-2">BAR</div>
-        </div>
-    </div>
-    <div id="bet-controls">
-        <button id="decrease-bet">-</button>
-        <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
-        <button id="increase-bet">+</button>
-    </div>
-    <div id="result-display">Cliquez sur SPIN pour jouer !</div>
-    <div id="frenzy-display"></div>
-    <button id="spin-button" onclick="startSpin()">SPIN</button>
-    <div id="test-log">
-        <strong>Résultats des tests :</strong>
-        <ul id="test-results"></ul>
-    </div>
-    
-    <div id="rules-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="hideRules()">&times;</span>
-            <h2>Règles du Jeu</h2>
-            <p>Alignez 5 symboles identiques sur la <strong>ligne du milieu</strong> (la deuxième rangée) pour gagner le montant de votre mise multiplié par la valeur du symbole.</p>
-            <p>Obtenez 3 symboles 🌟 (Scatter) ou plus n'importe où sur la grille pour déclencher <strong>10 Tours Gratuits</strong> en Mode Frénésie !</p>
-            <h3>Multiplicateurs de Gains :</h3>
-            <ul id="payout-list"></ul>
-        </div>
-    </div>
+      <!-- Musiques / sons -->
+  <audio id="bg-music" src="sounds/casino-music-jazz-las-vegas-monaco-background-intro-theme-294408.mp3" preload="auto" loop autoplay></audio>
+  <audio id="s-spin"    src="sounds/slot-machine-reels-sound-30276_ZFxVLP0I.mp3" preload="auto"></audio>
+  <audio id="s-stop"    src="sounds/.mp3"  preload="auto"></audio>
+  <audio id="s-win"     src="sounds/Slot Machine Jackpot Sound Effect.mp3"  preload="auto"></audio>
 
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="hideSettings()">&times;</span>
-            <h2>Paramètres</h2>
-            <h3>Thème</h3>
-            <button id="dark-mode-toggle">Activer le Mode Sombre</button>
-        </div>
-    </div>
+     <!-- ====== TON HTML EXISTANT (barre solde, machine, modales, etc.) ====== -->
+  <div id="balance-container">
+    💰 Solde : <span id="balance-display">0.00</span> €
+    <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
+    <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
+    <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
+    <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
+    <button id="test-button" onclick="runTests()" style="display:none">Test</button>
+  </div>
 
+  <a id="back-button" href="index.html">⬅ Retour</a>
+
+  <div id="slot-container">
+    <div id="reels-container">
+      <div class="symbol" id="symbol-0-0">🍒</div>
+      <div class="symbol" id="symbol-1-0">🍒</div>
+      <div class="symbol" id="symbol-2-0">🍒</div>
+      <div class="symbol" id="symbol-3-0">🍒</div>
+      <div class="symbol" id="symbol-4-0">🍒</div>
+      <div class="symbol" id="symbol-0-1">7</div>
+      <div class="symbol" id="symbol-1-1">7</div>
+      <div class="symbol" id="symbol-2-1">7</div>
+      <div class="symbol" id="symbol-3-1">7</div>
+      <div class="symbol" id="symbol-4-1">7</div>
+      <div class="symbol" id="symbol-0-2">BAR</div>
+      <div class="symbol" id="symbol-1-2">BAR</div>
+      <div class="symbol" id="symbol-2-2">BAR</div>
+      <div class="symbol" id="symbol-3-2">BAR</div>
+      <div class="symbol" id="symbol-4-2">BAR</div>
+    </div>
+  </div>
+
+  <div id="bet-controls">
+    <button id="decrease-bet">-</button>
+    <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
+    <button id="increase-bet">+</button>
+  </div>
+
+  <div id="result-display">Cliquez sur SPIN pour jouer !</div>
+  <div id="frenzy-display"></div>
+  <button id="spin-button" onclick="startSpin()">SPIN</button>
+
+  <div id="test-log">
+    <strong>Résultats des tests :</strong>
+    <ul id="test-results"></ul>
+  </div>
+
+  <div id="rules-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="modal-close" onclick="hideRules()">&times;</span>
+      <h2>Règles du Jeu</h2>
+      <p>Alignez 5 symboles identiques sur la <strong>ligne du milieu</strong>.</p>
+      <p>3 🌟 ou plus n’importe où = <strong>10 Tours Frénésie</strong>.</p>
+      <h3>Multiplicateurs :</h3>
+      <ul id="payout-list"></ul>
+    </div>
+  </div>
+
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="modal-close" onclick="hideSettings()">&times;</span>
+      <h2>Paramètres</h2>
+      <h3>Thème</h3>
+      <button id="dark-mode-toggle">Activer le Mode Sombre</button>
+    </div>
+  </div>
+
+  <script>
+  /* ============================
+     VARIABLES & CONFIG
+  ============================ */
+  const MAX_BALANCE = 100.00;
+  const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
+  const SYMBOLS = ["🍒","🍒","🍒","🍋","🍋","🍊","🔔","🔔","BAR","7","🌟"];
+  const SYMBOLS_FRENZY = ["🍒","🍋","🍋","🍊","🔔","BAR","7","🌟"];
+  const PAYOUTS = { "🍒":10, "🍋":20, "🍊":40, "🔔":100, "BAR":500, "7":5000 };
+
+  let userBalance = MAX_BALANCE;
+  let currentBet = DEFAULT_BET;
+  let activeCheatMode = "none";
+  let animationInterval;
+  let isFrenzyModeActive = false;
+  let frenzySpinsRemaining = 0;
+  const FRENZY_SPINS_AWARDED = 10;
+
+  /* ============================
+     DOM
+  ============================ */
+  const balanceDisplay = document.getElementById('balance-display');
+  const spinButton = document.getElementById('spin-button');
+  const resultDisplay = document.getElementById('result-display');
+  const betInput = document.getElementById('bet-input');
+  const decreaseBetButton = document.getElementById('decrease-bet');
+  const increaseBetButton = document.getElementById('increase-bet');
+  const rulesModal = document.getElementById('rules-modal');
+  const payoutList = document.getElementById('payout-list');
+  const frenzyDisplay = document.getElementById('frenzy-display');
+  const settingsModal = document.getElementById('settings-modal');
+  const darkModeToggleButton = document.getElementById('dark-mode-toggle');
 
     <script>
     // =========================================
@@ -911,5 +1177,12 @@
 </script>
 
 
+  /* ============================
+     INIT
+  ============================ */
+  updateBalanceDisplay();
+  updateBet(currentBet);
+  applySavedTheme();
+  </script>
 </body>
 </html>

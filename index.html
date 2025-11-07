@@ -69,15 +69,35 @@
     </div>
   </div>
 
-  <!-- Fenêtre Paramètres -->
-  <div id="settings-modal" class="modal-overlay" aria-hidden="true">
+  <!-- Fenêtre Paramètres (mise à jour) -->
+  <div id="settings-modal" class="modal-overlay" aria-hidden="true" style="display:none;">
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <span class="close-btn" id="close-settings" aria-label="Fermer">&times;</span>
       <h2 id="settings-title" data-fr="Paramètres" data-en="Settings">Paramètres</h2>
-      <p data-fr="Choisis ta langue :" data-en="Choose your language:">Choisis ta langue :</p>
-      <div class="lang-options">
-        <button class="btn lang-btn" data-lang="fr">🇫🇷 Français</button>
-        <button class="btn lang-btn" data-lang="en">🇬🇧 English</button>
+
+      <!-- LANGUE -->
+      <div class="settings-section" style="margin-bottom:18px;">
+        <p data-fr="Choisis ta langue :" data-en="Choose your language:" style="margin:0 0 8px 0;">
+          Choisis ta langue :
+        </p>
+        <div class="lang-options" style="display:flex;gap:8px;">
+          <button class="btn lang-btn" data-lang="fr">🇫🇷 Français</button>
+          <button class="btn lang-btn" data-lang="en">🇬🇧 English</button>
+        </div>
+      </div>
+
+      <hr style="margin:16px 0; border:0; border-top:1px solid rgba(0,0,0,0.08);" />
+
+      <!-- VOLUME -->
+      <div class="settings-section">
+        <p data-fr="Volume du son :" data-en="Sound volume:" style="margin:0 0 8px 0;">
+          Volume du son :
+        </p>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <input type="range" id="volumeControl" min="0" max="1" step="0.01" style="flex:1;">
+          <button id="muteBtn" class="btn" aria-pressed="false" title="Couper le son">🔊</button>
+          <span id="volumeValue" style="min-width:48px; text-align:right;">100%</span>
+        </div>
       </div>
     </div>
   </div>
@@ -128,6 +148,66 @@
   window.addEventListener("click", e => {
     if (e.target === settingsModal) settingsModal.style.display = "none";
   });
+
+  // --- Gestion du volume (avec Mute) ---
+  const volumeControl = document.getElementById("volumeControl");
+  const volumeValue = document.getElementById("volumeValue");
+  const muteBtn = document.getElementById("muteBtn");
+
+  let savedVolume = parseFloat(localStorage.getItem("siteVolume"));
+  if (isNaN(savedVolume)) savedVolume = 1;
+
+  volumeControl.value = savedVolume;
+  volumeValue.textContent = Math.round(savedVolume * 100) + "%";
+  muteBtn.textContent = savedVolume === 0 ? "🔇" : "🔊";
+  muteBtn.setAttribute("aria-pressed", savedVolume === 0 ? "true" : "false");
+
+  function setGlobalVolume(vol) {
+    document.querySelectorAll("audio, video").forEach(a => {
+      try { a.volume = vol; } catch(e) {}
+    });
+    localStorage.setItem("siteVolume", vol);
+  }
+
+  setGlobalVolume(savedVolume);
+
+  volumeControl.addEventListener("input", e => {
+    const newVolume = parseFloat(e.target.value);
+    volumeValue.textContent = Math.round(newVolume * 100) + "%";
+    muteBtn.textContent = newVolume === 0 ? "🔇" : "🔊";
+    muteBtn.setAttribute("aria-pressed", newVolume === 0 ? "true" : "false");
+    setGlobalVolume(newVolume);
+  });
+
+  muteBtn.addEventListener("click", () => {
+    let current = parseFloat(localStorage.getItem("siteVolume"));
+    if (isNaN(current)) current = parseFloat(volumeControl.value) || 1;
+    if (current > 0) {
+      localStorage.setItem("siteVolumeBeforeMute", current);
+      setGlobalVolume(0);
+      volumeControl.value = 0;
+      volumeValue.textContent = "0%";
+      muteBtn.textContent = "🔇";
+      muteBtn.setAttribute("aria-pressed", "true");
+    } else {
+      let prev = parseFloat(localStorage.getItem("siteVolumeBeforeMute"));
+      if (isNaN(prev)) prev = 1;
+      setGlobalVolume(prev);
+      volumeControl.value = prev;
+      volumeValue.textContent = Math.round(prev * 100) + "%";
+      muteBtn.textContent = "🔊";
+      muteBtn.setAttribute("aria-pressed", "false");
+    }
+  });
+
+  const observer = new MutationObserver(() => {
+    const volNow = parseFloat(localStorage.getItem("siteVolume")) || 1;
+    document.querySelectorAll("audio, video").forEach(a => {
+      try { a.volume = volNow; } catch(e) {}
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
 </script>
 
 <script src="java_script.js"></script>
