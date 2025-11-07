@@ -341,7 +341,6 @@
         CORRIGÉ : STYLES DU MODE SOMBRE
         ==============================================
         */
-        /* CORRIGÉ : Utilisation de 'body.dark-mode' au lieu de '.dark-mode body' */
         body.dark-mode {
             background-color: #1a1a2e;
         }
@@ -561,6 +560,82 @@
         body.dark-mode #user-info {
             border-right-color: rgba(255,255,255,0.3);
         }
+
+        /* --- STYLES ADMIN GESTION UTILISATEURS --- */
+        #manage-users-button {
+            background-color: #ffc107; /* Jaune distinctif */
+            color: #333;
+            font-weight: bold;
+            display: none; /* Masqué par défaut */
+        }
+        #manage-users-button:hover { background-color: #e0a800; }
+
+        body.dark-mode #manage-users-button {
+            background-color: #b38600;
+            color: white;
+        }
+        body.dark-mode #manage-users-button:hover { background-color: #997300; }
+
+        /* Styles pour la liste dans la modale de gestion */
+        #user-list {
+            list-style-type: none;
+            padding-left: 0;
+            max-height: 400px; /* Limite la hauteur si bcp d'utilisateurs */
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        #user-list li {
+            background: #f4f4f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        #user-list li strong {
+            font-size: 1.1em;
+            color: #333;
+        }
+        #user-list li div {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #user-list .balance-input {
+            width: 100px;
+            font-size: 1em;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #user-list .set-balance-btn {
+            padding: 5px 10px;
+            font-size: 0.9em;
+            cursor: pointer;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        #user-list .set-balance-btn:hover { background: #1e7e34; }
+
+        /* Mode sombre pour la liste */
+        body.dark-mode #user-list li {
+            background: #3a4b5c;
+            border-color: #555;
+        }
+        body.dark-mode #user-list li strong {
+            color: #fff;
+        }
+        body.dark-mode #user-list .balance-input {
+            background: #555;
+            color: #fff;
+            border-color: #777;
+        }
+        /* --- FIN STYLES ADMIN --- */
+
     </style>
     <script src="database.js"></script>
 </head>
@@ -583,7 +658,7 @@
             <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
             <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
             <button id="test-button" onclick="runTests()">Test</button>
-            <button id="logout-button">Déconnexion</button>
+            <button id="manage-users-button">Gérer Comptes</button> <button id="logout-button">Déconnexion</button>
         </div>
 
         <a id="back-button" href="Index.html">⬅ Retour</a>
@@ -645,6 +720,16 @@
         </div>
     </div>
 
+    <div id="user-management-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="hideUserManagement()">&times;</span>
+            <h2>Gestion des Utilisateurs</h2>
+            <p>Modifier le solde des utilisateurs. Les modifications sont sauvegardées immédiatement.</p>
+            <ul id="user-list">
+                </ul>
+        </div>
+    </div>
+
 
     <script>
         // --- CONSTANTES DU JEU ---
@@ -673,7 +758,6 @@
         let currentUser = null;
 
         // --- SÉLECTION DES ÉLÉMENTS DU DOM ---
-        // ... (Toutes les sélections d'éléments restent identiques) ...
         const balanceDisplay = document.getElementById('balance-display');
         const spinButton = document.getElementById('spin-button');
         const resultDisplay = document.getElementById('result-display');
@@ -694,6 +778,10 @@
         const logoutButton = document.getElementById('logout-button');
         const userInfoDisplay = document.getElementById('user-info');
         const cheatButton = document.getElementById('cheat-button');
+        // NOUVELLES SÉLECTIONS ADMIN
+        const manageUsersButton = document.getElementById('manage-users-button');
+        const userManagementModal = document.getElementById('user-management-modal');
+        const userList = document.getElementById('user-list');
 
         // ===============================================
         // FONCTIONS D'AUTHENTIFICATION
@@ -709,23 +797,27 @@
             registerButton.addEventListener('click', register);
             logoutButton.addEventListener('click', logout);
             darkModeToggleButton.addEventListener('click', toggleDarkMode);
+
+            // NOUVEAUX ÉVÉNEMENTS ADMIN
+            manageUsersButton.addEventListener('click', showUserManagement);
+            userManagementModal.addEventListener('click', function (event) {
+                if (event.target === userManagementModal) { hideUserManagement(); }
+            });
+            // Utiliser la délégation d'événements pour la liste
+            userList.addEventListener('click', handleUserListClick);
         }
 
         /**
-         * MODIFICATION N°2 :
          * Charge la liste des utilisateurs depuis localStorage.
          * Si localStorage est vide, utilise DEFAULT_USERS (de database.js).
          */
         function loadAllUsers() {
             const usersJSON = localStorage.getItem(STORAGE_USERS_KEY);
             if (usersJSON) {
-                // Si des utilisateurs sont déjà sauvegardés, on les charge
                 allUsers = JSON.parse(usersJSON);
             } else {
-                // Sinon (premier lancement), on utilise les données de database.js
-                // 'DEFAULT_USERS' est disponible car database.js a été chargé avant ce script
                 allUsers = DEFAULT_USERS;
-                saveAllUsers(); // On sauvegarde ce défaut dans localStorage
+                saveAllUsers(); 
             }
         }
 
@@ -746,10 +838,13 @@
                 userInfoDisplay.textContent = currentUser.name;
 
                 // 'ADMIN_EMAIL' est disponible car database.js a été chargé
+                // MODIFIÉ pour inclure le bouton de gestion
                 if (currentUser.email === ADMIN_EMAIL) {
                     cheatButton.style.display = 'inline-block';
+                    manageUsersButton.style.display = 'inline-block';
                 } else {
                     cheatButton.style.display = 'none';
+                    manageUsersButton.style.display = 'none';
                 }
 
             } else {
@@ -808,7 +903,7 @@
                 balance: MAX_BALANCE
             };
             allUsers.push(newUser);
-            saveAllUsers(); // Sauvegarde le nouvel utilisateur dans localStorage
+            saveAllUsers(); 
 
             localStorage.setItem(STORAGE_CURRENT_USER_KEY, newUser.email);
             location.reload();
@@ -817,6 +912,82 @@
         function logout() {
             localStorage.removeItem(STORAGE_CURRENT_USER_KEY);
             location.reload();
+        }
+
+        // ===============================================
+        // NOUVELLES FONCTIONS DE GESTION ADMIN
+        // ===============================================
+
+        function showUserManagement() {
+            userList.innerHTML = ''; // Vider la liste précédente
+
+            // Parcourir tous les utilisateurs
+            allUsers.forEach(user => {
+                // Ne pas afficher l'admin lui-même dans la liste
+                if (user.email === ADMIN_EMAIL) return;
+
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <strong>${user.name}</strong> (${user.email})<br>
+                    Solde actuel : <strong>${user.balance.toFixed(2)} €</strong>
+                    <div>
+                        <input type="number" class="balance-input" value="${user.balance.toFixed(2)}" step="10" min="0">
+                        <button class="set-balance-btn" data-email="${user.email}">Définir Solde</button>
+                    </div>
+                `;
+                userList.appendChild(li);
+            });
+
+            userManagementModal.style.display = 'flex';
+        }
+
+        function hideUserManagement() {
+            userManagementModal.style.display = 'none';
+        }
+
+        /**
+         * Gère le clic sur un bouton "Définir Solde" dans la modale de gestion
+         */
+        function handleUserListClick(e) {
+            // Vérifier si on a cliqué sur un bouton de sauvegarde
+            if (e.target.classList.contains('set-balance-btn')) {
+                const email = e.target.dataset.email;
+                // Trouver l'input associé à ce bouton
+                const input = e.target.previousElementSibling;
+                const newBalance = parseFloat(input.value);
+
+                if (isNaN(newBalance) || newBalance < 0) {
+                    alert("Veuillez entrer un solde valide (nombre positif).");
+                    return;
+                }
+
+                // Mettre à jour le solde et sauvegarder
+                updateUserBalance(email, newBalance);
+            }
+        }
+
+        /**
+         * Met à jour le solde d'un utilisateur spécifique et sauvegarde
+         */
+        function updateUserBalance(email, newBalance) {
+            const userToUpdate = allUsers.find(u => u.email === email);
+            if (userToUpdate) {
+                userToUpdate.balance = newBalance;
+                saveAllUsers(); // Sauvegarde la liste complète mise à jour dans localStorage
+                
+                // Optionnel : rafraîchir la liste pour confirmer visuellement
+                const btn = userList.querySelector(`button[data-email="${email}"]`);
+                if (btn) {
+                    const balanceDisplay = btn.closest('li').querySelector('strong:last-of-type');
+                    balanceDisplay.textContent = `${newBalance.toFixed(2)} €`;
+                    btn.previousElementSibling.value = newBalance.toFixed(2);
+                }
+                
+                alert(`Le solde de ${userToUpdate.name} a été mis à jour.`);
+
+            } else {
+                alert("Erreur : Utilisateur non trouvé.");
+            }
         }
 
         // ===============================================
@@ -848,7 +1019,6 @@
         });
 
         function toggleDarkMode() {
-            // C'est ici que la classe 'dark-mode' est ajoutée à 'document.body'
             document.body.classList.toggle('dark-mode');
             
             if (document.body.classList.contains('dark-mode')) {
