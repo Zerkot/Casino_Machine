@@ -533,358 +533,383 @@
 
 
     <script>
-        // ... (Tout le JavaScript reste identique à la version précédente) ...
+    // =========================================
+    //  JS complet - Machine à sous
+    //  Solde synchronisé avec l'accueil (localStorage)
+    // =========================================
 
-        const MAX_BALANCE = 100.00;
-        const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
-        const SYMBOLS = ["🍒","🍒","🍒","🍒","🍒","🍒","🍋","🍋","🍋","🍋","🍋","🍊","🍊","🍊","🍊","🔔","🔔","🔔","BAR","BAR","7", "🌟", "🌟"];
-        const SYMBOLS_FRENZY = ["🍒","🍒","🍋","🍋","🍋","🍊","🍊","🍊","🔔","🔔","🔔","🔔","BAR","BAR","BAR","7","7", "🌟"];
-        const PAYOUTS = { "🍒":10, "🍋":20, "🍊":40, "🔔":100, "BAR":500, "7":5000 };
+    const MAX_BALANCE = 100.00;
+    const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
 
-        let userBalance = MAX_BALANCE;
-        let currentBet = DEFAULT_BET;
-        
-        let activeCheatMode = "none"; // "none", "jackpot", "scatter"
-        
-        let animationInterval;
-        let isFrenzyModeActive = false;
-        let frenzySpinsRemaining = 0;
-        const FRENZY_SPINS_AWARDED = 10;
+    // --- Clé commune de stockage des crédits (même que sur index.js) ---
+    const LS_KEY = 'credits';
+    function getCredits() {
+        const v = parseFloat(localStorage.getItem(LS_KEY));
+        return Number.isFinite(v) ? v : MAX_BALANCE;  // solde par défaut
+    }
+    function setCredits(v) {
+        localStorage.setItem(LS_KEY, String(v));
+    }
 
-        const balanceDisplay = document.getElementById('balance-display');
-        const spinButton = document.getElementById('spin-button');
-        const resultDisplay = document.getElementById('result-display');
-        const betInput = document.getElementById('bet-input');
-        const decreaseBetButton = document.getElementById('decrease-bet');
-        const increaseBetButton = document.getElementById('increase-bet');
-        const testButton = document.getElementById('test-button');
-        const rulesModal = document.getElementById('rules-modal');
-        const payoutList = document.getElementById('payout-list');
-        const frenzyDisplay = document.getElementById('frenzy-display');
+    const SYMBOLS = ["🍒","🍒","🍒","🍒","🍒","🍒","🍋","🍋","🍋","🍋","🍋","🍊","🍊","🍊","🍊","🔔","🔔","🔔","BAR","BAR","7", "🌟", "🌟"];
+    const SYMBOLS_FRENZY = ["🍒","🍒","🍋","🍋","🍋","🍊","🍊","🍊","🔔","🔔","🔔","🔔","BAR","BAR","BAR","7","7", "🌟"];
+    const PAYOUTS = { "🍒":10, "🍋":20, "🍊":40, "🔔":100, "BAR":500, "7":5000 };
 
-        const settingsModal = document.getElementById('settings-modal');
-        const darkModeToggleButton = document.getElementById('dark-mode-toggle');
+    // ----- SOLDE UTILISATEUR (partagé) -----
+    let userBalance = getCredits();  // 🔗 récupère le solde commun
+    let currentBet = DEFAULT_BET;
+    
+    let activeCheatMode = "none"; // "none", "jackpot", "scatter"
+    
+    let animationInterval;
+    let isFrenzyModeActive = false;
+    let frenzySpinsRemaining = 0;
+    const FRENZY_SPINS_AWARDED = 10;
+
+    const balanceDisplay = document.getElementById('balance-display');
+    const spinButton = document.getElementById('spin-button');
+    const resultDisplay = document.getElementById('result-display');
+    const betInput = document.getElementById('bet-input');
+    const decreaseBetButton = document.getElementById('decrease-bet');
+    const increaseBetButton = document.getElementById('increase-bet');
+    const testButton = document.getElementById('test-button');
+    const rulesModal = document.getElementById('rules-modal');
+    const payoutList = document.getElementById('payout-list');
+    const frenzyDisplay = document.getElementById('frenzy-display');
+
+    const settingsModal = document.getElementById('settings-modal');
+    const darkModeToggleButton = document.getElementById('dark-mode-toggle');
 
 
-        function showRules() {
-            payoutList.innerHTML = '';
-            const sortedPayouts = Object.entries(PAYOUTS).sort(([,a], [,b]) => a - b);
-            for (const [symbol, multiplier] of sortedPayouts) {
-                const li = document.createElement('li');
-                li.innerHTML = `<span>${symbol}</span> x 5 sur la ligne du milieu = <strong>${multiplier}x</strong> la mise`;
-                payoutList.appendChild(li);
-            }
+    function showRules() {
+        payoutList.innerHTML = '';
+        const sortedPayouts = Object.entries(PAYOUTS).sort(([,a], [,b]) => a - b);
+        for (const [symbol, multiplier] of sortedPayouts) {
             const li = document.createElement('li');
-            li.innerHTML = `<span>🌟</span> x 3 (ou plus) n'importe où = <strong>${FRENZY_SPINS_AWARDED} Tours Frénésie</strong>`;
+            li.innerHTML = `<span>${symbol}</span> x 5 sur la ligne du milieu = <strong>${multiplier}x</strong> la mise`;
             payoutList.appendChild(li);
-            rulesModal.style.display = 'flex';
         }
-        function hideRules() { rulesModal.style.display = 'none'; }
-        rulesModal.addEventListener('click', function(event) {
-            if (event.target === rulesModal) { hideRules(); }
-        });
+        const li = document.createElement('li');
+        li.innerHTML = `<span>🌟</span> x 3 (ou plus) n'importe où = <strong>${FRENZY_SPINS_AWARDED} Tours Frénésie</strong>`;
+        payoutList.appendChild(li);
+        rulesModal.style.display = 'flex';
+    }
+    function hideRules() { rulesModal.style.display = 'none'; }
+    rulesModal.addEventListener('click', function(event) {
+        if (event.target === rulesModal) { hideRules(); }
+    });
 
-        function showSettings() { settingsModal.style.display = 'flex'; }
-        function hideSettings() { settingsModal.style.display = 'none'; }
-        settingsModal.addEventListener('click', function(event) {
-            if (event.target === settingsModal) { hideSettings(); }
-        });
+    function showSettings() { settingsModal.style.display = 'flex'; }
+    function hideSettings() { settingsModal.style.display = 'none'; }
+    settingsModal.addEventListener('click', function(event) {
+        if (event.target === settingsModal) { hideSettings(); }
+    });
 
-        function toggleDarkMode() {
-            // C'est ici que la classe 'dark-mode' est ajoutée à 'document.body'
-            document.body.classList.toggle('dark-mode'); 
-            
-            if (document.body.classList.contains('dark-mode')) {
-                darkModeToggleButton.textContent = "Désactiver le Mode Sombre";
-                localStorage.setItem('slotMachineTheme', 'dark');
-            } else {
-                darkModeToggleButton.textContent = "Activer le Mode Sombre";
-                localStorage.setItem('slotMachineTheme', 'light');
-            }
-        }
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode'); 
         
-        darkModeToggleButton.addEventListener('click', toggleDarkMode);
+        if (document.body.classList.contains('dark-mode')) {
+            darkModeToggleButton.textContent = "Désactiver le Mode Sombre";
+            localStorage.setItem('slotMachineTheme', 'dark');
+        } else {
+            darkModeToggleButton.textContent = "Activer le Mode Sombre";
+            localStorage.setItem('slotMachineTheme', 'light');
+        }
+    }
+    
+    darkModeToggleButton.addEventListener('click', toggleDarkMode);
 
-        function applySavedTheme() {
-            const savedTheme = localStorage.getItem('slotMachineTheme');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-                darkModeToggleButton.textContent = "Désactiver le Mode Sombre";
-            } else {
-                document.body.classList.remove('dark-mode');
-                darkModeToggleButton.textContent = "Activer le Mode Sombre";
-            }
+    function applySavedTheme() {
+        const savedTheme = localStorage.getItem('slotMachineTheme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            darkModeToggleButton.textContent = "Désactiver le Mode Sombre";
+        } else {
+            document.body.classList.remove('dark-mode');
+            darkModeToggleButton.textContent = "Activer le Mode Sombre";
+        }
+    }
+
+    function activateCheatMode() {
+        const cheatBtn = document.getElementById('cheat-button');
+        
+        if (activeCheatMode !== "none") {
+            activeCheatMode = "none";
+            cheatBtn.textContent = "Admin";
+            cheatBtn.style.backgroundColor = "#888";
+            testButton.style.display = "none";
+            document.getElementById('test-log').style.display = "none";
+            alert("Mode Cheat désactivé.");
+            return;
         }
 
-        function activateCheatMode() {
-            const cheatBtn = document.getElementById('cheat-button');
+        const password = prompt("Entrez le mot de passe administrateur :");
+        const correctPassword = "938-555-0100";
+        
+        if (password === correctPassword) {
+            const choice = prompt("Quel cheat activer ?\n1 = Jackpot (77777)\n2 = Scatter (Frénésie 100%)\n\nEntrez 1 ou 2 :");
             
-            if (activeCheatMode !== "none") {
-                activeCheatMode = "none";
-                cheatBtn.textContent = "Admin";
-                cheatBtn.style.backgroundColor = "#888";
-                testButton.style.display = "none";
-                document.getElementById('test-log').style.display = "none";
-                alert("Mode Cheat désactivé.");
-                return;
+            if (choice === "1") {
+                activeCheatMode = "jackpot";
+                cheatBtn.textContent = "CHEAT: 777";
+                cheatBtn.style.backgroundColor = "#2ecc71";
+                testButton.style.display = "inline-block";
+                alert("Mode Jackpot activé ! Tous les spins seront des 77777.");
+            } else if (choice === "2") {
+                activeCheatMode = "scatter";
+                cheatBtn.textContent = "CHEAT: 🌟";
+                cheatBtn.style.backgroundColor = "#2ecc71";
+                testButton.style.display = "inline-block";
+                alert("Mode Scatter activé ! 3+ Scatters garantis.");
+            } else {
+                alert("Choix invalide.");
             }
 
-            const password = prompt("Entrez le mot de passe administrateur :");
-            const correctPassword = "938-555-0100";
-            
-            if (password === correctPassword) {
-                const choice = prompt("Quel cheat activer ?\n1 = Jackpot (77777)\n2 = Scatter (Frénésie 100%)\n\nEntrez 1 ou 2 :");
+        } else if (password) {
+            alert("Mot de passe incorrect.");
+        }
+    }
+
+    function updateBet(newBet) {
+        if (newBet < MIN_BET) newBet = MIN_BET;
+        if (newBet > MAX_BET) newBet = MAX_BET;
+        if (!isFrenzyModeActive) {
+            currentBet = newBet;
+        }
+        betInput.value = Math.round(currentBet);
+        decreaseBetButton.disabled = (currentBet <= MIN_BET) || isFrenzyModeActive;
+        increaseBetButton.disabled = (currentBet >= MAX_BET) || isFrenzyModeActive;
+    }
+    function changeBet(amount) { updateBet(currentBet + amount); }
+    decreaseBetButton.addEventListener('click', () => changeBet(-BET_STEP));
+    increaseBetButton.addEventListener('click', () => changeBet(BET_STEP));
+    betInput.addEventListener('change', () => {
+        let typedBet = parseFloat(betInput.value);
+        if (isNaN(typedBet)) typedBet = DEFAULT_BET;
+        typedBet = Math.round(typedBet / BET_STEP) * BET_STEP;
+        updateBet(typedBet);
+    });
+
+    function updateBalanceDisplay() { balanceDisplay.textContent = userBalance.toFixed(2); }
+
+    // >>>>>>> ICI on synchronise avec localStorage <<<<<<<<
+    function adjustBalance(amount) {
+        userBalance += amount;
+        if (userBalance < 0) userBalance = 0;
+        updateBalanceDisplay();
+        updateBet(currentBet);
+        setCredits(userBalance);  // 🔁 met à jour le solde partagé
+        if (userBalance <= 0 && !isFrenzyModeActive) {
+            resultDisplay.textContent = "Solde épuisé ! Veuillez recharger.";
+            resultDisplay.classList.add('lose');
+        }
+    }
+
+    function rechargeBalance() {
+        if (userBalance <= 0) {
+            userBalance = MAX_BALANCE;
+            resultDisplay.textContent = "Solde rechargé !";
+            resultDisplay.classList.add('win');
+        } else {
+            resultDisplay.textContent = "Vous avez encore " + userBalance.toFixed(2) + " €.";
+            resultDisplay.classList.remove('win','lose','jackpot');
+        }
+        updateBalanceDisplay();
+        updateBet(currentBet);
+        setCredits(userBalance);  // 🔁 synchronisation avec index
+    }
+
+    function getRandomSymbol() {
+        const symbolList = isFrenzyModeActive ? SYMBOLS_FRENZY : SYMBOLS;
+        return symbolList[Math.floor(Math.random() * symbolList.length)];
+    }
+    
+    function generateFinalGrid() {
+        let grid=[];
+        for(let r=0;r<3;r++){
+            let row=[];
+            for(let c=0;c<5;c++){
                 
-                if (choice === "1") {
-                    activeCheatMode = "jackpot";
-                    cheatBtn.textContent = "CHEAT: 777";
-                    cheatBtn.style.backgroundColor = "#2ecc71";
-                    testButton.style.display = "inline-block";
-                    alert("Mode Jackpot activé ! Tous les spins seront des 77777.");
-                } else if (choice === "2") {
-                    activeCheatMode = "scatter";
-                    cheatBtn.textContent = "CHEAT: 🌟";
-                    cheatBtn.style.backgroundColor = "#2ecc71";
-                    testButton.style.display = "inline-block";
-                    alert("Mode Scatter activé ! 3+ Scatters garantis.");
+                if(activeCheatMode === "jackpot" && r === 1) {
+                    row.push("7");
+                
+                } else if (activeCheatMode === "scatter" && ( (r===0 && c===0) || (r===1 && c===2) || (r===2 && c===4) )) {
+                    row.push("🌟");
+                
                 } else {
-                    alert("Choix invalide.");
-                }
-
-            } else if (password) {
-                alert("Mot de passe incorrect.");
-            }
-        }
-
-        function updateBet(newBet) {
-            if (newBet < MIN_BET) newBet = MIN_BET;
-            if (newBet > MAX_BET) newBet = MAX_BET;
-            if (!isFrenzyModeActive) {
-                currentBet = newBet;
-            }
-            betInput.value = Math.round(currentBet);
-            decreaseBetButton.disabled = (currentBet <= MIN_BET) || isFrenzyModeActive;
-            increaseBetButton.disabled = (currentBet >= MAX_BET) || isFrenzyModeActive;
-        }
-        function changeBet(amount) { updateBet(currentBet + amount); }
-        decreaseBetButton.addEventListener('click', () => changeBet(-BET_STEP));
-        increaseBetButton.addEventListener('click', () => changeBet(BET_STEP));
-        betInput.addEventListener('change', () => {
-            let typedBet = parseFloat(betInput.value);
-            if (isNaN(typedBet)) typedBet = DEFAULT_BET;
-            typedBet = Math.round(typedBet / BET_STEP) * BET_STEP;
-            updateBet(typedBet);
-        });
-        function updateBalanceDisplay() { balanceDisplay.textContent = userBalance.toFixed(2); }
-        function adjustBalance(amount) {
-            userBalance += amount;
-            if (userBalance < 0) userBalance = 0;
-            updateBalanceDisplay();
-            updateBet(currentBet);
-            if (userBalance <= 0 && !isFrenzyModeActive) {
-                resultDisplay.textContent = "Solde épuisé ! Veuillez recharger.";
-                resultDisplay.classList.add('lose');
-            }
-        }
-        function rechargeBalance() {
-            if (userBalance <= 0) {
-                userBalance = MAX_BALANCE;
-                resultDisplay.textContent = "Solde rechargé !";
-                resultDisplay.classList.add('win');
-            } else {
-                resultDisplay.textContent = "Vous avez encore " + userBalance.toFixed(2) + " €.";
-                resultDisplay.classList.remove('win','lose','jackpot');
-            }
-            updateBalanceDisplay();
-            updateBet(currentBet);
-        }
-
-        function getRandomSymbol() {
-            const symbolList = isFrenzyModeActive ? SYMBOLS_FRENZY : SYMBOLS;
-            return symbolList[Math.floor(Math.random() * symbolList.length)];
-        }
-        
-        function generateFinalGrid() {
-            let grid=[];
-            for(let r=0;r<3;r++){
-                let row=[];
-                for(let c=0;c<5;c++){
-                    
-                    if(activeCheatMode === "jackpot" && r === 1) {
-                        row.push("7");
-                    
-                    } else if (activeCheatMode === "scatter" && ( (r===0 && c===0) || (r===1 && c===2) || (r===2 && c===4) )) {
-                        row.push("🌟");
-                    
-                    } else {
-                        row.push(getRandomSymbol());
-                    }
-                }
-                grid.push(row);
-            }
-            return grid;
-        }
-        
-        function runSpinAnimation(spinningCols) {
-            for(const c of spinningCols)
-                for(let r=0;r<3;r++)
-                    document.getElementById(`symbol-${c}-${r}`).textContent=getRandomSymbol();
-        }
-        function stopColumn(colIndex, finalGrid, spinningCols){
-            const idx=spinningCols.indexOf(colIndex);
-            if(idx>-1) spinningCols.splice(idx,1);
-            for(let r=0;r<3;r++){
-                const s=document.getElementById(`symbol-${colIndex}-${r}`);
-                s.textContent=finalGrid[r][colIndex];
-                s.classList.remove('spinning');
-            }
-        }
-
-        function countScatters(grid) {
-            let count = 0;
-            for (let r = 0; r < 3; r++) {
-                for (let c = 0; c < 5; c++) {
-                    if (grid[r][c] === "🌟") {
-                        count++;
-                    }
+                    row.push(getRandomSymbol());
                 }
             }
-            return count;
+            grid.push(row);
         }
-        function startFrenzyMode() {
-            if (!isFrenzyModeActive) {
-                isFrenzyModeActive = true;
+        return grid;
+    }
+    
+    function runSpinAnimation(spinningCols) {
+        for(const c of spinningCols)
+            for(let r=0;r<3;r++)
+                document.getElementById(`symbol-${c}-${r}`).textContent=getRandomSymbol();
+    }
+    function stopColumn(colIndex, finalGrid, spinningCols){
+        const idx=spinningCols.indexOf(colIndex);
+        if(idx>-1) spinningCols.splice(idx,1);
+        for(let r=0;r<3;r++){
+            const s=document.getElementById(`symbol-${colIndex}-${r}`);
+            s.textContent=finalGrid[r][colIndex];
+            s.classList.remove('spinning');
+        }
+    }
+
+    function countScatters(grid) {
+        let count = 0;
+        for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 5; c++) {
+                if (grid[r][c] === "🌟") {
+                    count++;
+                }
             }
-            frenzySpinsRemaining += FRENZY_SPINS_AWARDED;
-            document.body.classList.add('frenzy-mode');
+        }
+        return count;
+    }
+    function startFrenzyMode() {
+        if (!isFrenzyModeActive) {
+            isFrenzyModeActive = true;
+        }
+        frenzySpinsRemaining += FRENZY_SPINS_AWARDED;
+        document.body.classList.add('frenzy-mode');
+        updateFrenzyDisplay();
+        decreaseBetButton.disabled = true;
+        increaseBetButton.disabled = true;
+        betInput.disabled = true;
+    }
+    function endFrenzyMode() {
+        isFrenzyModeActive = false;
+        frenzySpinsRemaining = 0;
+        document.body.classList.remove('frenzy-mode');
+        updateFrenzyDisplay();
+        betInput.disabled = false;
+        updateBet(currentBet);
+    }
+    function updateFrenzyDisplay() {
+        if (isFrenzyModeActive && frenzySpinsRemaining > 0) {
+            frenzyDisplay.textContent = `Tours Frénésie : ${frenzySpinsRemaining}`;
+            frenzyDisplay.style.display = 'block';
+        } else {
+            frenzyDisplay.style.display = 'none';
+        }
+    }
+
+    function startSpin() {
+        if (!isFrenzyModeActive) {
+            if(userBalance < currentBet){ 
+                resultDisplay.textContent="Solde insuffisant !"; 
+                resultDisplay.classList.add('lose'); 
+                return; 
+            }
+            adjustBalance(-currentBet);
+            resultDisplay.textContent="Les rouleaux tournent...";
+        } else {
+            frenzySpinsRemaining--;
             updateFrenzyDisplay();
+            resultDisplay.textContent="Tour Frénésie !";
+        }
+        spinButton.disabled = true;
+        if (!isFrenzyModeActive) {
             decreaseBetButton.disabled = true;
             increaseBetButton.disabled = true;
             betInput.disabled = true;
         }
-        function endFrenzyMode() {
-            isFrenzyModeActive = false;
-            frenzySpinsRemaining = 0;
-            document.body.classList.remove('frenzy-mode');
-            updateFrenzyDisplay();
-            betInput.disabled = false;
-            updateBet(currentBet);
-        }
-        function updateFrenzyDisplay() {
-            if (isFrenzyModeActive && frenzySpinsRemaining > 0) {
-                frenzyDisplay.textContent = `Tours Frénésie : ${frenzySpinsRemaining}`;
-                frenzyDisplay.style.display = 'block';
-            } else {
-                frenzyDisplay.style.display = 'none';
-            }
-        }
-
-        function startSpin() {
-            if (!isFrenzyModeActive) {
-                if(userBalance < currentBet){ resultDisplay.textContent="Solde insuffisant !"; resultDisplay.classList.add('lose'); return; }
-                adjustBalance(-currentBet);
-                resultDisplay.textContent="Les rouleaux tournent...";
-            } else {
-                frenzySpinsRemaining--;
-                updateFrenzyDisplay();
-                resultDisplay.textContent="Tour Frénésie !";
-            }
-            spinButton.disabled = true;
-            if (!isFrenzyModeActive) {
-                decreaseBetButton.disabled = true;
-                increaseBetButton.disabled = true;
-                betInput.disabled = true;
-            }
-            resultDisplay.classList.remove('win','lose','jackpot');
-            const finalGrid = generateFinalGrid();
-            let spinningColumns = [0,1,2,3,4];
-            document.querySelectorAll('.symbol').forEach(s => s.classList.add('spinning'));
-            animationInterval = setInterval(() => runSpinAnimation(spinningColumns), 100);
-            setTimeout(() => stopColumn(0, finalGrid, spinningColumns), 1000);
-            setTimeout(() => stopColumn(1, finalGrid, spinningColumns), 1500);
-            setTimeout(() => stopColumn(2, finalGrid, spinningColumns), 2000);
-            setTimeout(() => stopColumn(3, finalGrid, spinningColumns), 2500);
-            setTimeout(() => {
-                stopColumn(4, finalGrid, spinningColumns);
-                clearInterval(animationInterval);
-                let winnings = 0;
-                const middleRow = finalGrid[1];
-                let hasWon = false;
-                if (middleRow.every(s => s === middleRow[0])) {
-                    const winningSymbol = middleRow[0];
-                    if (PAYOUTS[winningSymbol]) {
-                        const multiplier = PAYOUTS[winningSymbol];
-                        winnings = currentBet * multiplier;
-                    }
+        resultDisplay.classList.remove('win','lose','jackpot');
+        const finalGrid = generateFinalGrid();
+        let spinningColumns = [0,1,2,3,4];
+        document.querySelectorAll('.symbol').forEach(s => s.classList.add('spinning'));
+        animationInterval = setInterval(() => runSpinAnimation(spinningColumns), 100);
+        setTimeout(() => stopColumn(0, finalGrid, spinningColumns), 1000);
+        setTimeout(() => stopColumn(1, finalGrid, spinningColumns), 1500);
+        setTimeout(() => stopColumn(2, finalGrid, spinningColumns), 2000);
+        setTimeout(() => stopColumn(3, finalGrid, spinningColumns), 2500);
+        setTimeout(() => {
+            stopColumn(4, finalGrid, spinningColumns);
+            clearInterval(animationInterval);
+            let winnings = 0;
+            const middleRow = finalGrid[1];
+            let hasWon = false;
+            if (middleRow.every(s => s === middleRow[0])) {
+                const winningSymbol = middleRow[0];
+                if (PAYOUTS[winningSymbol]) {
+                    const multiplier = PAYOUTS[winningSymbol];
+                    winnings = currentBet * multiplier;
                 }
-                if (winnings > 0) {
-                    adjustBalance(winnings);
-                    hasWon = true;
-                    if (middleRow[0] === "7") {
-                        resultDisplay.textContent = `🎉 JACKPOT !!! +${winnings.toFixed(2)} € !`;
-                        resultDisplay.classList.add('jackpot');
-                    } else {
-                        resultDisplay.textContent = `Bravo ! Vous gagnez ${winnings.toFixed(2)} € !`;
-                        resultDisplay.classList.add('win');
-                    }
+            }
+            if (winnings > 0) {
+                adjustBalance(winnings);
+                hasWon = true;
+                if (middleRow[0] === "7") {
+                    resultDisplay.textContent = `🎉 JACKPOT !!! +${winnings.toFixed(2)} € !`;
+                    resultDisplay.classList.add('jackpot');
                 } else {
-                    resultDisplay.textContent = "Pas de chance... Essayez encore !";
-                    resultDisplay.classList.add('lose');
-                }
-                const scatterCount = countScatters(finalGrid);
-                if (scatterCount >= 3) {
-                    resultDisplay.textContent = `🌟 ${scatterCount} SCATTERS ! 🌟 +${FRENZY_SPINS_AWARDED} Tours Frénésie !`;
+                    resultDisplay.textContent = `Bravo ! Vous gagnez ${winnings.toFixed(2)} € !`;
                     resultDisplay.classList.add('win');
-                    startFrenzyMode();
                 }
-                if (isFrenzyModeActive && frenzySpinsRemaining <= 0) {
-                    endFrenzyMode();
-                    if (!hasWon && scatterCount < 3) {
-                        resultDisplay.textContent = "Mode Frénésie terminé !";
-                    }
+            } else {
+                resultDisplay.textContent = "Pas de chance... Essayez encore !";
+                resultDisplay.classList.add('lose');
+            }
+            const scatterCount = countScatters(finalGrid);
+            if (scatterCount >= 3) {
+                resultDisplay.textContent = `🌟 ${scatterCount} SCATTERS ! 🌟 +${FRENZY_SPINS_AWARDED} Tours Frénésie !`;
+                resultDisplay.classList.add('win');
+                startFrenzyMode();
+            }
+            if (isFrenzyModeActive && frenzySpinsRemaining <= 0) {
+                endFrenzyMode();
+                if (!hasWon && scatterCount < 3) {
+                    resultDisplay.textContent = "Mode Frénésie terminé !";
                 }
-                spinButton.disabled = false;
-                if (!isFrenzyModeActive) {
-                    betInput.disabled = false;
-                    updateBet(currentBet);
-                }
-            }, 3000);
-        }
+            }
+            spinButton.disabled = false;
+            if (!isFrenzyModeActive) {
+                betInput.disabled = false;
+                updateBet(currentBet);
+            }
+        }, 3000);
+    }
 
-        function assert(desc, cond){
-            const li=document.createElement('li');
-            li.textContent=desc+' → '+(cond?'✅ OK':'❌ Échec');
-            li.style.color=cond?'green':'red';
-            document.getElementById('test-results').appendChild(li);
-        }
+    function assert(desc, cond){
+        const li=document.createElement('li');
+        li.textContent=desc+' → '+(cond?'✅ OK':'❌ Échec');
+        li.style.color=cond?'green':'red';
+        document.getElementById('test-results').appendChild(li);
+    }
 
-        function runTests(){
-            const log=document.getElementById('test-log');
-            log.style.display='block';
-            document.getElementById('test-results').innerHTML='';
-            
-            assert('Solde initial correct', userBalance===MAX_BALANCE);
-            assert('Mise par défaut correcte', currentBet===DEFAULT_BET);
-            assert('Bouton SPIN activé', !spinButton.disabled);
+    function runTests(){
+        const log=document.getElementById('test-log');
+        log.style.display='block';
+        document.getElementById('test-results').innerHTML='';
+        
+        assert('Solde initial correct', userBalance===MAX_BALANCE || userBalance===getCredits());
+        assert('Mise par défaut correcte', currentBet===DEFAULT_BET);
+        assert('Bouton SPIN activé', !spinButton.disabled);
 
-            activeCheatMode = "jackpot";
-            const gridJackpot = generateFinalGrid();
-            const middleRow = gridJackpot[1];
-            assert('Mode Cheat [Jackpot] génère 77777', middleRow.every(s => '7' === s));
-            
-            activeCheatMode = "scatter";
-            const gridScatter = generateFinalGrid();
-            const scatterCount = countScatters(gridScatter);
-            assert('Mode Cheat [Scatter] génère >= 3 scatters', scatterCount >= 3);
+        activeCheatMode = "jackpot";
+        const gridJackpot = generateFinalGrid();
+        const middleRow = gridJackpot[1];
+        assert('Mode Cheat [Jackpot] génère 77777', middleRow.every(s => '7' === s));
+        
+        activeCheatMode = "scatter";
+        const gridScatter = generateFinalGrid();
+        const scatterCount = countScatters(gridScatter);
+        assert('Mode Cheat [Scatter] génère >= 3 scatters', scatterCount >= 3);
 
-            activeCheatMode = "none";
-        }
+        activeCheatMode = "none";
+    }
 
-        updateBalanceDisplay(); 
-        updateBet(currentBet);
-        applySavedTheme();
+    // ----- INIT -----
+    updateBalanceDisplay(); 
+    updateBet(currentBet);
+    applySavedTheme();
+</script>
 
-    </script>
 
 </body>
 </html>
