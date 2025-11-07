@@ -959,32 +959,76 @@
         // Gains pour 5 symboles (Lignes / Formes)
         // Remplacez "liens image.png" par le chemin de vos images (ex: "images/S1.png")
         const PAYOUTS = { 
-            "S1": 5,    // S1 = "liens S1.png"
-            "S2": 10,   // S2 = "liens S2.png"
-            "S3": 20,   // S3 = "liens S3.png"
-            "S4": 40,   // S4 = "liens S4.png"
-            "S5": 80,   // S5 = "liens S5.png"
-            "S6": 150,  // S6 = "liens S6.png"
-            "S7": 300,  // S7 = "liens S7.png"
-            "S8": 600,  // S8 = "liens S8.png"
-            "S9": 1200, // S9 = "liens S9.png"
-            "S10": 5000 // S10 = "liens S10.png" (Jackpot)
+            "S1": 5,    // S1 = "images/chanvillard gta5.png"
+            "S2": 10,   // S2 = "images/guille gta5.png"
+            "S3": 20,   // S3 = "images/bouguelia gta5.png"
+            "S4": 40,   // S4 = "images/goldfarb gta5.png"
+            "S5": 80,   // S5 = "images/fisquet gta5.png"
+            "S6": 150,  // S6 = "images/agoun gta5.png"
+            "S7": 300,  // S7 = "images/boubou gta5.png"
+            "S8": 600,  // S8 = "images/lhomme gta5.png"
+            "S9": 1200, // S9 = "images/rassel gta5.png"
+            "S10": 5000 // S10 = "images/ouzrout gta5.png" (Jackpot)
         };
         
         // Gains pour 3 symboles (Colonnes)
         const PAYOUTS_3 = { 
-            "S1": 1,    // S1 = "liens S1.png"
-            "S2": 2,    // S2 = "liens S2.png"
-            "S3": 4,    // S3 = "liens S3.png"
-            "S4": 8,    // S4 = "liens S4.png"
-            "S5": 15,   // S5 = "liens S5.png"
-            "S6": 30,   // S6 = "liens S6.png"
-            "S7": 60,   // S7 = "liens S7.png"
-            "S8": 120,  // S8 = "liens S8.png"
-            "S9": 250,  // S9 = "liens S9.png"
-            "S10": 1000, // S10 = "liens S10.png" (Jackpot)
+            "S1": 5,    // S1 = "images/chanvillard gta5.png"
+            "S2": 10,   // S2 = "images/guille gta5.png"
+            "S3": 20,   // S3 = "images/bouguelia gta5.png"
+            "S4": 40,   // S4 = "images/goldfarb gta5.png"
+            "S5": 80,   // S5 = "images/fisquet gta5.png"
+            "S6": 150,  // S6 = "images/agoun gta5.png"
+            "S7": 300,  // S7 = "images/boubou gta5.png"
+            "S8": 600,  // S8 = "images/lhomme gta5.png"
+            "S9": 1200, // S9 = "images/rassel gta5.png"
+            "S10": 5000, // S10 = "images/ouzrout gta5.png" (Jackpot)
             "🌟": 0     // 🌟 = "liens scatter.png"
         };
+
+        document.addEventListener("DOMContentLoaded", () => {
+  // === MAPPING SYMBOLS -> IMAGES ===
+  const map = {
+    "S1": "images/S1.png",   // chanvillard gta5.png
+    "S2": "images/S2.png",   // guille gta5.png
+    "S3": "images/S3.png",   // bouguelia gta5.png
+    "S4": "images/S4.png",   // goldfarb gta5.png
+    "S5": "images/S5.png",   // fisquet gta5.png
+    "S6": "images/S6.png",   // agoun gta5.png
+    "S7": "images/S7.png",   // boubou gta5.png
+    "S8": "images/S8.png",   // lhomme gta5.png
+    "S9": "images/S9.png",   // rassel gta5.png
+    "S10": "images/S10.png", // ouzrout gta5.png
+    "🌟": "images/scatter.png"
+  };
+
+    // === FONCTION QUI MET LES IMAGES ===
+    function updateSymbols() {
+        document.querySelectorAll(".symbol").forEach(el => {
+        const symbol = el.textContent.trim();
+        if (map[symbol]) {
+            el.style.backgroundImage = `url("${map[symbol]}")`;
+            el.setAttribute("data-symbol", symbol);
+            el.style.color = "transparent"; // cache le texte
+        }
+        });
+    }
+
+    // === 1re mise à jour au chargement ===
+    updateSymbols();
+
+    // === Observer les changements pour mettre à jour pendant le spin ===
+    const observer = new MutationObserver(updateSymbols);
+    const reels = document.getElementById("reels-container");
+    if (reels) {
+        observer.observe(reels, {
+        childList: true,
+        subtree: true,
+        characterData: true
+        });
+    }
+    });
+
         // ========= FIN MODIFICATIONS Symboles =========
 
 
