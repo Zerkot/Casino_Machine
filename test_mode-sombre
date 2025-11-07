@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tests Unitaires - Mode Sombre</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            transition: background-color 0.3s;
+        }
+        body.dark-mode {
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        body.dark-mode h1 {
+            color: #00aaff;
+            border-bottom-color: #0077cc;
+        }
+        .test-container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode .test-container {
+            background: #2c3e50;
+            color: #ddd;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            background: #f9f9f9;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        body.dark-mode .test-section {
+            background: #3a4b5c;
+            border-left-color: #00aaff;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-result.pass {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        body.dark-mode .test-result.pass {
+            background-color: #1e4620;
+            border-color: #2d6a31;
+            color: #4ade80;
+        }
+        .test-result.fail {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        body.dark-mode .test-result.fail {
+            background-color: #4a1f23;
+            border-color: #6d2e33;
+            color: #f87171;
+        }
+        .test-icon {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        body.dark-mode .summary {
+            background: linear-gradient(135deg, #4a5a8a 0%, #5a3b72 100%);
+        }
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        button {
+            padding: 12px 25px;
+            margin: 0 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #run-tests {
+            background-color: #3498db;
+            color: white;
+        }
+        #run-tests:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        #toggle-dark {
+            background-color: #6c757d;
+            color: white;
+        }
+        #toggle-dark:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+        body.dark-mode #run-tests {
+            background-color: #0077cc;
+        }
+        body.dark-mode #run-tests:hover {
+            background-color: #005fa3;
+        }
+        body.dark-mode #toggle-dark {
+            background-color: #00aaff;
+            color: #111;
+        }
+        body.dark-mode #toggle-dark:hover {
+            background-color: #0088cc;
+        }
+        .test-element-sample {
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #ecf0f1;
+            border: 2px solid #95a5a6;
+            border-radius: 5px;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+        body.dark-mode .test-element-sample {
+            background-color: #5a6a7a;
+            border-color: #777;
+            color: #fff;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+        body.dark-mode .loading {
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Tests Unitaires - Mode Sombre</h1>
+        
+        <div class="controls">
+            <button id="run-tests">▶️ Lancer les Tests</button>
+            <button id="toggle-dark">🌓 Basculer Mode Sombre</button>
+        </div>
+
+        <div id="results"></div>
+        
+        <div id="summary" class="summary" style="display: none;"></div>
+
+        <!-- Éléments de test -->
+        <div style="display: none;">
+            <div class="test-element-sample" id="test-element">Élément de test</div>
+        </div>
+    </div>
+
+    <script>
+        let testsPassed = 0;
+        let testsFailed = 0;
+
+        // Fonction de simulation du toggle dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('slotMachineTheme', 'dark');
+                document.getElementById('toggle-dark').textContent = '☀️ Mode Clair';
+            } else {
+                localStorage.setItem('slotMachineTheme', 'light');
+                document.getElementById('toggle-dark').textContent = '🌓 Mode Sombre';
+            }
+        }
+
+        // Fonction de simulation du chargement du thème sauvegardé
+        function applySavedTheme() {
+            const savedTheme = localStorage.getItem('slotMachineTheme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('toggle-dark').textContent = '☀️ Mode Clair';
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.getElementById('toggle-dark').textContent = '🌓 Mode Sombre';
+            }
+        }
+
+        function addTestResult(sectionId, testName, passed, message = '') {
+            const section = document.getElementById(sectionId);
+            const result = document.createElement('div');
+            result.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            
+            const icon = document.createElement('span');
+            icon.className = 'test-icon';
+            icon.textContent = passed ? '✅' : '❌';
+            
+            const text = document.createElement('span');
+            text.textContent = `${testName}${message ? ' - ' + message : ''}`;
+            
+            result.appendChild(icon);
+            result.appendChild(text);
+            section.appendChild(result);
+
+            if (passed) {
+                testsPassed++;
+            } else {
+                testsFailed++;
+            }
+        }
+
+        function createTestSection(title, id) {
+            const resultsDiv = document.getElementById('results');
+            const section = document.createElement('div');
+            section.className = 'test-section';
+            section.innerHTML = `<h3>${title}</h3><div id="${id}"></div>`;
+            resultsDiv.appendChild(section);
+        }
+
+        function runAllTests() {
+            // Réinitialisation
+            testsPassed = 0;
+            testsFailed = 0;
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('summary').style.display = 'none';
+
+            // Affichage du chargement
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            loading.textContent = '🔄 Exécution des tests en cours...';
+            document.getElementById('results').appendChild(loading);
+
+            setTimeout(() => {
+                document.getElementById('results').innerHTML = '';
+
+                // Section 1: Tests de la classe CSS
+                createTestSection('1️⃣ Tests de la classe CSS', 'section-1');
+                
+                // Test 1.1: Vérifier que body n'a pas la classe dark-mode par défaut
+                const hasClassInitially = document.body.classList.contains('dark-mode');
+                addTestResult('section-1', 'Test 1.1: Body sans classe dark-mode initialement', 
+                    !hasClassInitially, !hasClassInitially ? 'OK' : 'Classe présente');
+
+                // Test 1.2: Ajouter la classe dark-mode
+                document.body.classList.add('dark-mode');
+                const hasClassAfterAdd = document.body.classList.contains('dark-mode');
+                addTestResult('section-1', 'Test 1.2: Ajout de la classe dark-mode', 
+                    hasClassAfterAdd, hasClassAfterAdd ? 'OK' : 'Classe non ajoutée');
+
+                // Test 1.3: Retirer la classe dark-mode
+                document.body.classList.remove('dark-mode');
+                const hasClassAfterRemove = document.body.classList.contains('dark-mode');
+                addTestResult('section-1', 'Test 1.3: Suppression de la classe dark-mode', 
+                    !hasClassAfterRemove, !hasClassAfterRemove ? 'OK' : 'Classe encore présente');
+
+                // Test 1.4: Toggle de la classe
+                document.body.classList.toggle('dark-mode');
+                const hasClassAfterToggle1 = document.body.classList.contains('dark-mode');
+                document.body.classList.toggle('dark-mode');
+                const hasClassAfterToggle2 = document.body.classList.contains('dark-mode');
+                addTestResult('section-1', 'Test 1.4: Toggle de la classe dark-mode', 
+                    hasClassAfterToggle1 && !hasClassAfterToggle2, 
+                    hasClassAfterToggle1 && !hasClassAfterToggle2 ? 'OK' : 'Toggle ne fonctionne pas');
+
+                // Section 2: Tests du LocalStorage
+                createTestSection('2️⃣ Tests du LocalStorage', 'section-2');
+
+                // Test 2.1: Sauvegarde du thème dark
+                localStorage.setItem('slotMachineTheme', 'dark');
+                const savedDark = localStorage.getItem('slotMachineTheme');
+                addTestResult('section-2', 'Test 2.1: Sauvegarde du thème dark', 
+                    savedDark === 'dark', savedDark === 'dark' ? 'OK' : `Valeur: ${savedDark}`);
+
+                // Test 2.2: Sauvegarde du thème light
+                localStorage.setItem('slotMachineTheme', 'light');
+                const savedLight = localStorage.getItem('slotMachineTheme');
+                addTestResult('section-2', 'Test 2.2: Sauvegarde du thème light', 
+                    savedLight === 'light', savedLight === 'light' ? 'OK' : `Valeur: ${savedLight}`);
+
+                // Test 2.3: Suppression du thème
+                localStorage.removeItem('slotMachineTheme');
+                const savedAfterRemove = localStorage.getItem('slotMachineTheme');
+                addTestResult('section-2', 'Test 2.3: Suppression du thème', 
+                    savedAfterRemove === null, savedAfterRemove === null ? 'OK' : `Valeur: ${savedAfterRemove}`);
+
+                // Section 3: Tests de la fonction toggleDarkMode
+                createTestSection('3️⃣ Tests de la fonction toggleDarkMode', 'section-3');
+
+                // Test 3.1: Toggle active le mode sombre
+                localStorage.removeItem('slotMachineTheme');
+                document.body.classList.remove('dark-mode');
+                toggleDarkMode();
+                const isDarkAfterToggle = document.body.classList.contains('dark-mode');
+                const storedAfterToggle = localStorage.getItem('slotMachineTheme');
+                addTestResult('section-3', 'Test 3.1: Toggle active le mode sombre', 
+                    isDarkAfterToggle && storedAfterToggle === 'dark', 
+                    isDarkAfterToggle && storedAfterToggle === 'dark' ? 'OK' : 'Erreur d\'activation');
+
+                // Test 3.2: Second toggle désactive le mode sombre
+                toggleDarkMode();
+                const isLightAfterToggle = !document.body.classList.contains('dark-mode');
+                const storedAfterSecondToggle = localStorage.getItem('slotMachineTheme');
+                addTestResult('section-3', 'Test 3.2: Second toggle désactive le mode sombre', 
+                    isLightAfterToggle && storedAfterSecondToggle === 'light', 
+                    isLightAfterToggle && storedAfterSecondToggle === 'light' ? 'OK' : 'Erreur de désactivation');
+
+                // Section 4: Tests de la fonction applySavedTheme
+                createTestSection('4️⃣ Tests de la fonction applySavedTheme', 'section-4');
+
+                // Test 4.1: Charger le thème dark sauvegardé
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('slotMachineTheme', 'dark');
+                applySavedTheme();
+                const isDarkAfterLoad = document.body.classList.contains('dark-mode');
+                addTestResult('section-4', 'Test 4.1: Chargement du thème dark sauvegardé', 
+                    isDarkAfterLoad, isDarkAfterLoad ? 'OK' : 'Thème non appliqué');
+
+                // Test 4.2: Charger le thème light sauvegardé
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('slotMachineTheme', 'light');
+                applySavedTheme();
+                const isLightAfterLoad = !document.body.classList.contains('dark-mode');
+                addTestResult('section-4', 'Test 4.2: Chargement du thème light sauvegardé', 
+                    isLightAfterLoad, isLightAfterLoad ? 'OK' : 'Thème non appliqué');
+
+                // Test 4.3: Comportement sans thème sauvegardé
+                document.body.classList.add('dark-mode');
+                localStorage.removeItem('slotMachineTheme');
+                applySavedTheme();
+                const isLightByDefault = !document.body.classList.contains('dark-mode');
+                addTestResult('section-4', 'Test 4.3: Thème light par défaut (sans sauvegarde)', 
+                    isLightByDefault, isLightByDefault ? 'OK' : 'Thème par défaut incorrect');
+
+                // Section 5: Tests des styles CSS
+                createTestSection('5️⃣ Tests des styles CSS appliqués', 'section-5');
+
+                // Test 5.1: Couleur de fond en mode clair
+                document.body.classList.remove('dark-mode');
+                const bgColorLight = window.getComputedStyle(document.body).backgroundColor;
+                addTestResult('section-5', 'Test 5.1: Couleur de fond en mode clair', 
+                    bgColorLight === 'rgb(245, 245, 245)', `Couleur: ${bgColorLight}`);
+
+                // Test 5.2: Couleur de fond en mode sombre
+                document.body.classList.add('dark-mode');
+                const bgColorDark = window.getComputedStyle(document.body).backgroundColor;
+                const isDarkBg = bgColorDark === 'rgb(26, 26, 46)';
+                addTestResult('section-5', 'Test 5.2: Couleur de fond en mode sombre', 
+                    isDarkBg, `Couleur: ${bgColorDark}`);
+
+                // Test 5.3: Transition CSS présente
+                const transition = window.getComputedStyle(document.body).transition;
+                const hasTransition = transition.includes('background-color');
+                addTestResult('section-5', 'Test 5.3: Transition CSS présente', 
+                    hasTransition, hasTransition ? 'OK' : 'Transition manquante');
+
+                // Test 5.4: Élément enfant hérite des styles
+                const testElement = document.getElementById('test-element');
+                document.body.classList.remove('dark-mode');
+                const lightElemBg = window.getComputedStyle(testElement).backgroundColor;
+                document.body.classList.add('dark-mode');
+                const darkElemBg = window.getComputedStyle(testElement).backgroundColor;
+                const stylesChanged = lightElemBg !== darkElemBg;
+                addTestResult('section-5', 'Test 5.4: Styles des éléments enfants changent', 
+                    stylesChanged, stylesChanged ? 'OK' : 'Pas de changement détecté');
+
+                // Nettoyage final
+                document.body.classList.remove('dark-mode');
+                localStorage.removeItem('slotMachineTheme');
+
+                // Afficher le résumé
+                showSummary();
+            }, 500);
+        }
+
+        function showSummary() {
+            const total = testsPassed + testsFailed;
+            const percentage = ((testsPassed / total) * 100).toFixed(1);
+            const summaryDiv = document.getElementById('summary');
+            
+            let emoji = '✅';
+            let message = 'Tous les tests sont passés !';
+            
+            if (testsFailed > 0) {
+                emoji = testsFailed > total / 2 ? '❌' : '⚠️';
+                message = `${testsFailed} test(s) échoué(s)`;
+            }
+            
+            summaryDiv.innerHTML = `
+                ${emoji} Résumé: ${testsPassed}/${total} tests réussis (${percentage}%)
+                <br><small>${message}</small>
+            `;
+            summaryDiv.style.display = 'block';
+        }
+
+        // Event Listeners
+        document.getElementById('run-tests').addEventListener('click', runAllTests);
+        document.getElementById('toggle-dark').addEventListener('click', toggleDarkMode);
+
+        // Charger le thème sauvegardé au démarrage
+        applySavedTheme();
+    </script>
+</body>
+</html>
