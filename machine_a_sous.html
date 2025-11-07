@@ -6,15 +6,13 @@
     <title>Solde de la Machine à Sous</title>
 
     <style>
-        /* CSS pour positionner et styliser le solde */
+        /* ... (Styles CSS identiques à la version précédente) ... */
+        
         #balance-container {
-            /* Positionnement fixe en haut à droite */
             position: fixed;
             top: 20px;
             right: 20px;
-            
-            /* Style visuel */
-            background-color: #007bff; /* Bleu standard */
+            background-color: #007bff;
             color: white;
             padding: 10px 15px;
             border-radius: 8px;
@@ -24,13 +22,257 @@
             font-family: Arial, sans-serif;
             z-index: 1000;
         }
+        #balance-container button {
+            margin-left: 10px;
+            font-size: 0.7em;
+            padding: 5px 8px;
+            vertical-align: middle;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #333;
+        }
+        #rules-button {
+            background-color: #17a2b8;
+            color: white;
+            font-weight: bold;
+        }
+        #rules-button:hover { background-color: #117a8b; }
+        #cheat-button {
+            background-color: #888;
+            color: white;
+        }
+        #cheat-button:hover { background-color: #666; }
+        #test-button {
+            background-color: #f39c12;
+            color: white;
+            display: none; 
+        }
+        #test-button:hover { background-color: #e67e22; }
+        #spin-button {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #007bff;
+            color: white;
+            font-size: 2.5em;
+            font-weight: bold;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        #spin-button:hover { background-color: #0056b3; }
+        #spin-button:active { transform: translateX(-50%) scale(0.95); }
+        #spin-button:disabled { background-color: #555; cursor: not-allowed; box-shadow: none; transform: translateX(-50%); }
+        #slot-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 80px auto 0 auto;
+            background: #2c3e50;
+            border: 10px solid #f1c40f;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5);
+            transition: border-color 0.5s, background-color 0.5s;
+        }
+        #reels-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            border: 3px solid #7f8c8d;
+        }
+        .symbol {
+            font-size: 3em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            min-height: 80px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease-out;
+        }
+        .symbol.spinning {
+            opacity: 0.6;
+            filter: blur(2px);
+            transform: scale(0.9);
+        }
+        #bet-controls {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-family: Arial, sans-serif;
+        }
+        #bet-controls button {
+            font-size: 1.5em;
+            font-weight: bold;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid #007bff;
+            background-color: white;
+            color: #007bff;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            vertical-align: middle;
+        }
+        #bet-controls button:hover { background-color: #007bff; color: white; }
+        #bet-controls button:disabled { background-color: #ccc; color: #888; border-color: #ccc; cursor: not-allowed; }
+        #bet-input {
+            font-size: 1.8em;
+            font-weight: bold;
+            width: 100px;
+            text-align: center;
+            margin: 0 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            vertical-align: middle;
+            -moz-appearance: textfield;
+        }
+        #bet-input::-webkit-outer-spin-button,
+        #bet-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        #result-display {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            color: #333;
+            transition: color 0.3s, transform 0.3s;
+        }
+        #result-display.win { color: #2ecc71; transform: scale(1.1); }
+        #result-display.lose { color: #95a5a6; }
+        #result-display.jackpot { color: #f1c40f; transform: scale(1.2); font-size: 2.2em; }
+        #test-log {
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: none;
+            font-family: Arial, sans-serif;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            color: #333;
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #333; }
+        .modal-content h2 {
+            margin-top: 0;
+            color: #007bff;
+            border-bottom: 2px solid #f4f4f9;
+            padding-bottom: 10px;
+        }
+        .modal-content h3 {
+            margin-top: 20px;
+            color: #2c3e50;
+        }
+        .modal-content p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        #payout-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #payout-list li {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        #payout-list li span {
+            font-size: 1.6em;
+            margin-right: 15px;
+            display: inline-block;
+            width: 40px; 
+            text-align: center;
+        }
+        @keyframes frenzy-border-flash {
+            0% { border-color: #e74c3c; }
+            50% { border-color: #f39c12; }
+            100% { border-color: #e74c3c; }
+        }
+        body.frenzy-mode {
+            background-color: #4A235A;
+        }
+        .frenzy-mode #slot-container {
+            background: #6C3483;
+            animation: frenzy-border-flash 0.8s infinite linear;
+        }
+        .frenzy-mode #spin-button {
+            background-color: #e74c3c;
+        }
+        .frenzy-mode #spin-button:hover {
+            background-color: #c0392b;
+        }
+        #frenzy-display {
+            position: fixed;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1.5em;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            z-index: 999;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
 
-        /* Le reste de votre page HTML */
         body {
-            height: 200vh; /* Pour pouvoir tester le positionnement fixe */
+            height: 200vh;
             margin: 0;
             padding: 0;
             background-color: #f4f4f9;
+            transition: background-color 0.5s;
         }
     </style>
 </head>
@@ -38,48 +280,386 @@
 
     <div id="balance-container">
         💰 Solde : <span id="balance-display">0.00</span> €
-        <button id="recharge-button" onclick="rechargeBalance()">
-            Recharger (100 €)
-        </button>
+        <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
+        <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
+        <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
+        <button id="test-button" onclick="runTests()">Test</button>
+    </div>
+    
+    <div id="slot-container">
+        <div id="reels-container">
+            <div class="symbol" id="symbol-0-0">🍒</div>
+            <div class="symbol" id="symbol-1-0">🍒</div>
+            <div class="symbol" id="symbol-2-0">🍒</div>
+            <div class="symbol" id="symbol-3-0">🍒</div>
+            <div class="symbol" id="symbol-4-0">🍒</div>
+            <div class="symbol" id="symbol-0-1">7</div>
+            <div class="symbol" id="symbol-1-1">7</div>
+            <div class="symbol" id="symbol-2-1">7</div>
+            <div class="symbol" id="symbol-3-1">7</div>
+            <div class="symbol" id="symbol-4-1">7</div>
+            <div class="symbol" id="symbol-0-2">BAR</div>
+            <div class="symbol" id="symbol-1-2">BAR</div>
+            <div class="symbol" id="symbol-2-2">BAR</div>
+            <div class="symbol" id="symbol-3-2">BAR</div>
+            <div class="symbol" id="symbol-4-2">BAR</div>
+        </div>
+    </div>
+    <div id="bet-controls">
+        <button id="decrease-bet">-</button>
+        <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
+        <button id="increase-bet">+</button>
+    </div>
+    <div id="result-display">Cliquez sur SPIN pour jouer !</div>
+    <div id="frenzy-display"></div>
+    <button id="spin-button" onclick="startSpin()">SPIN</button>
+    <div id="test-log">
+        <strong>Résultats des tests :</strong>
+        <ul id="test-results"></ul>
+    </div>
+    <div id="rules-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="hideRules()">&times;</span>
+            <h2>Règles du Jeu</h2>
+            <p>Alignez 5 symboles identiques sur la <strong>ligne du milieu</strong> (la deuxième rangée) pour gagner le montant de votre mise multiplié par la valeur du symbole.</p>
+            <p>Obtenez 3 symboles 🌟 (Scatter) ou plus n'importe où sur la grille pour déclencher <strong>10 Tours Gratuits</strong> en Mode Frénésie !</p>
+            <h3>Multiplicateurs de Gains :</h3>
+            <ul id="payout-list"></ul>
+        </div>
     </div>
 
+
     <script>
-        // JavaScript pour gérer et afficher le solde
+        const MAX_BALANCE = 100.00;
+        const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
+        const SYMBOLS = ["🍒","🍒","🍒","🍒","🍒","🍒","🍋","🍋","🍋","🍋","🍋","🍊","🍊","🍊","🍊","🔔","🔔","🔔","BAR","BAR","7", "🌟", "🌟"];
+        const SYMBOLS_FRENZY = ["🍒","🍒","🍋","🍋","🍋","🍊","🍊","🍊","🔔","🔔","🔔","🔔","BAR","BAR","BAR","7","7", "🌟"];
+        const PAYOUTS = { "🍒":10, "🍋":20, "🍊":40, "🔔":100, "BAR":500, "7":5000 };
+
+        let userBalance = MAX_BALANCE;
+        let currentBet = DEFAULT_BET;
         
+        // MODIFIÉ : Remplacement de isCheatModeActive par activeCheatMode
+        let activeCheatMode = "none"; // "none", "jackpot", "scatter"
+        
+        let animationInterval;
+        let isFrenzyModeActive = false;
+        let frenzySpinsRemaining = 0;
+        const FRENZY_SPINS_AWARDED = 10;
+
         let userBalance = 100.00; // Le solde initial
         const MAX_BALANCE = 100.00;
         const balanceDisplay = document.getElementById('balance-display');
+        const spinButton = document.getElementById('spin-button');
+        const resultDisplay = document.getElementById('result-display');
+        const betInput = document.getElementById('bet-input');
+        const decreaseBetButton = document.getElementById('decrease-bet');
+        const increaseBetButton = document.getElementById('increase-bet');
+        const testButton = document.getElementById('test-button');
+        const rulesModal = document.getElementById('rules-modal');
+        const payoutList = document.getElementById('payout-list');
+        const frenzyDisplay = document.getElementById('frenzy-display');
 
-        // Fonction pour mettre à jour l'affichage
-        function updateBalanceDisplay() {
-            balanceDisplay.textContent = userBalance.toFixed(2);
+        function showRules() {
+            payoutList.innerHTML = '';
+            const sortedPayouts = Object.entries(PAYOUTS).sort(([,a], [,b]) => a - b);
+            for (const [symbol, multiplier] of sortedPayouts) {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${symbol}</span> x 5 sur la ligne du milieu = <strong>${multiplier}x</strong> la mise`;
+                payoutList.appendChild(li);
+            }
+            const li = document.createElement('li');
+            li.innerHTML = `<span>🌟</span> x 3 (ou plus) n'importe où = <strong>${FRENZY_SPINS_AWARDED} Tours Frénésie</strong>`;
+            payoutList.appendChild(li);
+            rulesModal.style.display = 'flex';
+        }
+        function hideRules() { rulesModal.style.display = 'none'; }
+        rulesModal.addEventListener('click', function(event) {
+            if (event.target === rulesModal) { hideRules(); }
+        });
+
+        // MODIFIÉ : Fonction pour gérer les différents modes de triche
+        function activateCheatMode() {
+            const cheatBtn = document.getElementById('cheat-button');
+            
+            // Si un cheat est déjà actif, on le désactive
+            if (activeCheatMode !== "none") {
+                activeCheatMode = "none";
+                cheatBtn.textContent = "Admin";
+                cheatBtn.style.backgroundColor = "#888";
+                testButton.style.display = "none";
+                document.getElementById('test-log').style.display = "none";
+                alert("Mode Cheat désactivé.");
+                return;
+            }
+
+            // Sinon, on demande le mot de passe
+            const password = prompt("Entrez le mot de passe administrateur :");
+            const correctPassword = "938-555-0100";
+            
+            if (password === correctPassword) {
+                // Mot de passe correct, on demande le mode
+                const choice = prompt("Quel cheat activer ?\n1 = Jackpot (77777)\n2 = Scatter (Frénésie 100%)\n\nEntrez 1 ou 2 :");
+                
+                if (choice === "1") {
+                    activeCheatMode = "jackpot";
+                    cheatBtn.textContent = "CHEAT: 777";
+                    cheatBtn.style.backgroundColor = "#2ecc71";
+                    testButton.style.display = "inline-block";
+                    alert("Mode Jackpot activé ! Tous les spins seront des 77777.");
+                } else if (choice === "2") {
+                    activeCheatMode = "scatter";
+                    cheatBtn.textContent = "CHEAT: 🌟";
+                    cheatBtn.style.backgroundColor = "#2ecc71";
+                    testButton.style.display = "inline-block";
+                    alert("Mode Scatter activé ! 3+ Scatters garantis.");
+                } else {
+                    alert("Choix invalide.");
+                }
+
+            } else if (password) { 
+                alert("Mot de passe incorrect."); 
+            }
         }
 
-        // Afficher le solde initial au chargement de la page
-        updateBalanceDisplay();
-
-        // --- EXEMPLE (à supprimer ou adapter pour votre usage) ---
-        // Vous pouvez appeler cette fonction pour modifier le solde : adjustBalance(montant)
+        // ... (fonctions updateBet, changeBet, updateBalanceDisplay, adjustBalance, rechargeBalance inchangées) ...
+        function updateBet(newBet) {
+            if (newBet < MIN_BET) newBet = MIN_BET;
+            if (newBet > MAX_BET) newBet = MAX_BET;
+            if (!isFrenzyModeActive) {
+                currentBet = newBet;
+            }
+            betInput.value = Math.round(currentBet);
+            decreaseBetButton.disabled = (currentBet <= MIN_BET) || isFrenzyModeActive;
+            increaseBetButton.disabled = (currentBet >= MAX_BET) || isFrenzyModeActive;
+        }
+        function changeBet(amount) { updateBet(currentBet + amount); }
+        decreaseBetButton.addEventListener('click', () => changeBet(-BET_STEP));
+        increaseBetButton.addEventListener('click', () => changeBet(BET_STEP));
+        betInput.addEventListener('change', () => {
+            let typedBet = parseFloat(betInput.value);
+            if (isNaN(typedBet)) typedBet = DEFAULT_BET;
+            typedBet = Math.round(typedBet / BET_STEP) * BET_STEP;
+            updateBet(typedBet);
+        });
+        function updateBalanceDisplay() { balanceDisplay.textContent = userBalance.toFixed(2); }
         function adjustBalance(amount) {
             userBalance += amount;
+            if (userBalance < 0) userBalance = 0;
             updateBalanceDisplay();
-            console.log("Nouveau solde : " + userBalance.toFixed(2));
+            updateBet(currentBet);
+            if (userBalance <= 0 && !isFrenzyModeActive) {
+                resultDisplay.textContent = "Solde épuisé ! Veuillez recharger.";
+                resultDisplay.classList.add('lose');
+            }
         }
-        
-        // Simuler une mise de 5 € après 3 secondes
-        // setTimeout(() => adjustBalance(-5.00), 3000); 
         function rechargeBalance() {
             if (userBalance <= 0) {
-                userBalance = MAX_BALANCE; // Remettre le solde à 100.00
-                alert("Solde rechargé ! Vous avez de nouveau " + MAX_BALANCE.toFixed(2) + " €.");
+                userBalance = MAX_BALANCE;
+                resultDisplay.textContent = "Solde rechargé !";
+                resultDisplay.classList.add('win');
+            } else {
+                resultDisplay.textContent = "Vous avez encore " + userBalance.toFixed(2) + " €.";
+                resultDisplay.classList.remove('win','lose','jackpot');
             }
-            // Si le solde n'est pas à zéro, ne rien faire
-            
             updateBalanceDisplay();
+            updateBet(currentBet);
         }
 
-        // 4. Initialisation
-        updateBalanceDisplay();
+        function getRandomSymbol() { 
+            const symbolList = isFrenzyModeActive ? SYMBOLS_FRENZY : SYMBOLS;
+            return symbolList[Math.floor(Math.random() * symbolList.length)];
+        }
+        
+        // MODIFIÉ : generateFinalGrid pour gérer les différents modes de triche
+        function generateFinalGrid() {
+            let grid=[];
+            for(let r=0;r<3;r++){
+                let row=[];
+                for(let c=0;c<5;c++){
+                    
+                    // Priorité 1: Cheat Jackpot
+                    if(activeCheatMode === "jackpot" && r === 1) {
+                        row.push("7");
+                    
+                    // Priorité 2: Cheat Scatter (on place 3 scatters)
+                    } else if (activeCheatMode === "scatter" && ( (r===0 && c===0) || (r===1 && c===2) || (r===2 && c===4) )) {
+                        row.push("🌟");
+                    
+                    // Sinon, symbole aléatoire
+                    } else {
+                        row.push(getRandomSymbol());
+                    }
+                }
+                grid.push(row);
+            }
+            return grid;
+        }
+        
+        // ... (fonctions runSpinAnimation et stopColumn inchangées) ...
+        function runSpinAnimation(spinningCols) {
+            for(const c of spinningCols)
+                for(let r=0;r<3;r++)
+                    document.getElementById(`symbol-${c}-${r}`).textContent=getRandomSymbol();
+        }
+        function stopColumn(colIndex, finalGrid, spinningCols){
+            const idx=spinningCols.indexOf(colIndex);
+            if(idx>-1) spinningCols.splice(idx,1);
+            for(let r=0;r<3;r++){
+                const s=document.getElementById(`symbol-${colIndex}-${r}`);
+                s.textContent=finalGrid[r][colIndex];
+                s.classList.remove('spinning');
+            }
+        }
+
+        // ... (fonctions countScatters, startFrenzyMode, endFrenzyMode, updateFrenzyDisplay inchangées) ...
+        function countScatters(grid) {
+            let count = 0;
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 5; c++) {
+                    if (grid[r][c] === "🌟") {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+        function startFrenzyMode() {
+            if (!isFrenzyModeActive) {
+                isFrenzyModeActive = true;
+            }
+            frenzySpinsRemaining += FRENZY_SPINS_AWARDED;
+            document.body.classList.add('frenzy-mode');
+            updateFrenzyDisplay();
+            decreaseBetButton.disabled = true;
+            increaseBetButton.disabled = true;
+            betInput.disabled = true;
+        }
+        function endFrenzyMode() {
+            isFrenzyModeActive = false;
+            frenzySpinsRemaining = 0;
+            document.body.classList.remove('frenzy-mode');
+            updateFrenzyDisplay();
+            betInput.disabled = false;
+            updateBet(currentBet);
+        }
+        function updateFrenzyDisplay() {
+            if (isFrenzyModeActive && frenzySpinsRemaining > 0) {
+                frenzyDisplay.textContent = `Tours Frénésie : ${frenzySpinsRemaining}`;
+                frenzyDisplay.style.display = 'block';
+            } else {
+                frenzyDisplay.style.display = 'none';
+            }
+        }
+
+        // ... (fonction startSpin inchangée) ...
+        function startSpin() {
+            if (!isFrenzyModeActive) {
+                if(userBalance < currentBet){ resultDisplay.textContent="Solde insuffisant !"; resultDisplay.classList.add('lose'); return; }
+                adjustBalance(-currentBet);
+                resultDisplay.textContent="Les rouleaux tournent...";
+            } else {
+                frenzySpinsRemaining--;
+                updateFrenzyDisplay();
+                resultDisplay.textContent="Tour Frénésie !";
+            }
+            spinButton.disabled = true;
+            if (!isFrenzyModeActive) {
+                decreaseBetButton.disabled = true; 
+                increaseBetButton.disabled = true; 
+                betInput.disabled = true;
+            }
+            resultDisplay.classList.remove('win','lose','jackpot');
+            const finalGrid = generateFinalGrid();
+            let spinningColumns = [0,1,2,3,4];
+            document.querySelectorAll('.symbol').forEach(s => s.classList.add('spinning'));
+            animationInterval = setInterval(() => runSpinAnimation(spinningColumns), 100);
+            setTimeout(() => stopColumn(0, finalGrid, spinningColumns), 1000);
+            setTimeout(() => stopColumn(1, finalGrid, spinningColumns), 1500);
+            setTimeout(() => stopColumn(2, finalGrid, spinningColumns), 2000);
+            setTimeout(() => stopColumn(3, finalGrid, spinningColumns), 2500);
+            setTimeout(() => {
+                stopColumn(4, finalGrid, spinningColumns);
+                clearInterval(animationInterval);
+                let winnings = 0;
+                const middleRow = finalGrid[1];
+                let hasWon = false;
+                if (middleRow.every(s => s === middleRow[0])) {
+                    const winningSymbol = middleRow[0];
+                    if (PAYOUTS[winningSymbol]) { 
+                        const multiplier = PAYOUTS[winningSymbol];
+                        winnings = currentBet * multiplier;
+                    }
+                }
+                if (winnings > 0) {
+                    adjustBalance(winnings);
+                    hasWon = true;
+                    if (middleRow[0] === "7") {
+                        resultDisplay.textContent = `🎉 JACKPOT !!! +${winnings.toFixed(2)} € !`;
+                        resultDisplay.classList.add('jackpot');
+                    } else {
+                        resultDisplay.textContent = `Bravo ! Vous gagnez ${winnings.toFixed(2)} € !`;
+                        resultDisplay.classList.add('win');
+                    }
+                } else {
+                    resultDisplay.textContent = "Pas de chance... Essayez encore !";
+                    resultDisplay.classList.add('lose');
+                }
+                const scatterCount = countScatters(finalGrid);
+                if (scatterCount >= 3) {
+                    resultDisplay.textContent = `🌟 ${scatterCount} SCATTERS ! 🌟 +${FRENZY_SPINS_AWARDED} Tours Frénésie !`;
+                    resultDisplay.classList.add('win');
+                    startFrenzyMode();
+                }
+                if (isFrenzyModeActive && frenzySpinsRemaining <= 0) {
+                    endFrenzyMode();
+                    if (!hasWon && scatterCount < 3) { 
+                        resultDisplay.textContent = "Mode Frénésie terminé !";
+                    }
+                }
+                spinButton.disabled = false;
+                if (!isFrenzyModeActive) {
+                    betInput.disabled = false;
+                    updateBet(currentBet);
+                }
+            }, 3000);
+        }
+
+        function assert(desc, cond){
+            const li=document.createElement('li');
+            li.textContent=desc+' → '+(cond?'✅ OK':'❌ Échec');
+            li.style.color=cond?'green':'red';
+            document.getElementById('test-results').appendChild(li);
+        }
+
+        // MODIFIÉ : runTests pour vérifier les deux modes de triche
+        function runTests(){
+            const log=document.getElementById('test-log');
+            log.style.display='block';
+            document.getElementById('test-results').innerHTML='';
+            
+            // Tests initiaux
+            assert('Solde initial correct', userBalance===MAX_BALANCE);
+            assert('Mise par défaut correcte', currentBet===DEFAULT_BET);
+            assert('Bouton SPIN activé', !spinButton.disabled);
+
+            // Test 1: Mode Cheat Jackpot
+            activeCheatMode = "jackpot"; // Force le mode
+            const gridJackpot = generateFinalGrid();
+            const middleRow = gridJackpot[1];
+            assert('Mode Cheat [Jackpot] génère 77777', middleRow.every(s => '7' === s));
+            
+            // Test 2: Mode Cheat Scatter
+            activeCheatMode = "scatter"; // Force le mode
+            const gridScatter = generateFinalGrid();
+            const scatterCount = countScatters(gridScatter);
+            assert('Mode Cheat [Scatter] génère >= 3 scatters', scatterCount >= 3);
+
+            // Nettoyage
+            activeCheatMode = "none";
+        }
+
+        updateBalanceDisplay(); updateBet(currentBet);
     </script>
 
 </body>

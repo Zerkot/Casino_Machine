@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Soltys Casino — Accueil</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- En-tête -->
+  <header class="page">
+    <h1 class="title">🪩 Casino</h1>
+    <div class="header-right">
+      <span class="badge" id="headerCredits">Crédits : 0</span>
+    </div>
+  </header>
+
+  <!-- Interface principale -->
+  <main class="container">
+    <h2 class="section-title">Jeux disponibles</h2>
+
+    <div class="top-row">
+      <!-- Cartes cliquables -->
+      <button class="dropzone game-card" id="gameBJ" type="button" aria-label="Blackjack">
+        <img class="preview" src="secondary-thumb2x.jpg" alt="Blackjack">
+        <span class="game-label">Blackjack</span>
+      </button>
+
+      <button class="dropzone game-card" id="gameRoulette" type="button" aria-label="Roulette">
+        <img class="preview" src="roulette-francaise-300x300.jpg" alt="Roulette">
+        <span class="game-label">Roulette</span>
+      </button>
+    </div>
+
+    <!-- Lien vers la machine à sous -->
+    <div class="click-area" id="clickArea" role="button" tabindex="0" aria-pressed="false">
+      <div class="click-inner">
+        <div class="click-title">Machine à sous</div>
+        <div class="click-sub">Clique ici — accéder à la machine à sous</div>
+        <button class="btn" id="actionBtn" aria-hidden="true">Ouvrir</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Pop-up d’avertissement -->
+  <div id="welcome-popup" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+      <span class="close-btn" aria-label="Fermer">&times;</span>
+      <h2 id="popup-title">Bienvenue</h2>
+      <p>Ce site est une SIMULATION de machine à sous.</p>
+      <p>Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir.</p>
+      <button id="accept-btn">J'ai compris</button>
+    </div>
+  </div>
+
+  <!-- Overlay générique -->
+  <div id="overlay" class="overlay-msg" hidden>
+    <div class="overlay-card">
+      <pre id="overlayText"></pre>
+      <button class="btn" id="closeOverlay">Fermer</button>
+    </div>
+  </div>
+
+  <script>
+    // ===== Crédit partagé (localStorage) =====
+    const LS_KEY = 'credits';
+    function getCredits(){
+      const v = parseInt(localStorage.getItem(LS_KEY),10);
+      return Number.isFinite(v) ? v : 100; // défaut 100
+    }
+    function setCredits(v){
+      localStorage.setItem(LS_KEY, String(v));
+      document.getElementById('headerCredits').textContent = `Crédits : ${v}`;
+    }
+
+    // ===== Overlay simple =====
+    const overlay = document.getElementById('overlay');
+    const overlayText = document.getElementById('overlayText');
+    const closeOverlay = document.getElementById('closeOverlay');
+    function showOverlay(text){
+      overlayText.textContent = text;
+      overlay.hidden = false;
+    }
+    function hideOverlay(){ overlay.hidden = true; }
+    closeOverlay.addEventListener('click', hideOverlay);
+    overlay.addEventListener('click', e => { if(e.target === overlay) hideOverlay(); });
+
+    // ===== Pop-up d'accueil =====
+    document.addEventListener("DOMContentLoaded", function(){
+      const modal = document.getElementById("welcome-popup");
+      const closeButton = document.querySelector(".close-btn");
+      const acceptButton = document.getElementById("accept-btn");
+
+      function hideModal(){ modal.classList.remove("show"); modal.setAttribute('aria-hidden','true'); }
+      function showModal(){ modal.classList.add("show"); modal.setAttribute('aria-hidden','false'); }
+
+      // init crédits header
+      setCredits(getCredits());
+
+      showModal();
+      closeButton.addEventListener("click", hideModal);
+      acceptButton.addEventListener("click", hideModal);
+      modal.addEventListener("click", e => { if(e.target === modal) hideModal(); });
+    });
+
+    // ===== Cartes "en cours de développement" =====
+    document.getElementById('gameBJ').addEventListener('click', ()=> showOverlay('Jeu en cours de développement'));
+    document.getElementById('gameRoulette').addEventListener('click', ()=> showOverlay('Jeu en cours de développement'));
+
+    // ===== Redirection vers machine à sous =====
+    const clickArea = document.getElementById('clickArea');
+    const actionBtn = document.getElementById('actionBtn');
+    function redirectToMachine(){ window.location.href = "machine_a_sous.html"; }
+    clickArea.addEventListener('click', redirectToMachine);
+    clickArea.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); redirectToMachine(); }
+    });
+    actionBtn.addEventListener('click', e => { e.stopPropagation(); redirectToMachine(); });
+  </script>
+</body>
+</html>
