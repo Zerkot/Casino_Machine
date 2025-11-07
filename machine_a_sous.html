@@ -6,7 +6,6 @@
     <title>Solde de la Machine à Sous</title>
     <style>
         /* ... (Styles CSS identiques à la version précédente) ... */
-        /* ... (Tous vos styles CSS restent identiques) ... */
         body {
             height: 200vh;
             margin: 0;
@@ -129,13 +128,33 @@
             border-radius: 5px;
             min-height: 80px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-            transition: transform 0.1s ease-out, background-color 0.3s, color 0.3s;
+            transition: transform 0.1s ease-out, background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+            position: relative; /* NOUVEAU: Pour z-index */
         }
         .symbol.spinning {
             opacity: 0.6;
             filter: blur(2px);
             transform: scale(0.9);
         }
+        
+        /* NOUVEAU : Style de surbrillance */
+        .symbol.winning-symbol {
+            background-color: #f1c40f; /* Or */
+            color: #333;
+            border: 3px solid #e67e22; /* Bordure orange */
+            transform: scale(1.1);
+            box-shadow: 0 0 15px 5px #f1c40f;
+            z-index: 10;
+        }
+
+        body.dark-mode .symbol.winning-symbol {
+            background-color: #ffd700; /* Or plus vif */
+            color: #111;
+            border-color: #f39c12;
+            box-shadow: 0 0 15px 5px #ffd700;
+        }
+        /* FIN NOUVEAU */
+
 
         #bet-controls {
             text-align: center;
@@ -658,7 +677,8 @@
             <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
             <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
             <button id="test-button" onclick="runTests()">Test</button>
-            <button id="manage-users-button">Gérer Comptes</button> <button id="logout-button">Déconnexion</button>
+            <button id="manage-users-button">Gérer Comptes</button>
+            <button id="logout-button">Déconnexion</button>
         </div>
 
         <a id="back-button" href="Index.html">⬅ Retour</a>
@@ -700,11 +720,13 @@
             <ul id="test-results"></ul>
         </div>
 
-    </div> <div id="rules-modal" class="modal-overlay">
+    </div>
+
+    <div id="rules-modal" class="modal-overlay">
         <div class="modal-content">
             <span class="modal-close" onclick="hideRules()">&times;</span>
             <h2>Règles du Jeu</h2>
-            <p>Alignez 5 symboles identiques sur la <strong>ligne du milieu</strong> (la deuxième rangée) pour gagner le montant de votre mise multiplié par la valeur du symbole.</p>
+            <p>Alignez des symboles identiques sur les <strong>lignes horizontales (5x)</strong>, les <strong>colonnes (3x)</strong>, ou en <strong>formes (V, Z, A)</strong> pour gagner !</p>
             <p>Obtenez 3 symboles 🌟 (Scatter) ou plus n'importe où sur la grille pour déclencher <strong>10 Tours Gratuits</strong> en Mode Frénésie !</p>
             <h3>Multiplicateurs de Gains :</h3>
             <ul id="payout-list"></ul>
@@ -738,6 +760,7 @@
         const SYMBOLS = ["🍒", "🍒", "🍒", "🍒", "🍒", "🍒", "🍋", "🍋", "🍋", "🍋", "🍋", "🍊", "🍊", "🍊", "🍊", "🔔", "🔔", "🔔", "BAR", "BAR", "7", "🌟", "🌟"];
         const SYMBOLS_FRENZY = ["🍒", "🍒", "🍋", "🍋", "🍋", "🍊", "🍊", "🍊", "🔔", "🔔", "🔔", "🔔", "BAR", "BAR", "BAR", "7", "7", "🌟"];
         const PAYOUTS = { "🍒": 10, "🍋": 20, "🍊": 40, "🔔": 100, "BAR": 500, "7": 5000 };
+        const PAYOUTS_3 = { "🍒": 1, "🍋": 2, "🍊": 4, "🔔": 10, "BAR": 25, "7": 100, "🌟": 0 }; // Gains pour 3 symboles (colonnes)
 
         // --- CONSTANTES D'AUTH ---
         // (Note: ADMIN_EMAIL est maintenant défini dans database.js)
@@ -991,20 +1014,177 @@
         }
 
         // ===============================================
-        // FONCTIONS DU JEU (Inchangées)
+        // FONCTIONS DU JEU
         // ===============================================
 
+        /**
+         * NOUVELLE FONCTION DE CALCUL DES GAINS (MODIFIÉE)
+         * Calcule la totalité des gains pour une grille donnée.
+         * Vérifie les lignes, colonnes et formes spéciales (V, Z, A).
+         * RETOURNE MAINTENANT 'winningCoords'
+         */
+        function calculateTotalWinnings(grid, bet) {
+            let totalWinnings = 0;
+            let winningLinesDesc = [];
+            let isJackpotWin = false;
+            let winningCoords = new Set(); // NOUVEAU: Stocke les coordonnées "r-c"
+            const R = 3; // rows
+            const C = 5; // columns
+
+            // Helper pour ajouter des coordonnées
+            const addCoords = (r, c) => winningCoords.add(`${r}-${c}`);
+
+            // 1. Vérification des Lignes Horizontales (Gains 5x)
+            for (let r = 0; r < R; r++) {
+                const firstSymbol = grid[r][0];
+                if (PAYOUTS[firstSymbol] === undefined) continue; 
+
+                let isFullLine = true;
+                for (let c = 1; c < C; c++) {
+                    if (grid[r][c] !== firstSymbol) {
+                        isFullLine = false;
+                        break;
+                    }
+                }
+                if (isFullLine) {
+                    const multiplier = PAYOUTS[firstSymbol];
+                    totalWinnings += bet * multiplier;
+                    const lineName = (r === 0) ? "Ligne Haut" : (r === 1) ? "Ligne Milieu" : "Ligne Bas";
+                    winningLinesDesc.push(`${lineName} (${firstSymbol})`);
+                    if (firstSymbol === "7") isJackpotWin = true;
+
+                    // NOUVEAU : Ajouter les coordonnées
+                    for (let c_win = 0; c_win < C; c_win++) {
+                        addCoords(r, c_win);
+                    }
+                }
+            }
+
+            // 2. Vérification des Colonnes Verticales (Gains 3x)
+            for (let c = 0; c < C; c++) {
+                const firstSymbol = grid[0][c];
+                if (PAYOUTS_3[firstSymbol] === undefined || PAYOUTS_3[firstSymbol] === 0) continue; 
+
+                let isFullColumn = true;
+                for (let r = 1; r < R; r++) {
+                    if (grid[r][c] !== firstSymbol) {
+                        isFullColumn = false;
+                        break;
+                    }
+                }
+                if (isFullColumn) {
+                    const multiplier = PAYOUTS_3[firstSymbol];
+                    totalWinnings += bet * multiplier;
+                    winningLinesDesc.push(`Colonne ${c+1} (${firstSymbol})`);
+                    
+                    // NOUVEAU : Ajouter les coordonnées
+                    for (let r_win = 0; r_win < R; r_win++) {
+                        addCoords(r_win, c);
+                    }
+                }
+            }
+
+            // 3. Vérification des Formes (Gains 5x)
+
+            // Forme V: [0,0], [1,1], [2,2], [1,3], [0,4]
+            const vSymbols = [grid[0][0], grid[1][1], grid[2][2], grid[1][3], grid[0][4]];
+            const firstVSymbol = vSymbols[0];
+            if (PAYOUTS[firstVSymbol] && vSymbols.every(s => s === firstVSymbol)) {
+                totalWinnings += bet * PAYOUTS[firstVSymbol];
+                winningLinesDesc.push(`Forme V (${firstVSymbol})`);
+                if (firstVSymbol === "7") isJackpotWin = true;
+                // NOUVEAU : Ajouter les coordonnées
+                addCoords(0, 0); addCoords(1, 1); addCoords(2, 2); addCoords(1, 3); addCoords(0, 4);
+            }
+
+            // Forme Z: [0,0], [0,1], [1,2], [2,3], [2,4]
+            const zSymbols = [grid[0][0], grid[0][1], grid[1][2], grid[2][3], grid[2][4]];
+            const firstZSymbol = zSymbols[0];
+            if (PAYOUTS[firstZSymbol] && zSymbols.every(s => s === firstZSymbol)) {
+                totalWinnings += bet * PAYOUTS[firstZSymbol];
+                winningLinesDesc.push(`Forme Z (${firstZSymbol})`);
+                if (firstZSymbol === "7") isJackpotWin = true;
+                // NOUVEAU : Ajouter les coordonnées
+                addCoords(0, 0); addCoords(0, 1); addCoords(1, 2); addCoords(2, 3); addCoords(2, 4);
+            }
+            
+            // Forme Z-Inverse: [2,0], [2,1], [1,2], [0,3], [0,4]
+            const revZSymbols = [grid[2][0], grid[2][1], grid[1][2], grid[0][3], grid[0][4]];
+            const firstRevZSymbol = revZSymbols[0];
+            if (PAYOUTS[firstRevZSymbol] && revZSymbols.every(s => s === firstRevZSymbol)) {
+                totalWinnings += bet * PAYOUTS[firstRevZSymbol];
+                winningLinesDesc.push(`Forme Z-inv (${firstRevZSymbol})`);
+                if (firstRevZSymbol === "7") isJackpotWin = true;
+                // NOUVEAU : Ajouter les coordonnées
+                addCoords(2, 0); addCoords(2, 1); addCoords(1, 2); addCoords(0, 3); addCoords(0, 4);
+            }
+
+            // Forme A (V inversé): [2,0], [1,1], [0,2], [1,3], [2,4]
+            // CORRIGÉ : Bug dans la définition du tableau aSymbols
+            const aSymbols = [grid[2][0], grid[1][1], grid[0][2], grid[1][3], grid[2][4]]; 
+            const firstASymbol = aSymbols[0];
+            if (PAYOUTS[firstASymbol] && aSymbols.every(s => s === firstASymbol)) {
+                totalWinnings += bet * PAYOUTS[firstASymbol];
+                winningLinesDesc.push(`Forme A (${firstASymbol})`);
+                if (firstASymbol === "7") isJackpotWin = true;
+                // NOUVEAU : Ajouter les coordonnées
+                addCoords(2, 0); addCoords(1, 1); addCoords(0, 2); addCoords(1, 3); addCoords(2, 4);
+            }
+
+            // MODIFIÉ : Retourner aussi les coordonnées
+            return { totalWinnings, winningLinesDesc: [...new Set(winningLinesDesc)], isJackpotWin, winningCoords };
+        }
+
+
+        /**
+         * FONCTION showRules MISE A JOUR
+         */
         function showRules() {
-            payoutList.innerHTML = '';
+            payoutList.innerHTML = ''; // Vider la liste
+            
+            // Modifier le texte principal (le premier <p> dans la modale)
+            const p = rulesModal.querySelector('.modal-content p');
+            p.innerHTML = "Alignez des symboles identiques sur les <strong>lignes horizontales (5x)</strong>, les <strong>colonnes (3x)</strong>, ou en <strong>formes (V, Z, A)</strong> pour gagner !";
+
+            // Ajoute un titre pour les gains 5x
+            const h5x = document.createElement('li');
+            h5x.innerHTML = "<strong>--- Gains (5 symboles) ---</strong>";
+            h5x.style.background = "none";
+            h5x.style.marginTop = "10px";
+            payoutList.appendChild(h5x);
+
+            // Affiche les gains 5x (PAYOUTS)
             const sortedPayouts = Object.entries(PAYOUTS).sort(([, a], [, b]) => a - b);
             for (const [symbol, multiplier] of sortedPayouts) {
                 const li = document.createElement('li');
-                li.innerHTML = `<span>${symbol}</span> x 5 sur la ligne du milieu = <strong>${multiplier}x</strong> la mise`;
+                li.innerHTML = `<span>${symbol}</span> x 5 (Lignes, V, Z, A) = <strong>${multiplier}x</strong> la mise`;
                 payoutList.appendChild(li);
             }
+            
+            // Ajoute un titre pour les gains 3x
+            const h3x = document.createElement('li');
+            h3x.innerHTML = "<strong>--- Gains (3 symboles) ---</strong>";
+            h3x.style.background = "none";
+            h3x.style.marginTop = "10px";
+            payoutList.appendChild(h3x);
+
+            // Affiche les gains 3x (PAYOUTS_3)
+            const sortedPayouts3 = Object.entries(PAYOUTS_3)
+                .filter(([, multiplier]) => multiplier > 0) // Ne pas montrer 🌟
+                .sort(([, a], [, b]) => a - b);
+                
+            for (const [symbol, multiplier] of sortedPayouts3) {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${symbol}</span> x 3 (Colonnes) = <strong>${multiplier}x</strong> la mise`;
+                payoutList.appendChild(li);
+            }
+
+            // Affiche le gain de Scatter
             const li = document.createElement('li');
+            li.style.marginTop = "10px";
             li.innerHTML = `<span>🌟</span> x 3 (ou plus) n'importe où = <strong>${FRENZY_SPINS_AWARDED} Tours Frénésie</strong>`;
             payoutList.appendChild(li);
+            
             rulesModal.style.display = 'flex';
         }
         function hideRules() { rulesModal.style.display = 'none'; }
@@ -1139,7 +1319,12 @@
             for (let r = 0; r < 3; r++) {
                 let row = [];
                 for (let c = 0; c < 5; c++) {
-                    if (activeCheatMode === "jackpot" && r === 1) {
+                    // Logique de Cheat
+                    if (activeCheatMode === "jackpot" && (
+                        (r === 1) || // Ligne milieu
+                        [0,4].includes(c) || // Colonnes V/Z
+                        (r === 2 && c === 2) // Centre V
+                    )) {
                         row.push("7");
                     } else if (activeCheatMode === "scatter" && ((r === 0 && c === 0) || (r === 1 && c === 2) || (r === 2 && c === 4))) {
                         row.push("🌟");
@@ -1149,6 +1334,14 @@
                 }
                 grid.push(row);
             }
+
+            // Assurer que le Jackpot s'applique à TOUTES les lignes si demandé (pour test)
+            if (activeCheatMode === "jackpot") {
+                grid[0] = ["7", "7", "7", "7", "7"];
+                grid[1] = ["7", "7", "7", "7", "7"];
+                grid[2] = ["7", "7", "7", "7", "7"];
+            }
+
             return grid;
         }
 
@@ -1212,7 +1405,15 @@
             }
         }
 
+        /**
+         * FONCTION startSpin (MODIFIÉE)
+         */
         function startSpin() {
+            // NOUVEAU : Effacer les surbrillances du tour précédent
+            document.querySelectorAll('.symbol.winning-symbol').forEach(el => {
+                el.classList.remove('winning-symbol');
+            });
+
             if (!isFrenzyModeActive) {
                 if (userBalance < currentBet) { resultDisplay.textContent = "Solde insuffisant !"; resultDisplay.classList.add('lose'); return; }
                 adjustBalance(-currentBet);
@@ -1245,39 +1446,76 @@
                 stopColumn(4, finalGrid, spinningColumns);
                 clearInterval(animationInterval);
 
-                let winnings = 0;
-                const middleRow = finalGrid[1];
-                let hasWon = false;
+                // ==================================
+                // LOGIQUE DE GAINS (MODIFIÉE)
+                // ==================================
 
-                if (middleRow.every(s => s === middleRow[0])) {
-                    const winningSymbol = middleRow[0];
-                    if (PAYOUTS[winningSymbol]) {
-                        const multiplier = PAYOUTS[winningSymbol];
-                        winnings = currentBet * multiplier;
-                    }
-                }
+                // MODIFIÉ : Récupérer les 'winningCoords'
+                const { totalWinnings, winningLinesDesc, isJackpotWin, winningCoords } = calculateTotalWinnings(finalGrid, currentBet);
+                let hasWon = totalWinnings > 0; // Flag pour la logique d'affichage
 
-                if (winnings > 0) {
-                    adjustBalance(winnings);
-                    hasWon = true;
-                    if (middleRow[0] === "7") {
-                        resultDisplay.textContent = `🎉 JACKPOT !!! +${winnings.toFixed(2)} € !`;
+                // Compter les scatters
+                const scatterCount = countScatters(finalGrid);
+
+                // 1. Gérer les gains de lignes/formes
+                if (hasWon) {
+                    adjustBalance(totalWinnings);
+                    
+                    if (isJackpotWin) {
+                        resultDisplay.textContent = `🎉 JACKPOT !!! +${totalWinnings.toFixed(2)} € !`;
                         resultDisplay.classList.add('jackpot');
                     } else {
-                        resultDisplay.textContent = `Bravo ! Vous gagnez ${winnings.toFixed(2)} € !`;
+                        let desc = winningLinesDesc.join(', ');
+                        if (desc.length > 50) {
+                            desc = `${winningLinesDesc.length} lignes gagnantes`;
+                        }
+                        resultDisplay.textContent = `Gagné ! +${totalWinnings.toFixed(2)} € (${desc})`;
                         resultDisplay.classList.add('win');
                     }
-                } else {
+                    
+                    // NOUVEAU : Appliquer le surbrillance pour les lignes/formes
+                    winningCoords.forEach(coord => {
+                        const [r, c] = coord.split('-').map(Number);
+                        const symbolEl = document.getElementById(`symbol-${c}-${r}`);
+                        if (symbolEl) {
+                            symbolEl.classList.add('winning-symbol');
+                        }
+                    });
+
+                } else if (scatterCount < 3) { 
                     resultDisplay.textContent = "Pas de chance... Essayez encore !";
                     resultDisplay.classList.add('lose');
                 }
 
-                const scatterCount = countScatters(finalGrid);
+                // 2. Gérer les gains de Scatters (Frénésie)
                 if (scatterCount >= 3) {
-                    resultDisplay.textContent = `🌟 ${scatterCount} SCATTERS ! 🌟 +${FRENZY_SPINS_AWARDED} Tours Frénésie !`;
-                    resultDisplay.classList.add('win');
+                    let scatterMsg = `🌟 ${scatterCount} SCATTERS ! 🌟 +${FRENZY_SPINS_AWARDED} Tours Frénésie !`;
+                    if (hasWon) {
+                        resultDisplay.textContent += " " + scatterMsg;
+                    } else {
+                        resultDisplay.textContent = scatterMsg;
+                        resultDisplay.classList.remove('lose');
+                        resultDisplay.classList.add('win');
+                    }
+                    
+                    // NOUVEAU : Mettre aussi les scatters en surbrillance
+                    for (let r = 0; r < 3; r++) {
+                        for (let c = 0; c < 5; c++) {
+                            if (finalGrid[r][c] === "🌟") {
+                                const symbolEl = document.getElementById(`symbol-${c}-${r}`);
+                                if (symbolEl) {
+                                    symbolEl.classList.add('winning-symbol');
+                                }
+                            }
+                        }
+                    }
+
                     startFrenzyMode();
                 }
+
+                // ==================================
+                // FIN DE LA LOGIQUE
+                // ==================================
 
                 if (isFrenzyModeActive && frenzySpinsRemaining <= 0) {
                     endFrenzyMode();
@@ -1312,8 +1550,9 @@
 
             activeCheatMode = "jackpot";
             const gridJackpot = generateFinalGrid();
-            const middleRow = gridJackpot[1];
-            assert('Mode Cheat [Jackpot] génère 77777', middleRow.every(s => '7' === s));
+            assert('Mode Cheat [Jackpot] génère 77777 Ligne 1', gridJackpot[0].every(s => '7' === s));
+            assert('Mode Cheat [Jackpot] génère 77777 Ligne 2', gridJackpot[1].every(s => '7' === s));
+            assert('Mode Cheat [Jackpot] génère 77777 Ligne 3', gridJackpot[2].every(s => '7' === s));
 
             activeCheatMode = "scatter";
             const gridScatter = generateFinalGrid();
