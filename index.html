@@ -1,136 +1,215 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vérification</title>
-
-    <style>
-        /* Style de base pour la page */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            /* On laisse le fond vide */
-        }
-
-        /* 1. L'arrière-plan (overlay) du pop-up */
-        .modal-overlay {
-            /* Caché par défaut */
-            display: none; 
-            
-            /* Reste fixe sur l'écran */
-            position: fixed; 
-            z-index: 1000; /* Se place au-dessus de tout */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            
-            /* Fond noir semi-transparent */
-            background-color: rgba(0, 0, 0, 0.6); 
-            
-            /* Permet de centrer le contenu verticalement et horizontalement */
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Classe qui sera ajoutée par JavaScript pour AFFICHER le pop-up */
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        /* 2. La boîte (le contenu) du pop-up */
-        .modal-content {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            width: 90%;
-            max-width: 500px; /* Largeur maximale */
-            position: relative; /* Important pour positionner le bouton 'X' */
-            text-align: center;
-        }
-
-        /* 3. Le bouton de fermeture (le 'X') */
-        .close-btn {
-            color: #aaa;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close-btn:hover {
-            color: #333;
-        }
-
-        /* 4. Le bouton "J'ai compris" */
-        #accept-btn {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 15px;
-        }
-
-        #accept-btn:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Soltys Casino — Accueil</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+  <!-- Écran de chargement -->
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <div class="loading-text" data-fr="Chargement..." data-en="Loading...">Chargement...</div>
+  </div>
 
-    <div id="welcome-popup" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            
-            <h2>Bienvenue !</h2>
-            <p>Ce site est une SIMULATION de machine à sous.</p>
-            <p>Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir !</p>
-            <button id="accept-btn">J'ai compris !</button>
-        </div>
+  <!-- En-tête -->
+  <header class="page">
+    <h1 class="title" data-fr="🪩 Casino" data-en="🪩 Casino">🪩 Casino</h1>
+    <div class="header-right">
+      <span class="badge" id="headerCredits" data-fr="Crédits : 0" data-en="Credits: 0">Crédits : 0</span>
+      <span id="balance-index-display" style="margin-left:10px;">0.00</span> €
+      <button id="settingsBtn" class="btn" style="margin-left:15px;" data-fr="Paramètres" data-en="Settings">Paramètres</button>
     </div>
-    <script>
-        // On attend que tout le HTML soit chargé avant d'exécuter le script
-        document.addEventListener("DOMContentLoaded", function() {
+  </header>
 
-            // 1. On sélectionne les éléments dont on a besoin
-            const modal = document.getElementById("welcome-popup");
-            const closeButton = document.querySelector(".close-btn");
-            const acceptButton = document.getElementById("accept-btn");
+  <!-- Interface principale -->
+  <main class="container">
+    <h2 class="section-title" data-fr="Jeux disponibles" data-en="Available Games">Jeux disponibles</h2>
 
-            // 2. AFFICHER LE POP-UP
-            // Dès que la page est prête, on ajoute la classe 'show' à l'overlay
-            modal.classList.add("show");
+    <div class="top-row">
+      <!-- Cartes cliquables -->
+      <button class="dropzone game-card" id="gameBJ" type="button" aria-label="Blackjack">
+        <img class="preview" src="secondary-thumb2x.jpg" alt="Blackjack">
+        <span class="game-label">Blackjack</span>
+      </button>
 
-            // 3. DÉFINIR LES ACTIONS DE FERMETURE
-            
-            // Fonction pour fermer le pop-up
-            function hideModal() {
-                modal.classList.remove("show");
-            }
+      <button class="dropzone game-card" id="gameRoulette" type="button" aria-label="Roulette">
+        <img class="preview" src="roulette-francaise-300x300.jpg" alt="Roulette">
+        <span class="game-label">Roulette</span>
+      </button>
+    </div>
 
-            // On ferme si on clique sur le 'X'
-            closeButton.addEventListener("click", hideModal);
+    <!-- Lien vers la machine à sous -->
+    <div class="click-area" id="clickArea" role="button" tabindex="0" aria-pressed="false">
+      <div class="click-inner">
+        <div class="click-title" data-fr="Machine à sous" data-en="Slot Machine">Machine à sous</div>
+        <div class="click-sub" data-fr="Clique ici — accéder à la machine à sous" data-en="Click here — access the slot machine">
+          Clique ici — accéder à la machine à sous
+        </div>
+        <button class="btn" id="actionBtn" aria-hidden="true" data-fr="Ouvrir" data-en="Open">Ouvrir</button>
+      </div>
+    </div>
+  </main>
 
-            // On ferme si on clique sur le bouton "J'ai compris"
-            acceptButton.addEventListener("click", hideModal);
+  <!-- Pop-up d’avertissement -->
+  <div id="welcome-popup" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+      <span class="close-btn" aria-label="Fermer">&times;</span>
+      <h2 id="popup-title" data-fr="Bienvenue" data-en="Welcome">Bienvenue</h2>
+      <p data-fr="Ce site est une SIMULATION de machine à sous." data-en="This site is a SLOT MACHINE SIMULATION.">
+        Ce site est une SIMULATION de machine à sous.
+      </p>
+      <p data-fr="Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir."
+         data-en="No real money is used or can be won. Play for fun.">
+         Aucun argent réel n'est utilisé ou ne peut être gagné. Jouez pour le plaisir.
+      </p>
+      <button id="accept-btn" data-fr="J'ai compris" data-en="I understand">J'ai compris</button>
+    </div>
+  </div>
 
-            // (Optionnel) On ferme aussi si on clique N'IMPORTE OÙ sur l'arrière-plan gris
-            modal.addEventListener("click", function(event) {
-                // On vérifie si on a cliqué sur l'overlay lui-même (et non sur la boîte blanche)
-                if (event.target === modal) {
-                    hideModal();
-                }
-            });
+  <!-- Fenêtre Paramètres (mise à jour) -->
+  <div id="settings-modal" class="modal-overlay" aria-hidden="true" style="display:none;">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <span class="close-btn" id="close-settings" aria-label="Fermer">&times;</span>
+      <h2 id="settings-title" data-fr="Paramètres" data-en="Settings">Paramètres</h2>
 
-        });
-    </script>
+      <!-- LANGUE -->
+      <div class="settings-section" style="margin-bottom:18px;">
+        <p data-fr="Choisis ta langue :" data-en="Choose your language:" style="margin:0 0 8px 0;">
+          Choisis ta langue :
+        </p>
+        <div class="lang-options" style="display:flex;gap:8px;">
+          <button class="btn lang-btn" data-lang="fr">🇫🇷 Français</button>
+          <button class="btn lang-btn" data-lang="en">🇬🇧 English</button>
+        </div>
+      </div>
+
+      <hr style="margin:16px 0; border:0; border-top:1px solid rgba(0,0,0,0.08);" />
+
+      <!-- VOLUME -->
+      <div class="settings-section">
+        <p data-fr="Volume du son :" data-en="Sound volume:" style="margin:0 0 8px 0;">
+          Volume du son :
+        </p>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <input type="range" id="volumeControl" min="0" max="1" step="0.01" style="flex:1;">
+          <button id="muteBtn" class="btn" aria-pressed="false" title="Couper le son">🔊</button>
+          <span id="volumeValue" style="min-width:48px; text-align:right;">100%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay générique -->
+  <div id="overlay" class="overlay-msg" hidden>
+    <div class="overlay-card">
+      <pre id="overlayText"></pre>
+      <button class="btn" id="closeOverlay" data-fr="Fermer" data-en="Close">Fermer</button>
+    </div>
+  </div>
+
+<script>
+  // --- Gestion du changement de langue ---
+  function setLanguage(lang) {
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-fr]").forEach(el => {
+      el.textContent = el.getAttribute(`data-${lang}`) || el.textContent;
+    });
+  }
+
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const lang = btn.dataset.lang;
+      localStorage.setItem("siteLang", lang);
+      setLanguage(lang);
+      document.getElementById("settings-modal").style.display = "none";
+    });
+  });
+
+  // Charger la langue sauvegardée
+  const savedLang = localStorage.getItem("siteLang") || "fr";
+  setLanguage(savedLang);
+
+  // --- Gestion ouverture/fermeture du modal Paramètres ---
+  const settingsBtn = document.getElementById("settingsBtn");
+  const settingsModal = document.getElementById("settings-modal");
+  const closeSettings = document.getElementById("close-settings");
+
+  settingsBtn.addEventListener("click", () => {
+    settingsModal.style.display = "flex";
+  });
+
+  closeSettings.addEventListener("click", () => {
+    settingsModal.style.display = "none";
+  });
+
+  window.addEventListener("click", e => {
+    if (e.target === settingsModal) settingsModal.style.display = "none";
+  });
+
+  // --- Gestion du volume (avec Mute) ---
+  const volumeControl = document.getElementById("volumeControl");
+  const volumeValue = document.getElementById("volumeValue");
+  const muteBtn = document.getElementById("muteBtn");
+
+  let savedVolume = parseFloat(localStorage.getItem("siteVolume"));
+  if (isNaN(savedVolume)) savedVolume = 1;
+
+  volumeControl.value = savedVolume;
+  volumeValue.textContent = Math.round(savedVolume * 100) + "%";
+  muteBtn.textContent = savedVolume === 0 ? "🔇" : "🔊";
+  muteBtn.setAttribute("aria-pressed", savedVolume === 0 ? "true" : "false");
+
+  function setGlobalVolume(vol) {
+    document.querySelectorAll("audio, video").forEach(a => {
+      try { a.volume = vol; } catch(e) {}
+    });
+    localStorage.setItem("siteVolume", vol);
+  }
+
+  setGlobalVolume(savedVolume);
+
+  volumeControl.addEventListener("input", e => {
+    const newVolume = parseFloat(e.target.value);
+    volumeValue.textContent = Math.round(newVolume * 100) + "%";
+    muteBtn.textContent = newVolume === 0 ? "🔇" : "🔊";
+    muteBtn.setAttribute("aria-pressed", newVolume === 0 ? "true" : "false");
+    setGlobalVolume(newVolume);
+  });
+
+  muteBtn.addEventListener("click", () => {
+    let current = parseFloat(localStorage.getItem("siteVolume"));
+    if (isNaN(current)) current = parseFloat(volumeControl.value) || 1;
+    if (current > 0) {
+      localStorage.setItem("siteVolumeBeforeMute", current);
+      setGlobalVolume(0);
+      volumeControl.value = 0;
+      volumeValue.textContent = "0%";
+      muteBtn.textContent = "🔇";
+      muteBtn.setAttribute("aria-pressed", "true");
+    } else {
+      let prev = parseFloat(localStorage.getItem("siteVolumeBeforeMute"));
+      if (isNaN(prev)) prev = 1;
+      setGlobalVolume(prev);
+      volumeControl.value = prev;
+      volumeValue.textContent = Math.round(prev * 100) + "%";
+      muteBtn.textContent = "🔊";
+      muteBtn.setAttribute("aria-pressed", "false");
+    }
+  });
+
+  const observer = new MutationObserver(() => {
+    const volNow = parseFloat(localStorage.getItem("siteVolume")) || 1;
+    document.querySelectorAll("audio, video").forEach(a => {
+      try { a.volume = volNow; } catch(e) {}
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+</script>
+
+<script src="java_script.js"></script>
 </body>
 </html>

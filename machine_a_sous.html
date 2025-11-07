@@ -4,17 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solde de la Machine à Sous</title>
-
     <style>
-        /* CSS pour positionner et styliser le solde */
+        /* ... (Styles CSS identiques à la version précédente) ... */
+        /* ... (Tous vos styles CSS restent identiques) ... */
+        body {
+            height: 200vh;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            transition: background-color 0.5s;
+        }
+
         #balance-container {
-            /* Positionnement fixe en haut à droite */
             position: fixed;
             top: 20px;
             right: 20px;
-            
-            /* Style visuel */
-            background-color: #007bff; /* Bleu standard */
+            background-color: #007bff;
             color: white;
             padding: 10px 15px;
             border-radius: 8px;
@@ -25,73 +30,1000 @@
             z-index: 1000;
         }
 
-        /* Le reste de votre page HTML */
-        body {
-            height: 200vh; /* Pour pouvoir tester le positionnement fixe */
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
+        #balance-container button {
+            margin-left: 10px;
+            font-size: 0.7em;
+            padding: 5px 8px;
+            vertical-align: middle;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #333;
         }
+
+        #rules-button {
+            background-color: #17a2b8;
+            color: white;
+            font-weight: bold;
+        }
+        #rules-button:hover { background-color: #117a8b; }
+
+        #settings-button {
+            background-color: #6c757d;
+            color: white;
+            font-weight: bold;
+        }
+        #settings-button:hover { background-color: #5a6268; }
+
+        #cheat-button {
+            background-color: #888;
+            color: white;
+            display: none;
+        }
+        #cheat-button:hover { background-color: #666; }
+
+        #logout-button {
+            background-color: #dc3545;
+            color: white;
+            font-weight: bold;
+        }
+        #logout-button:hover { background-color: #c82333; }
+
+        #test-button {
+            background-color: #f39c12;
+            color: white;
+            display: none;
+        }
+        #test-button:hover { background-color: #e67e22; }
+
+        #spin-button {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #007bff;
+            color: white;
+            font-size: 2.5em;
+            font-weight: bold;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        #spin-button:hover { background-color: #0056b3; }
+        #spin-button:active { transform: translateX(-50%) scale(0.95); }
+        #spin-button:disabled { background-color: #555; cursor: not-allowed; box-shadow: none; transform: translateX(-50%); }
+
+        #slot-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 80px auto 0 auto;
+            background: #2c3e50;
+            border: 10px solid #f1c40f;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5);
+            transition: border-color 0.5s, background-color 0.5s;
+        }
+
+        #reels-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            border: 3px solid #7f8c8d;
+        }
+
+        .symbol {
+            font-size: 3em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            min-height: 80px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease-out, background-color 0.3s, color 0.3s;
+        }
+        .symbol.spinning {
+            opacity: 0.6;
+            filter: blur(2px);
+            transform: scale(0.9);
+        }
+
+        #bet-controls {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-family: Arial, sans-serif;
+        }
+        #bet-controls button {
+            font-size: 1.5em;
+            font-weight: bold;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid #007bff;
+            background-color: white;
+            color: #007bff;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            vertical-align: middle;
+        }
+        #bet-controls button:hover { background-color: #007bff; color: white; }
+        #bet-controls button:disabled { background-color: #ccc; color: #888; border-color: #ccc; cursor: not-allowed; }
+
+        #bet-input {
+            font-size: 1.8em;
+            font-weight: bold;
+            width: 100px;
+            text-align: center;
+            margin: 0 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            vertical-align: middle;
+            -moz-appearance: textfield;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+        #bet-input::-webkit-outer-spin-button,
+        #bet-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        #result-display {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            color: #333;
+            transition: color 0.3s, transform 0.3s;
+        }
+        #result-display.win { color: #2ecc71; transform: scale(1.1); }
+        #result-display.lose { color: #95a5a6; }
+        #result-display.jackpot { color: #f1c40f; transform: scale(1.2); font-size: 2.2em; }
+
+        #test-log {
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: none;
+            font-family: Arial, sans-serif;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .modal-close:hover { color: #333; }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #007bff;
+            border-bottom: 2px solid #f4f4f9;
+            padding-bottom: 10px;
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        .modal-content h3 {
+            margin-top: 20px;
+            color: #2c3e50;
+            transition: color 0.3s;
+        }
+
+        .modal-content p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        #payout-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+
+        #payout-list li {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        #payout-list li span {
+            font-size: 1.6em;
+            margin-right: 15px;
+            display: inline-block;
+            width: 40px;
+            text-align: center;
+        }
+
+        #dark-mode-toggle {
+            font-size: 1em;
+            padding: 10px 15px;
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        #dark-mode-toggle:hover { background-color: #0056b3; }
+
+        @keyframes frenzy-border-flash {
+            0% { border-color: #e74c3c; }
+            50% { border-color: #f39c12; }
+            100% { border-color: #e74c3c; }
+        }
+
+        body.frenzy-mode {
+            background-color: #4A235A;
+        }
+
+        .frenzy-mode #slot-container {
+            background: #6C3483;
+            animation: frenzy-border-flash 0.8s infinite linear;
+        }
+
+        .frenzy-mode #spin-button {
+            background-color: #e74c3c;
+        }
+
+        .frenzy-mode #spin-button:hover {
+            background-color: #c0392b;
+        }
+
+        #frenzy-display {
+            position: fixed;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1.5em;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            z-index: 999;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /*
+        ==============================================
+        CORRIGÉ : STYLES DU MODE SOMBRE
+        ==============================================
+        */
+        body.dark-mode {
+            background-color: #1a1a2e;
+        }
+
+        body.dark-mode #balance-container {
+            background-color: #004a99;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode #balance-container button {
+            color: #ddd;
+        }
+
+        body.dark-mode #rules-button {
+            background-color: #106a7a;
+            color: white;
+        }
+        body.dark-mode #rules-button:hover { background-color: #0d5663; }
+
+        body.dark-mode #settings-button {
+            background-color: #4a5157;
+            color: white;
+        }
+        body.dark-mode #settings-button:hover { background-color: #383d41; }
+
+        body.dark-mode #cheat-button {
+            background-color: #444;
+            color: white;
+        }
+        body.dark-mode #cheat-button:hover { background-color: #222; }
+
+        body.dark-mode #test-button {
+            background-color: #a0680a;
+            color: white;
+        }
+        body.dark-mode #test-button:hover { background-color: #805308; }
+
+        body.dark-mode #spin-button {
+            background-color: #0056b3;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+        body.dark-mode #spin-button:hover { background-color: #003d80; }
+        body.dark-mode #spin-button:disabled { background-color: #333; }
+
+        body.dark-mode #slot-container {
+            background: #1f2c3a;
+            border-color: #b88a0b;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.7), 0 10px 20px rgba(0,0,0,0.7);
+        }
+
+        body.dark-mode #reels-container {
+            background: #333;
+            border-color: #555;
+        }
+
+        body.dark-mode .symbol {
+            background-color: #5a6a7a;
+            color: #fff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        body.dark-mode #bet-controls button {
+            background-color: #444;
+            color: #00aaff;
+            border-color: #00aaff;
+        }
+
+        body.dark-mode #bet-controls button:hover {
+            background-color: #00aaff;
+            color: #111;
+        }
+
+        body.dark-mode #bet-controls button:disabled {
+            background-color: #222;
+            color: #555;
+            border-color: #444;
+        }
+
+        body.dark-mode #bet-input {
+            background-color: #555;
+            color: #fff;
+            border-color: #777;
+        }
+
+        body.dark-mode #result-display {
+            color: #ddd;
+        }
+        body.dark-mode #result-display.win { color: #30f080; }
+        body.dark-mode #result-display.lose { color: #88999a; }
+        body.dark-mode #result-display.jackpot { color: #ffd700; }
+
+        body.dark-mode #test-log {
+            background: #333;
+            color: #ddd;
+            border-color: #555;
+        }
+
+        body.dark-mode .modal-content {
+            background-color: #2c3e50;
+            color: #ddd;
+        }
+
+        body.dark-mode .modal-close {
+            color: #777;
+        }
+        body.dark-mode .modal-close:hover {
+            color: #fff;
+        }
+
+        body.dark-mode .modal-content h2 {
+            color: #00aaff;
+            border-bottom-color: #445;
+        }
+
+        body.dark-mode .modal-content h3 {
+            color: #aaa;
+        }
+
+        body.dark-mode #payout-list li {
+            background: #3a4b5c;
+        }
+
+        body.dark-mode #dark-mode-toggle {
+            background-color: #00aaff;
+            color: #111;
+        }
+        body.dark-mode #dark-mode-toggle:hover {
+            background-color: #0077cc;
+        }
+
+        /* CORRIGÉ : Sélecteurs combinés pour Frénésie + Mode Sombre */
+        body.dark-mode.frenzy-mode {
+            background-color: #2a133a;
+        }
+
+        body.dark-mode.frenzy-mode #slot-container {
+            background: #4a1e5c;
+        }
+
+        body.dark-mode.frenzy-mode #spin-button {
+            background-color: #b02a1b;
+        }
+
+        body.dark-mode.frenzy-mode #spin-button:hover {
+            background-color: #902115;
+        }
+
+        #back-button {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        font-size: 1em;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    #back-button:hover {
+        background: linear-gradient(135deg, #2980b9, #3498db);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.35);
+    }
+    #audio-gate {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.6);
+      z-index: 3000;
+    }
+    #audio-gate .card {
+      background: #07132a;
+      color: #e6eef8;
+      padding: 18px 22px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    #audio-gate button {
+      margin-top: 10px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      background: #00aaff;
+      color: #07132a;
+    }
+    #audio-gate button:hover { filter: brightness(0.95); }
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        #back-button:hover {
+            background: linear-gradient(135deg, #2980b9, #3498db);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.35);
+        }
+
+        #auth-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        #auth-container h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        #auth-container button {
+            font-size: 1.2em;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #login-button { background-color: #007bff; color: white; }
+        #login-button:hover { background-color: #0056b3; }
+        #register-button { background-color: #28a745; color: white; }
+        #register-button:hover { background-color: #1e7e34; }
+
+        body.dark-mode #auth-container {
+            background: #2c3e50;
+        }
+        body.dark-mode #auth-container h2 {
+            color: #f4f4f9;
+        }
+        body.dark-mode #login-button { background-color: #0056b3; }
+        body.dark-mode #login-button:hover { background-color: #003d80; }
+        body.dark-mode #register-button { background-color: #1e7e34; }
+        body.dark-mode #register-button:hover { background-color: #155724; }
+
+        #user-info {
+            font-size: 0.7em;
+            font-weight: normal;
+            margin-right: 15px;
+            padding-right: 15px;
+            border-right: 2px solid rgba(255,255,255,0.5);
+            vertical-align: middle;
+        }
+        body.dark-mode #user-info {
+            border-right-color: rgba(255,255,255,0.3);
+        }
+
+        /* --- STYLES ADMIN GESTION UTILISATEURS --- */
+        #manage-users-button {
+            background-color: #ffc107; /* Jaune distinctif */
+            color: #333;
+            font-weight: bold;
+            display: none; /* Masqué par défaut */
+        }
+        #manage-users-button:hover { background-color: #e0a800; }
+
+        body.dark-mode #manage-users-button {
+            background-color: #b38600;
+            color: white;
+        }
+        body.dark-mode #manage-users-button:hover { background-color: #997300; }
+
+        /* Styles pour la liste dans la modale de gestion */
+        #user-list {
+            list-style-type: none;
+            padding-left: 0;
+            max-height: 400px; /* Limite la hauteur si bcp d'utilisateurs */
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        #user-list li {
+            background: #f4f4f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        #user-list li strong {
+            font-size: 1.1em;
+            color: #333;
+        }
+        #user-list li div {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #user-list .balance-input {
+            width: 100px;
+            font-size: 1em;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #user-list .set-balance-btn {
+            padding: 5px 10px;
+            font-size: 0.9em;
+            cursor: pointer;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        #user-list .set-balance-btn:hover { background: #1e7e34; }
+
+        /* Mode sombre pour la liste */
+        body.dark-mode #user-list li {
+            background: #3a4b5c;
+            border-color: #555;
+        }
+        body.dark-mode #user-list li strong {
+            color: #fff;
+        }
+        body.dark-mode #user-list .balance-input {
+            background: #555;
+            color: #fff;
+            border-color: #777;
+        }
+        /* --- FIN STYLES ADMIN --- */
+
     </style>
+    <script src="database.js"></script>
 </head>
+
 <body>
 
-    <div id="balance-container">
-        💰 Solde : <span id="balance-display">0.00</span> €
-        <button id="recharge-button" onclick="rechargeBalance()">
-            Recharger (100 €)
-        </button>
+      <!-- Musiques / sons -->
+  <audio id="bg-music" src="sounds/casino-music-jazz-las-vegas-monaco-background-intro-theme-294408.mp3" preload="auto" loop autoplay></audio>
+  <audio id="s-spin"    src="sounds/slot-machine-reels-sound-30276_ZFxVLP0I.mp3" preload="auto"></audio>
+  <audio id="s-stop"    src="sounds/.mp3"  preload="auto"></audio>
+  <audio id="s-win"     src="sounds/Slot Machine Jackpot Sound Effect.mp3"  preload="auto"></audio>
+
+     <!-- ====== TON HTML EXISTANT (barre solde, machine, modales, etc.) ====== -->
+  <div id="balance-container">
+    💰 Solde : <span id="balance-display">0.00</span> €
+    <button id="recharge-button" onclick="rechargeBalance()">Recharger (100 €)</button>
+    <button id="rules-button" onclick="showRules()">ℹ️ Règles</button>
+    <button id="settings-button" onclick="showSettings()">⚙️ Paramètres</button>
+    <button id="cheat-button" onclick="activateCheatMode()">Admin</button>
+    <button id="test-button" onclick="runTests()" style="display:none">Test</button>
+  </div>
+
+  <a id="back-button" href="index.html">⬅ Retour</a>
+
+  <div id="slot-container">
+    <div id="reels-container">
+      <div class="symbol" id="symbol-0-0">🍒</div>
+      <div class="symbol" id="symbol-1-0">🍒</div>
+      <div class="symbol" id="symbol-2-0">🍒</div>
+      <div class="symbol" id="symbol-3-0">🍒</div>
+      <div class="symbol" id="symbol-4-0">🍒</div>
+      <div class="symbol" id="symbol-0-1">7</div>
+      <div class="symbol" id="symbol-1-1">7</div>
+      <div class="symbol" id="symbol-2-1">7</div>
+      <div class="symbol" id="symbol-3-1">7</div>
+      <div class="symbol" id="symbol-4-1">7</div>
+      <div class="symbol" id="symbol-0-2">BAR</div>
+      <div class="symbol" id="symbol-1-2">BAR</div>
+      <div class="symbol" id="symbol-2-2">BAR</div>
+      <div class="symbol" id="symbol-3-2">BAR</div>
+      <div class="symbol" id="symbol-4-2">BAR</div>
     </div>
+  </div>
 
-    <script>
-        // JavaScript pour gérer et afficher le solde
-        
-        // Définir la constante pour la recharge
-        const MAX_BALANCE = 100.00; 
-        
-        let userBalance = MAX_BALANCE; // Le solde initial
-        const balanceDisplay = document.getElementById('balance-display');
+  <div id="bet-controls">
+    <button id="decrease-bet">-</button>
+    <input type="number" id="bet-input" value="5.00" min="1.00" max="25.00" step="1.00">
+    <button id="increase-bet">+</button>
+  </div>
 
-        // Fonction pour mettre à jour l'affichage
-        function updateBalanceDisplay() {
-            balanceDisplay.textContent = userBalance.toFixed(2);
-        }
+  <div id="result-display">Cliquez sur SPIN pour jouer !</div>
+  <div id="frenzy-display"></div>
+  <button id="spin-button" onclick="startSpin()">SPIN</button>
 
-        // Afficher le solde initial au chargement de la page
-        updateBalanceDisplay();
+  <div id="test-log">
+    <strong>Résultats des tests :</strong>
+    <ul id="test-results"></ul>
+  </div>
 
-        // Fonction pour modifier le solde (gains ou pertes)
-        function adjustBalance(amount) {
-            userBalance += amount;
-            
-            // S'assurer que le solde ne devienne pas négatif
-            if (userBalance < 0) {
-                userBalance = 0;
-            }
-            
-            updateBalanceDisplay();
-            console.log("Nouveau solde : " + userBalance.toFixed(2));
-            
-            // VÉRIFICATION : C'est ici qu'on affiche le pop-up
-            if (userBalance <= 0) {
-                // Afficher le pop-up demandé
-                alert("Solde épuisé ! Veuillez recharger.");
-            }
-        }
+  <div id="rules-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="modal-close" onclick="hideRules()">&times;</span>
+      <h2>Règles du Jeu</h2>
+      <p>Alignez 5 symboles identiques sur la <strong>ligne du milieu</strong>.</p>
+      <p>3 🌟 ou plus n’importe où = <strong>10 Tours Frénésie</strong>.</p>
+      <h3>Multiplicateurs :</h3>
+      <ul id="payout-list"></ul>
+    </div>
+  </div>
 
-        // Fonction pour le bouton "Recharger"
-        function rechargeBalance() {
-            if (userBalance <= 0) {
-                userBalance = MAX_BALANCE; // Remettre le solde à 100.00
-                alert("Solde rechargé ! Vous avez de nouveau " + MAX_BALANCE.toFixed(2) + " €.");
-            } else {
-                alert("Vous avez encore " + userBalance.toFixed(2) + " €. Pas besoin de recharger !");
-            }
-            
-            updateBalanceDisplay();
-        }
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="modal-close" onclick="hideSettings()">&times;</span>
+      <h2>Paramètres</h2>
+      <h3>Thème</h3>
+      <button id="dark-mode-toggle">Activer le Mode Sombre</button>
+    </div>
+  </div>
 
-    </script>
+  <script>
+  /* ============================
+     VARIABLES & CONFIG
+  ============================ */
+  const MAX_BALANCE = 100.00;
+  const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
+  const SYMBOLS = ["🍒","🍒","🍒","🍋","🍋","🍊","🔔","🔔","BAR","7","🌟"];
+  const SYMBOLS_FRENZY = ["🍒","🍋","🍋","🍊","🔔","BAR","7","🌟"];
+  const PAYOUTS = { "🍒":10, "🍋":20, "🍊":40, "🔔":100, "BAR":500, "7":5000 };
 
+  let userBalance = MAX_BALANCE;
+  let currentBet = DEFAULT_BET;
+  let activeCheatMode = "none";
+  let animationInterval;
+  let isFrenzyModeActive = false;
+  let frenzySpinsRemaining = 0;
+  const FRENZY_SPINS_AWARDED = 10;
+
+  /* ============================
+     DOM
+  ============================ */
+  const balanceDisplay = document.getElementById('balance-display');
+  const spinButton = document.getElementById('spin-button');
+  const resultDisplay = document.getElementById('result-display');
+  const betInput = document.getElementById('bet-input');
+  const decreaseBetButton = document.getElementById('decrease-bet');
+  const increaseBetButton = document.getElementById('increase-bet');
+  const rulesModal = document.getElementById('rules-modal');
+  const payoutList = document.getElementById('payout-list');
+  const frenzyDisplay = document.getElementById('frenzy-display');
+  const settingsModal = document.getElementById('settings-modal');
+  const darkModeToggleButton = document.getElementById('dark-mode-toggle');
+
+  /* ============================
+   AUDIO
+const A = {
+  bg:  document.getElementById('bg-music'),
+  spin:document.getElementById('s-spin'),
+  stop:document.getElementById('s-stop'),
+  win: document.getElementById('s-win')
+};
+
+// Réglages de volume
+A.bg.volume   = 0.25;
+A.spin.volume = 0.5;
+A.stop.volume = 0.35;
+A.win.volume  = 0.6;
+
+// Fonction pour lancer la musique après une interaction
+function startBackgroundMusic() {
+  A.bg.play().catch(() => {
+    console.warn("Lecture audio bloquée par le navigateur");
+  });
+  // On supprime les écouteurs pour éviter plusieurs lectures
+  document.removeEventListener('click', startBackgroundMusic);
+  document.removeEventListener('keydown', startBackgroundMusic);
+}
+
+// L’utilisateur doit cliquer ou appuyer une touche une fois
+document.addEventListener('click', startBackgroundMusic);
+document.addEventListener('keydown', startBackgroundMusic);
+
+
+  /* ============================
+     THEME
+  ============================ */
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    if (document.body.classList.contains('dark-mode')) {
+      darkModeToggleButton.textContent = "Désactiver le Mode Sombre";
+      localStorage.setItem('slotMachineTheme', 'dark');
+    } else {
+      darkModeToggleButton.textContent = "Activer le Mode Sombre";
+      localStorage.setItem('slotMachineTheme', 'light');
+    }
+  }
+  darkModeToggleButton.addEventListener('click', toggleDarkMode);
+
+  function applySavedTheme() {
+    const saved = localStorage.getItem('slotMachineTheme');
+    if (saved === 'dark') {
+      document.body.classList.add('dark-mode');
+      darkModeToggleButton.textContent = "Désactiver le Mode Sombre";
+    }
+  }
+
+  /* ============================
+     SOLDE & MISES
+  ============================ */
+  function updateBalanceDisplay(){ balanceDisplay.textContent = userBalance.toFixed(2); }
+  function adjustBalance(a){
+    userBalance += a;
+    if (userBalance < 0) userBalance = 0;
+    updateBalanceDisplay();
+  }
+  function rechargeBalance(){
+    userBalance = MAX_BALANCE;
+    resultDisplay.textContent = "Solde rechargé !";
+    updateBalanceDisplay();
+  }
+  function updateBet(newBet){
+    newBet = Math.min(MAX_BET, Math.max(MIN_BET, newBet));
+    currentBet = newBet;
+    betInput.value = currentBet.toFixed(2);
+  }
+  function changeBet(delta){ updateBet(currentBet + delta); }
+  decreaseBetButton.addEventListener('click', () => changeBet(-BET_STEP));
+  increaseBetButton.addEventListener('click', () => changeBet(BET_STEP));
+
+  /* ============================
+     MACHINE
+  ============================ */
+  function getRandomSymbol(){
+    const list = isFrenzyModeActive ? SYMBOLS_FRENZY : SYMBOLS;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+  function generateFinalGrid(){
+    const grid = [];
+    for (let r=0; r<3; r++){
+      const row=[];
+      for (let c=0; c<5; c++){
+        if (activeCheatMode === "jackpot" && r===1) row.push("7");
+        else row.push(getRandomSymbol());
+      }
+      grid.push(row);
+    }
+    return grid;
+  }
+  function runSpinAnimation(cols){
+    for (const c of cols)
+      for (let r=0; r<3; r++)
+        document.getElementById(`symbol-${c}-${r}`).textContent = getRandomSymbol();
+  }
+  function stopColumn(col, finalGrid, cols){
+    const i = cols.indexOf(col);
+    if (i>-1) cols.splice(i,1);
+    for (let r=0; r<3; r++){
+      const el = document.getElementById(`symbol-${col}-${r}`);
+      el.textContent = finalGrid[r][col];
+      el.classList.remove('spinning');
+    }
+    A.stop.currentTime = 0;
+    A.stop.play().catch(()=>{});
+  }
+  function countScatters(grid){
+    let n=0; grid.flat().forEach(x => { if (x==="🌟") n++; });
+    return n;
+  }
+
+  /* ============================
+     SPIN + AUDIO
+  ============================ */
+  function startSpin(){
+    if (userBalance < currentBet && !isFrenzyModeActive){
+      resultDisplay.textContent = "Solde insuffisant !";
+      resultDisplay.classList.add('lose');
+      return;
+    }
+
+    // son spin à chaque clic
+    A.spin.currentTime = 0;
+    A.spin.play().catch(()=>{});
+
+    // couper un jingle de gain en cours
+    if (!A.win.paused){ A.win.pause(); A.win.currentTime = 0; }
+
+    adjustBalance(-currentBet);
+    resultDisplay.textContent = "Les rouleaux tournent...";
+    spinButton.disabled = true;
+    resultDisplay.classList.remove('win','lose','jackpot');
+
+    const finalGrid = generateFinalGrid();
+    let spinningColumns = [0,1,2,3,4];
+    document.querySelectorAll('.symbol').forEach(s => s.classList.add('spinning'));
+    animationInterval = setInterval(()=>runSpinAnimation(spinningColumns), 100);
+
+    setTimeout(()=>stopColumn(0, finalGrid, spinningColumns), 1000);
+    setTimeout(()=>stopColumn(1, finalGrid, spinningColumns), 1500);
+    setTimeout(()=>stopColumn(2, finalGrid, spinningColumns), 2000);
+    setTimeout(()=>stopColumn(3, finalGrid, spinningColumns), 2500);
+
+    setTimeout(()=>{
+      stopColumn(4, finalGrid, spinningColumns);
+      clearInterval(animationInterval);
+
+      let winnings = 0;
+      const middle = finalGrid[1];
+      if (middle.every(s => s === middle[0])){
+        const sym = middle[0];
+        if (PAYOUTS[sym]) winnings = currentBet * PAYOUTS[sym];
+      }
+
+      if (winnings > 0){
+        adjustBalance(winnings);
+        resultDisplay.textContent = `Bravo ! Vous gagnez ${winnings.toFixed(2)} € !`;
+        resultDisplay.classList.add('win');
+
+        // jingle de gain
+        A.win.currentTime = 0;
+        A.win.play().catch(()=>{});
+      } else {
+        resultDisplay.textContent = "Pas de chance... Essayez encore !";
+        resultDisplay.classList.add('lose');
+      }
+
+      // scatters
+      const scat = countScatters(finalGrid);
+      if (scat >= 3){
+        resultDisplay.textContent = `🌟 ${scat} SCATTERS ! 🌟 +${FRENZY_SPINS_AWARDED} Tours Frénésie !`;
+        resultDisplay.classList.add('win');
+        // à toi de brancher ton mode frénésie ici si besoin
+      }
+
+      spinButton.disabled = false;
+    }, 3000);
+  }
+
+  /* ============================
+     RÈGLES / PARAMS (stubs)
+  ============================ */
+  function showRules(){
+    payoutList.innerHTML = '';
+    const sorted = Object.entries(PAYOUTS).sort(([,a],[,b]) => a-b);
+    for (const [symbol, mult] of sorted){
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${symbol}</span> x5 milieu = <strong>${mult}x</strong>`;
+      payoutList.appendChild(li);
+    }
+    rulesModal.style.display = 'flex';
+  }
+  function hideRules(){ rulesModal.style.display = 'none'; }
+  rulesModal.addEventListener('click', e => { if (e.target===rulesModal) hideRules(); });
+
+  function showSettings(){ settingsModal.style.display = 'flex'; }
+  function hideSettings(){ settingsModal.style.display = 'none'; }
+  settingsModal.addEventListener('click', e => { if (e.target===settingsModal) hideSettings(); });
+
+  function activateCheatMode(){
+    const btn = document.getElementById('cheat-button');
+    if (activeCheatMode !== 'none'){
+      activeCheatMode = 'none';
+      btn.textContent = 'Admin';
+      btn.style.backgroundColor = '#888';
+      alert('Mode Cheat désactivé.');
+      return;
+    }
+    const pw = prompt('Mot de passe admin :');
+    if (pw === '938-555-0100'){
+      const c = prompt('1=Jackpot 77777');
+      if (c === '1'){ activeCheatMode='jackpot'; btn.textContent='CHEAT: 777'; btn.style.backgroundColor='#2ecc71'; alert('Jackpot forcé.'); }
+    } else if (pw) { alert('Mot de passe incorrect.'); }
+  }
+
+  /* ============================
+     INIT
+  ============================ */
+  updateBalanceDisplay();
+  updateBet(currentBet);
+  applySavedTheme();
+  </script>
 </body>
 </html>
