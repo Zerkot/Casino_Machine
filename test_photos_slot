@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Unitaire des Slots</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; }
+        #test-log { background: #fff; border: 1px solid #ccc; border-radius: 5px; padding: 20px; max-width: 600px; margin: auto; }
+        #test-results li { margin-bottom: 8px; font-size: 1.1em; }
+        .pass { color: green; }
+        .fail { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Tests Unitaires Automatiques des Slots</h1>
+    <div id="test-log">
+        <strong>Résultats des tests :</strong>
+        <ul id="test-results"></ul>
+    </div>
+
+    <script>
+        // --- Configuration des slots ---
+        const SYMBOLS = ["🍒","🍋","🍊","🔔","BAR","7","🌟"];
+        const SYMBOLS_FRENZY = ["🍒","🍋","🍊","🔔","BAR","7","🌟"];
+        const REELS = 5;
+        const ROWS = 3;
+
+        let activeCheatMode = "none"; // "none", "jackpot", "scatter"
+
+        function assert(desc, cond) {
+            const li = document.createElement('li');
+            li.textContent = desc + ' → ' + (cond ? '✅ OK' : '❌ Échec');
+            li.className = cond ? 'pass' : 'fail';
+            document.getElementById('test-results').appendChild(li);
+        }
+
+        function getRandomSymbol() {
+            const list = SYMBOLS;
+            return list[Math.floor(Math.random() * list.length)];
+        }
+
+        function generateFinalGrid() {
+            let grid = [];
+            for (let r = 0; r < ROWS; r++) {
+                let row = [];
+                for (let c = 0; c < REELS; c++) {
+                    if (activeCheatMode === "jackpot" && r === 1) {
+                        row.push("7");
+                    } else if (activeCheatMode === "scatter" && ((r===0 && c===0) || (r===1 && c===2) || (r===2 && c===4))) {
+                        row.push("🌟");
+                    } else {
+                        row.push(getRandomSymbol());
+                    }
+                }
+                grid.push(row);
+            }
+            return grid;
+        }
+
+        function countScatters(grid) {
+            let count = 0;
+            grid.forEach(row => row.forEach(s => { if (s === "🌟") count++; }));
+            return count;
+        }
+
+        function runTests() {
+            document.getElementById('test-results').innerHTML = '';
+
+            // Test 1 : Grille correcte
+            const grid = generateFinalGrid();
+            assert("Grille contient 3 lignes", grid.length === 3);
+            assert("Chaque ligne contient 5 colonnes", grid.every(row => row.length === 5));
+
+            // Test 2 : Symboles valides
+            grid.flat().forEach((s, idx) => assert(`Symbole à la position ${idx} est valide`, SYMBOLS.includes(s)));
+
+            // Test 3 : Mode Jackpot
+            activeCheatMode = "jackpot";
+            const gridJackpot = generateFinalGrid();
+            assert("Mode Jackpot : ligne du milieu = 7", gridJackpot[1].every(s => s === "7"));
+
+            // Test 4 : Mode Scatter
+            activeCheatMode = "scatter";
+            const gridScatter = generateFinalGrid();
+            const scatterCount = countScatters(gridScatter);
+            assert("Mode Scatter : au moins 3 scatters présents", scatterCount >= 3);
+
+            activeCheatMode = "none";
+        }
+
+        runTests();
+    </script>
+</body>
+</html>
