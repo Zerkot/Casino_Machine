@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Test Unitaire Probabilités Slots</title>
+</head>
+<body>
+
+<h1>Test Unitaire Automatique - Mode Triche</h1>
+<div id="test-results"></div>
+
+<script>
+    /********** Fonctions simulées du jeu pour test **********/
+    const SYMBOLS = ["🍒","🍋","🍊","🔔","BAR","7"];
+    const PAYOUTS = {"🍒":10,"🍋":20,"🍊":40,"🔔":100,"BAR":500,"7":5000};
+    
+    let isCheatModeActive = false;
+
+    function getRandomSymbol() {
+        const randomIndex = Math.floor(Math.random() * SYMBOLS.length);
+        return SYMBOLS[randomIndex];
+    }
+
+    function generateFinalGrid() {
+        let grid = [];
+        for (let r = 0; r < 3; r++) {
+            let row = [];
+            for (let c = 0; c < 5; c++) {
+                if (isCheatModeActive && r === 1) {
+                    row.push("7"); // Ligne du milieu forcée
+                } else {
+                    row.push(getRandomSymbol());
+                }
+            }
+            grid.push(row);
+        }
+        return grid;
+    }
+
+    /********** Test unitaire automatique **********/
+    function runTests() {
+        const resultsContainer = document.getElementById('test-results');
+        let testsPassed = 0;
+        let testsFailed = 0;
+
+        // Activer le mode triche
+        isCheatModeActive = true;
+
+        // Faire 100 spins et vérifier que la ligne du milieu est toujours des "7"
+        for (let i = 0; i < 100; i++) {
+            const grid = generateFinalGrid();
+            const middleRow = grid[1];
+            if (middleRow.every(symbol => symbol === "7")) {
+                testsPassed++;
+            } else {
+                testsFailed++;
+                console.error("Échec du test au spin #" + (i+1), middleRow);
+            }
+        }
+
+        // Affichage des résultats
+        resultsContainer.innerHTML = `
+            <p>Tests passés : ${testsPassed}</p>
+            <p>Tests échoués : ${testsFailed}</p>
+        `;
+
+        if (testsFailed === 0) {
+            resultsContainer.style.color = "green";
+        } else {
+            resultsContainer.style.color = "red";
+        }
+    }
+
+    // Lancer les tests automatiquement au chargement
+    window.onload = runTests;
+</script>
+
+</body>
+</html>
