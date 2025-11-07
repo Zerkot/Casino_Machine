@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Unitaire - Solde</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 40px;
+        }
+        h1 {
+            color: #007bff;
+        }
+        .test {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .fail {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🔍 Tests unitaires - Fonction de solde</h1>
+    <div id="results"></div>
+
+    <script>
+        /***********************
+         *  Module à tester
+         ***********************/
+        let userBalance = 100.00;
+        const MAX_BALANCE = 100.00;
+
+        function updateBalanceDisplay() {
+            // Simulation d’une mise à jour d’affichage (inutile pour le test)
+            return userBalance.toFixed(2);
+        }
+
+        function adjustBalance(amount) {
+            userBalance += amount;
+            if (userBalance < 0) userBalance = 0;
+            return updateBalanceDisplay();
+        }
+
+        function rechargeBalance() {
+            if (userBalance <= 0) {
+                userBalance = MAX_BALANCE;
+            }
+            return updateBalanceDisplay();
+        }
+
+        function resetBalance() {
+            userBalance = MAX_BALANCE;
+            return updateBalanceDisplay();
+        }
+
+        /***********************
+         *  Mini moteur de test
+         ***********************/
+        const resultsDiv = document.getElementById('results');
+        let passed = 0;
+        let failed = 0;
+
+        function test(name, fn) {
+            try {
+                fn();
+                const el = document.createElement('div');
+                el.className = 'test success';
+                el.textContent = '✅ ' + name;
+                resultsDiv.appendChild(el);
+                passed++;
+            } catch (err) {
+                const el = document.createElement('div');
+                el.className = 'test fail';
+                el.textContent = '❌ ' + name + ' — ' + err.message;
+                resultsDiv.appendChild(el);
+                failed++;
+            }
+        }
+
+        function assertEqual(actual, expected, message) {
+            if (actual !== expected)
+                throw new Error(`${message} (attendu: ${expected}, obtenu: ${actual})`);
+        }
+
+        /***********************
+         *  Tests unitaires
+         ***********************/
+        test('Solde initial = 100.00', () => {
+            resetBalance();
+            assertEqual(userBalance, 100.00, 'Solde incorrect');
+        });
+
+        test('Retrait de 10 € → solde = 90.00', () => {
+            resetBalance();
+            adjustBalance(-10);
+            assertEqual(userBalance, 90.00, 'Mauvais résultat après retrait');
+        });
+
+        test('Gain de 25 € → solde = 115.00', () => {
+            resetBalance();
+            adjustBalance(15);
+            assertEqual(userBalance, 115.00, 'Mauvais résultat après ajout');
+        });
+
+        test('Solde ne devient pas négatif', () => {
+            resetBalance();
+            adjustBalance(-200);
+            assertEqual(userBalance, 0, 'Le solde devrait être 0 et non négatif');
+        });
+
+        test('Recharge quand solde = 0 → 100.00', () => {
+            userBalance = 0;
+            rechargeBalance();
+            assertEqual(userBalance, 100.00, 'La recharge n’a pas fonctionné');
+        });
+
+        test('Recharge ignorée quand solde > 0', () => {
+            resetBalance();
+            userBalance = 50.00;
+            rechargeBalance();
+            assertEqual(userBalance, 50.00, 'Recharge incorrectement appliquée');
+        });
+
+        /***********************
+         *  Résumé
+         ***********************/
+        const summary = document.createElement('h2');
+        summary.textContent = `Résultat : ${passed} tests réussis / ${passed + failed} exécutés`;
+        resultsDiv.appendChild(summary);
+    </script>
+
+</body>
+</html>
