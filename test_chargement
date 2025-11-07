@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test unitaire - Écran de chargement</title>
+  <style>
+    /* Simple style pour le test */
+    #loading-screen { display: block; }
+    .hidden { display: none; }
+    body { font-family: Arial, sans-serif; }
+    .pass { color: green; }
+    .fail { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Tests unitaires - Fonction de chargement</h1>
+  <div id="test-results"></div>
+
+  <!-- Écran de chargement simulé -->
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <div class="loading-text">Chargement...</div>
+  </div>
+
+  <script>
+    // --- Fonction à tester ---
+    function hideLoadingScreen() {
+      const screen = document.getElementById('loading-screen');
+      screen.style.display = 'none';
+    }
+
+    function showLoadingScreen() {
+      const screen = document.getElementById('loading-screen');
+      screen.style.display = 'block';
+    }
+
+    // --- Mini framework de test ---
+    const resultsEl = document.getElementById('test-results');
+
+    function assert(condition, description) {
+      const div = document.createElement('div');
+      if (condition) {
+        div.textContent = "✔ " + description;
+        div.className = 'pass';
+      } else {
+        div.textContent = "✖ " + description;
+        div.className = 'fail';
+      }
+      resultsEl.appendChild(div);
+    }
+
+    // --- Tests automatiques ---
+    function runTests() {
+      showLoadingScreen();
+      const screen = document.getElementById('loading-screen');
+
+      // Test 1 : L'écran est visible après showLoadingScreen
+      assert(screen.style.display !== 'none', "L'écran de chargement est visible après showLoadingScreen()");
+
+      // Test 2 : L'écran disparaît après hideLoadingScreen
+      hideLoadingScreen();
+      assert(screen.style.display === 'none', "L'écran de chargement disparaît après hideLoadingScreen()");
+
+      // Test 3 : L'écran revient après showLoadingScreen
+      showLoadingScreen();
+      assert(screen.style.display === 'block', "L'écran de chargement revient après showLoadingScreen()");
+    }
+
+    // Lancer les tests automatiquement au chargement
+    window.onload = runTests;
+  </script>
+</body>
+</html>
