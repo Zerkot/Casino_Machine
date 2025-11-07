@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tests Unitaires - Bouton Règles</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #17a2b8;
+            padding-bottom: 10px;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #17a2b8;
+            background: #f9f9f9;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-result.pass {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .test-result.fail {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .test-icon {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        button {
+            padding: 12px 25px;
+            margin: 0 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #run-tests {
+            background-color: #17a2b8;
+            color: white;
+        }
+        #run-tests:hover {
+            background-color: #138496;
+            transform: translateY(-2px);
+        }
+        #show-modal-test {
+            background-color: #28a745;
+            color: white;
+        }
+        #show-modal-test:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+
+        /* Styles du Modal (réplique du jeu) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            color: #333;
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #333; }
+        .modal-content h2 {
+            margin-top: 0;
+            color: #007bff;
+            border-bottom: 2px solid #f4f4f9;
+            padding-bottom: 10px;
+        }
+        .modal-content h3 {
+            margin-top: 20px;
+            color: #2c3e50;
+        }
+        .modal-content p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        #payout-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #payout-list li {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        #payout-list li span {
+            font-size: 1.6em;
+            margin-right: 15px;
+            display: inline-block;
+            width: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Tests Unitaires - Bouton Règles (ℹ️)</h1>
+        
+        <div class="controls">
+            <button id="run-tests">▶️ Lancer les Tests</button>
+            <button id="show-modal-test">👁️ Tester le Modal Manuellement</button>
+        </div>
+
+        <div id="results"></div>
+        
+        <div id="summary" class="summary" style="display: none;"></div>
+    </div>
+
+    <!-- Modal de test (réplique du jeu) -->
+    <div id="rules-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" id="modal-close-btn">&times;</span>
+            <h2>Règles du Jeu</h2>
+            <p>Alignez 5 symboles identiques sur la <strong>ligne du milieu</strong> (la deuxième rangée) pour gagner le montant de votre mise multiplié par la valeur du symbole.</p>
+            <h3>Multiplicateurs de Gains :</h3>
+            <ul id="payout-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        let testsPassed = 0;
+        let testsFailed = 0;
+
+        // Constantes du jeu (réplique)
+        const PAYOUTS = { "🍒":10, "🍋":20, "🍊":40, "🔔":100, "BAR":500, "7":5000 };
+        const rulesModal = document.getElementById('rules-modal');
+        const payoutList = document.getElementById('payout-list');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        // Fonctions du jeu (réplique)
+        function showRules() {
+            payoutList.innerHTML = '';
+            const sortedPayouts = Object.entries(PAYOUTS).sort(([,a], [,b]) => a - b);
+            for (const [symbol, multiplier] of sortedPayouts) {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${symbol}</span> x 5 sur la ligne du milieu = <strong>${multiplier}x</strong> la mise`;
+                payoutList.appendChild(li);
+            }
+            rulesModal.style.display = 'flex';
+        }
+
+        function hideRules() {
+            rulesModal.style.display = 'none';
+        }
+
+        // Fermeture en cliquant sur l'arrière-plan
+        rulesModal.addEventListener('click', function(event) {
+            if (event.target === rulesModal) {
+                hideRules();
+            }
+        });
+
+        // Fermeture avec le bouton X
+        modalCloseBtn.addEventListener('click', hideRules);
+
+        // Fonctions de test
+        function addTestResult(sectionId, testName, passed, message = '') {
+            const section = document.getElementById(sectionId);
+            const result = document.createElement('div');
+            result.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            
+            const icon = document.createElement('span');
+            icon.className = 'test-icon';
+            icon.textContent = passed ? '✅' : '❌';
+            
+            const text = document.createElement('span');
+            text.textContent = `${testName}${message ? ' - ' + message : ''}`;
+            
+            result.appendChild(icon);
+            result.appendChild(text);
+            section.appendChild(result);
+
+            if (passed) {
+                testsPassed++;
+            } else {
+                testsFailed++;
+            }
+        }
+
+        function createTestSection(title, id) {
+            const resultsDiv = document.getElementById('results');
+            const section = document.createElement('div');
+            section.className = 'test-section';
+            section.innerHTML = `<h3>${title}</h3><div id="${id}"></div>`;
+            resultsDiv.appendChild(section);
+        }
+
+        function runAllTests() {
+            testsPassed = 0;
+            testsFailed = 0;
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('summary').style.display = 'none';
+
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            loading.textContent = '🔄 Exécution des tests en cours...';
+            document.getElementById('results').appendChild(loading);
+
+            setTimeout(() => {
+                document.getElementById('results').innerHTML = '';
+
+                // Section 1: Tests d'affichage du modal
+                createTestSection('1️⃣ Tests d\'affichage du modal', 'section-1');
+
+                // Test 1.1: Modal caché par défaut
+                const isHiddenInitially = rulesModal.style.display === 'none' || 
+                                         window.getComputedStyle(rulesModal).display === 'none';
+                addTestResult('section-1', 'Test 1.1: Modal caché par défaut', 
+                    isHiddenInitially, isHiddenInitially ? 'OK' : 'Modal visible');
+
+                // Test 1.2: showRules() affiche le modal
+                showRules();
+                const isVisibleAfterShow = rulesModal.style.display === 'flex';
+                addTestResult('section-1', 'Test 1.2: showRules() affiche le modal', 
+                    isVisibleAfterShow, isVisibleAfterShow ? 'OK' : 'Modal non affiché');
+
+                // Test 1.3: hideRules() cache le modal
+                hideRules();
+                const isHiddenAfterHide = rulesModal.style.display === 'none';
+                addTestResult('section-1', 'Test 1.3: hideRules() cache le modal', 
+                    isHiddenAfterHide, isHiddenAfterHide ? 'OK' : 'Modal encore visible');
+
+                // Section 2: Tests du contenu généré
+                createTestSection('2️⃣ Tests du contenu généré', 'section-2');
+
+                // Test 2.1: Liste vide avant showRules()
+                payoutList.innerHTML = '';
+                const isEmptyBefore = payoutList.children.length === 0;
+                addTestResult('section-2', 'Test 2.1: Liste vide avant showRules()', 
+                    isEmptyBefore, isEmptyBefore ? 'OK' : `${payoutList.children.length} éléments`);
+
+                // Test 2.2: Génération des éléments de liste
+                showRules();
+                const expectedCount = Object.keys(PAYOUTS).length;
+                const actualCount = payoutList.children.length;
+                const hasCorrectCount = actualCount === expectedCount;
+                addTestResult('section-2', 'Test 2.2: Nombre correct d\'éléments générés', 
+                    hasCorrectCount, hasCorrectCount ? `${actualCount} éléments` : `Attendu: ${expectedCount}, Obtenu: ${actualCount}`);
+
+                // Test 2.3: Tous les éléments sont des <li>
+                const allAreLi = Array.from(payoutList.children).every(el => el.tagName === 'LI');
+                addTestResult('section-2', 'Test 2.3: Tous les éléments sont des <li>', 
+                    allAreLi, allAreLi ? 'OK' : 'Éléments non-<li> détectés');
+
+                // Test 2.4: Chaque élément contient un <span>
+                const allHaveSpan = Array.from(payoutList.children).every(li => 
+                    li.querySelector('span') !== null
+                );
+                addTestResult('section-2', 'Test 2.4: Chaque élément contient un <span> (symbole)', 
+                    allHaveSpan, allHaveSpan ? 'OK' : 'Spans manquants');
+
+                // Test 2.5: Les symboles sont triés par multiplicateur croissant
+                const items = Array.from(payoutList.children);
+                let isSorted = true;
+                let previousMultiplier = 0;
+                for (const li of items) {
+                    const text = li.textContent;
+                    const match = text.match(/(\d+)x/);
+                    if (match) {
+                        const multiplier = parseInt(match[1]);
+                        if (multiplier < previousMultiplier) {
+                            isSorted = false;
+                            break;
+                        }
+                        previousMultiplier = multiplier;
+                    }
+                }
+                addTestResult('section-2', 'Test 2.5: Symboles triés par multiplicateur croissant', 
+                    isSorted, isSorted ? 'OK' : 'Ordre incorrect');
+
+                // Section 3: Tests du contenu spécifique
+                createTestSection('3️⃣ Tests du contenu spécifique', 'section-3');
+
+                // Test 3.1: Présence du symbole 🍒 (10x)
+                const hasCherrySymbol = Array.from(items).some(li => 
+                    li.textContent.includes('🍒') && li.textContent.includes('10x')
+                );
+                addTestResult('section-3', 'Test 3.1: Présence du symbole 🍒 (10x)', 
+                    hasCherrySymbol, hasCherrySymbol ? 'OK' : 'Non trouvé');
+
+                // Test 3.2: Présence du symbole 7 (5000x - Jackpot)
+                const hasJackpotSymbol = Array.from(items).some(li => 
+                    li.textContent.includes('7') && li.textContent.includes('5000x')
+                );
+                addTestResult('section-3', 'Test 3.2: Présence du symbole 7 (5000x - Jackpot)', 
+                    hasJackpotSymbol, hasJackpotSymbol ? 'OK' : 'Non trouvé');
+
+                // Test 3.3: Tous les symboles PAYOUTS sont présents
+                const allSymbolsPresent = Object.keys(PAYOUTS).every(symbol => {
+                    return Array.from(items).some(li => li.textContent.includes(symbol));
+                });
+                addTestResult('section-3', 'Test 3.3: Tous les symboles PAYOUTS sont présents', 
+                    allSymbolsPresent, allSymbolsPresent ? 'OK' : 'Symboles manquants');
+
+                // Test 3.4: Format correct du texte (contient "x 5 sur la ligne du milieu")
+                const hasCorrectFormat = Array.from(items).every(li => 
+                    li.textContent.includes('x 5 sur la ligne du milieu')
+                );
+                addTestResult('section-3', 'Test 3.4: Format correct du texte', 
+                    hasCorrectFormat, hasCorrectFormat ? 'OK' : 'Format incorrect');
+
+                // Section 4: Tests d'interaction
+                createTestSection('4️⃣ Tests d\'interaction', 'section-4');
+
+                // Test 4.1: Clic sur le bouton X ferme le modal
+                showRules();
+                modalCloseBtn.click();
+                setTimeout(() => {
+                    const isClosedByX = rulesModal.style.display === 'none';
+                    addTestResult('section-4', 'Test 4.1: Clic sur le bouton X ferme le modal', 
+                        isClosedByX, isClosedByX ? 'OK' : 'Modal encore visible');
+
+                    // Test 4.2: Clic sur l'arrière-plan ferme le modal
+                    showRules();
+                    setTimeout(() => {
+                        const clickEvent = new MouseEvent('click', {
+                            bubbles: true,
+                            cancelable: true,
+                            view: window
+                        });
+                        Object.defineProperty(clickEvent, 'target', {
+                            value: rulesModal,
+                            writable: false
+                        });
+                        rulesModal.dispatchEvent(clickEvent);
+                        
+                        setTimeout(() => {
+                            const isClosedByBackground = rulesModal.style.display === 'none';
+                            addTestResult('section-4', 'Test 4.2: Clic sur l\'arrière-plan ferme le modal', 
+                                isClosedByBackground, isClosedByBackground ? 'OK' : 'Modal encore visible');
+
+                            // Section 5: Tests de régénération
+                            createTestSection('5️⃣ Tests de régénération', 'section-5');
+
+                            // Test 5.1: Réaffichage du modal régénère le contenu
+                            const firstContent = payoutList.innerHTML;
+                            hideRules();
+                            payoutList.innerHTML = '<li>Test</li>'; // Modifier le contenu
+                            showRules();
+                            const secondContent = payoutList.innerHTML;
+                            const contentRegenerated = firstContent !== '<li>Test</li>' && 
+                                                      secondContent === firstContent;
+                            addTestResult('section-5', 'Test 5.1: Réaffichage régénère le contenu correctement', 
+                                contentRegenerated, contentRegenerated ? 'OK' : 'Contenu non régénéré');
+
+                            // Test 5.2: Multiple appels ne créent pas de doublons
+                            payoutList.innerHTML = '';
+                            showRules();
+                            const countAfterFirst = payoutList.children.length;
+                            showRules();
+                            const countAfterSecond = payoutList.children.length;
+                            const noDuplicates = countAfterFirst === countAfterSecond && 
+                                               countAfterFirst === Object.keys(PAYOUTS).length;
+                            addTestResult('section-5', 'Test 5.2: Appels multiples ne créent pas de doublons', 
+                                noDuplicates, noDuplicates ? 'OK' : `Doublons détectés (${countAfterSecond} au lieu de ${countAfterFirst})`);
+
+                            // Nettoyage et résumé
+                            hideRules();
+                            showSummary();
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 500);
+        }
+
+        function showSummary() {
+            const total = testsPassed + testsFailed;
+            const percentage = ((testsPassed / total) * 100).toFixed(1);
+            const summaryDiv = document.getElementById('summary');
+            
+            let emoji = '✅';
+            let message = 'Tous les tests sont passés !';
+            
+            if (testsFailed > 0) {
+                emoji = testsFailed > total / 2 ? '❌' : '⚠️';
+                message = `${testsFailed} test(s) échoué(s)`;
+            }
+            
+            summaryDiv.innerHTML = `
+                ${emoji} Résumé: ${testsPassed}/${total} tests réussis (${percentage}%)
+                <br><small>${message}</small>
+            `;
+            summaryDiv.style.display = 'block';
+        }
+
+        // Event Listeners
+        document.getElementById('run-tests').addEventListener('click', runAllTests);
+        document.getElementById('show-modal-test').addEventListener('click', () => {
+            showRules();
+            alert('Modal affiché ! Testez les interactions (bouton X, clic sur l\'arrière-plan)');
+        });
+    </script>
+</body>
+</html>

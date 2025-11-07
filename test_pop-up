@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Unitaire - Pop-up Solde 0</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
+    h1 { color: #007bff; }
+    ul { list-style-type: none; padding: 0; }
+    li { margin-bottom: 10px; font-size: 1.2em; }
+    .ok { color: green; }
+    .fail { color: red; }
+</style>
+</head>
+<body>
+
+<h1>Tests Automatiques : Pop-up Solde à 0</h1>
+<ul id="test-results"></ul>
+
+<script>
+    // --- Simulation du slot ---
+    const MAX_BALANCE = 100.00;
+    let userBalance = MAX_BALANCE;
+
+    function updateBalanceDisplay() { /* dummy */ }
+    
+    function adjustBalance(amount) {
+        userBalance += amount;
+        if (userBalance < 0) userBalance = 0;
+        if (userBalance <= 0) {
+            alert("Solde épuisé ! Veuillez recharger.");
+        }
+    }
+
+    function rechargeBalance() {
+        if (userBalance <= 0) {
+            userBalance = MAX_BALANCE;
+            alert("Solde rechargé ! Vous avez de nouveau " + MAX_BALANCE.toFixed(2) + " €.");
+        }
+    }
+
+    // --- Helper de test ---
+    function assert(desc, condition) {
+        const li = document.createElement('li');
+        li.textContent = desc + " → " + (condition ? "✅ OK" : "❌ Échec");
+        li.className = condition ? "ok" : "fail";
+        document.getElementById('test-results').appendChild(li);
+    }
+
+    // --- Tests automatiques ---
+    (function runTests() {
+        let alertMessages = [];
+
+        // Interception de window.alert
+        const originalAlert = window.alert;
+        window.alert = (msg) => { alertMessages.push(msg); };
+
+        // Test 1 : réduire le solde à 0 déclenche le pop-up
+        userBalance = 50;
+        alertMessages = [];
+        adjustBalance(-50);
+        assert("Pop-up déclenché à solde 0", alertMessages.includes("Solde épuisé ! Veuillez recharger."));
+
+        // Test 2 : solde négatif corrigé à 0 déclenche le pop-up
+        userBalance = 30;
+        alertMessages = [];
+        adjustBalance(-50);
+        assert("Solde négatif corrigé et pop-up affiché", alertMessages.includes("Solde épuisé ! Veuillez recharger."));
+        assert("Solde est bien 0 après ajustement", userBalance === 0);
+
+        // Test 3 : recharger le solde affiche le message correct
+        alertMessages = [];
+        rechargeBalance();
+        assert("Pop-up rechargé affiché", alertMessages.includes("Solde rechargé ! Vous avez de nouveau 100.00 €."));
+        assert("Solde remis à 100", userBalance === 100);
+
+        // Restaurer alert
+        window.alert = originalAlert;
+    })();
+
+</script>
+</body>
+</html>

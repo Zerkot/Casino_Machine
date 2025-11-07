@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Unitaire Authentification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #test-log { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        #test-log li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <h2>Tests Unitaires : Compte & Connexion</h2>
+    <ul id="test-log"></ul>
+
+    <script>
+        // --- Mock Database ---
+        const STORAGE_USERS_KEY = "test_users";
+        const STORAGE_CURRENT_USER_KEY = "test_currentUserEmail";
+        const DEFAULT_USERS = [{name: "Alice", email: "alice@example.com", balance: 50}];
+
+        function resetStorage() {
+            localStorage.clear();
+            localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(DEFAULT_USERS));
+        }
+
+        function assert(desc, cond) {
+            const li = document.createElement('li');
+            li.textContent = desc + ' → ' + (cond ? '✅ OK' : '❌ Échec');
+            li.style.color = cond ? 'green' : 'red';
+            document.getElementById('test-log').appendChild(li);
+        }
+
+        // --- Fonctions Auth ---
+        function loadAllUsers() {
+            const usersJSON = localStorage.getItem(STORAGE_USERS_KEY);
+            return usersJSON ? JSON.parse(usersJSON) : [];
+        }
+
+        function saveAllUsers(users) {
+            localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+        }
+
+        function register(name, email) {
+            let users = loadAllUsers();
+            if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) return false;
+            const newUser = {name, email, balance: 100};
+            users.push(newUser);
+            saveAllUsers(users);
+            localStorage.setItem(STORAGE_CURRENT_USER_KEY, email);
+            return true;
+        }
+
+        function login(email) {
+            let users = loadAllUsers();
+            const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+            if (user) {
+                localStorage.setItem(STORAGE_CURRENT_USER_KEY, email);
+                return true;
+            }
+            return false;
+        }
+
+        function logout() {
+            localStorage.removeItem(STORAGE_CURRENT_USER_KEY);
+        }
+
+        function getCurrentUser() {
+            const email = localStorage.getItem(STORAGE_CURRENT_USER_KEY);
+            if (!email) return null;
+            const users = loadAllUsers();
+            return users.find(u => u.email === email) || null;
+        }
+
+        // --- Tests Unitaires ---
+        function runAuthTests() {
+            resetStorage();
+
+            // 1. Test : Login existant
+            let result = login("alice@example.com");
+            assert("Connexion avec compte existant", result === true);
+            assert("Utilisateur courant après login", getCurrentUser().email === "alice@example.com");
+
+            // 2. Test : Logout
+            logout();
+            assert("Déconnexion fonctionne", getCurrentUser() === null);
+
+            // 3. Test : Enregistrement nouveau compte
+            result = register("Bob", "bob@example.com");
+            assert("Création d'un nouveau compte", result === true);
+            assert("Utilisateur courant après création", getCurrentUser().email === "bob@example.com");
+
+            // 4. Test : Impossible de créer un compte avec email existant
+            result = register("Alice2", "alice@example.com");
+            assert("Échec création compte avec email existant", result === false);
+
+            // 5. Test : Solde initial correct
+            assert("Solde initial du nouvel utilisateur = 100", getCurrentUser().balance === 100);
+        }
+
+        // --- Lancer les tests au chargement ---
+        document.addEventListener('DOMContentLoaded', runAuthTests);
+    </script>
+</body>
+</html>
