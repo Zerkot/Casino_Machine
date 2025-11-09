@@ -2,11 +2,17 @@
 
 <html lang="fr">
 <head>
-<meta charset="utf-8"/>
+<meta charset="utf-t"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Solde de la Machine à Sous</title>
 <style>
         /* ... (Styles CSS identiques à la version précédente) ... */
+    .rules-symbol-img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain; /* ou "cover" selon ton rendu souhaité */
+    }
+
         body {
             height: 200vh;
             margin: 0;
@@ -131,7 +137,21 @@
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
             transition: transform 0.1s ease-out, background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
             position: relative; /* NOUVEAU: Pour z-index */
+            /* Note: Pour utiliser des images, modifiez le JS (voir stopColumn) 
+               et décommentez/ajustez ces styles :
+            */
+            /*
+            padding: 5px; 
+            font-size: 1em; 
+            */
         }
+        /*
+        .symbol img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        */
         .symbol.spinning {
             opacity: 0.6;
             filter: blur(2px);
@@ -712,7 +732,7 @@
     </style>
 <script src="database.js"></script>
 </head>
-<body><audio autoplay="" id="bg-music" loop="" preload="auto" src="sounds/casino-music-jazz-las-vegas-monaco-background-intro-theme-294408.mp3"></audio><audio id="s-spin" preload="auto" src="sounds/slot-machine-reels-sound-30276_ZFxVLP0I.mp3"></audio><audio id="s-stop" preload="auto" src="sounds/.mp3"></audio><audio id="s-win" preload="auto" src="sounds/Slot Machine Jackpot Sound Effect.mp3"></audio><div id="audio-gate" style="position: fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.6); z-index:3000;">
+<body><audio autoplay="" id="bg-music" loop="" preload="auto" src="sounds/casino-music-jazz-las-vegas-monaco-background-intro-theme-294408.mp3"></audio><audio id="s-spin" preload="auto" src="sounds/slot-machine-reels-sound-30276_ZFxVLP0I.mp3"></audio><audio id="s-stop" preload="auto" src="sounds/.mp3"></audio><audio id="s-win" preload="auto"src="sounds/Slot Machine Jackpot Sound Effect.mp3"></audio><div id="audio-gate" style="position: fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.6); z-index:3000;">
 <div class="card" style="background:#07132a; color:#e6eef8; padding:18px 22px; border-radius:12px; text-align:center; max-width:90%; box-shadow:0 10px 30px rgba(0,0,0,.35);">
 <div>Appuyez pour activer les sons</div>
 <button id="enable-audio-btn" style="margin-top:10px; padding:10px 16px; border:none; border-radius:8px; cursor:pointer; font-weight:700; background:#00aaff; color:#07132a;">Activer le son</button>
@@ -739,21 +759,21 @@
 <a href="Index.html" id="back-button">⬅ Retour</a>
 <div id="slot-container">
 <div id="reels-container">
-<div class="symbol" id="symbol-0-0">🍒</div>
-<div class="symbol" id="symbol-1-0">🍒</div>
-<div class="symbol" id="symbol-2-0">🍒</div>
-<div class="symbol" id="symbol-3-0">🍒</div>
-<div class="symbol" id="symbol-4-0">🍒</div>
-<div class="symbol" id="symbol-0-1">7</div>
-<div class="symbol" id="symbol-1-1">7</div>
-<div class="symbol" id="symbol-2-1">7</div>
-<div class="symbol" id="symbol-3-1">7</div>
-<div class="symbol" id="symbol-4-1">7</div>
-<div class="symbol" id="symbol-0-2">BAR</div>
-<div class="symbol" id="symbol-1-2">BAR</div>
-<div class="symbol" id="symbol-2-2">BAR</div>
-<div class="symbol" id="symbol-3-2">BAR</div>
-<div class="symbol" id="symbol-4-2">BAR</div>
+<div class="symbol" id="symbol-0-0">S1</div>
+<div class="symbol" id="symbol-1-0">S1</div>
+<div class="symbol" id="symbol-2-0">S1</div>
+<div class="symbol" id="symbol-3-0">S1</div>
+<div class="symbol" id="symbol-4-0">S1</div>
+<div class="symbol" id="symbol-0-1">S2</div>
+<div class="symbol" id="symbol-1-1">S2</div>
+<div class="symbol" id="symbol-2-1">S2</div>
+<div class="symbol" id="symbol-3-1">S2</div>
+<div class="symbol" id="symbol-4-1">S2</div>
+<div class="symbol" id="symbol-0-2">S3</div>
+<div class="symbol" id="symbol-1-2">S3</div>
+<div class="symbol" id="symbol-2-2">S3</div>
+<div class="symbol" id="symbol-3-2">S3</div>
+<div class="symbol" id="symbol-4-2">S3</div>
 </div>
 </div>
 <div id="bet-controls">
@@ -796,7 +816,6 @@
 </ul>
 </div>
 </div>
-<!-- Panel de démo rétractable -->
 <button id="demo-toggle-btn" title="Ouvrir le panneau démo">DEMO</button>
 <div aria-hidden="true" class="hidden" id="demo-panel">
 <h3>Panel Démo</h3>
@@ -813,16 +832,145 @@
 <div class="demo-row">
 <button class="demo-btn small" onclick="setGuaranteedWin()">Spin gagnant garanti (prochain spin)</button>
 </div>
-<p><small>Le spin garanti rendra la ligne du milieu gagnante (77777) au prochain SPIN.</small></p>
+<p><small>Le spin garanti rendra la ligne du milieu gagnante (S10x5) au prochain SPIN.</small></p>
 </div>
 <script>
         // --- CONSTANTES DU JEU ---
         const MAX_BALANCE = 100.00;
         const MIN_BET = 1.00, MAX_BET = 25.00, BET_STEP = 1.00, DEFAULT_BET = 5.00;
-        const SYMBOLS = ["🍒", "🍒", "🍒", "🍒", "🍒", "🍒", "🍋", "🍋", "🍋", "🍋", "🍋", "🍊", "🍊", "🍊", "🍊", "🔔", "🔔", "🔔", "BAR", "BAR", "7", "🌟", "🌟"];
-        const SYMBOLS_FRENZY = ["🍒", "🍒", "🍋", "🍋", "🍋", "🍊", "🍊", "🍊", "🔔", "🔔", "🔔", "🔔", "BAR", "BAR", "BAR", "7", "7", "🌟"];
-        const PAYOUTS = { "🍒": 10, "🍋": 20, "🍊": 40, "🔔": 100, "BAR": 500, "7": 5000 };
-        const PAYOUTS_3 = { "🍒": 1, "🍋": 2, "🍊": 4, "🔔": 10, "BAR": 25, "7": 100, "🌟": 0 }; // Gains pour 3 symboles (colonnes)
+
+        // ========= MODIFIÉ : Définition des Symboles et Rareté =========
+        // S1 (commun) -> S10 (rare/jackpot)
+        
+        // Mode Normal : S1 est commun, S10 est très rare.
+        const SYMBOLS = [
+            "S1", "S1", "S1", "S1", "S1", "S1", "S1", "S1", // 8x
+            "S2", "S2", "S2", "S2", "S2", "S2", "S2",     // 7x
+            "S3", "S3", "S3", "S3", "S3", "S3",             // 6x
+            "S4", "S4", "S4", "S4", "S4",                 // 5x
+            "S5", "S5", "S5", "S5",                     // 4x
+            "S6", "S6", "S6",                         // 3x
+            "S7", "S7",                             // 2x
+            "S8",                                 // 1x
+            "S9",                                 // 1x
+            "S10",                                // 1x (Jackpot)
+            "🌟", "🌟"                            // 2x (Scatter)
+        ]; // Total 40
+
+        // Mode Frénésie : Les symboles rares (S7-S10) sont plus communs.
+        const SYMBOLS_FRENZY = [
+            "S1",                                 // 1x
+            "S2",                                 // 1x
+            "S3", "S3",                             // 2x
+            "S4", "S4", "S4",                         // 3x
+            "S5", "S5", "S5", "S5",                     // 4x
+            "S6", "S6", "S6", "S6", "S6",                 // 5x
+            "S7", "S7", "S7", "S7", "S7",                 // 5x
+            "S8", "S8", "S8", "S8",                     // 4x
+            "S9", "S9", "S9",                         // 3x
+            "S10", "S10",                           // 2x (Jackpot)
+            "🌟", "🌟", "🌟"                        // 3x (Scatter)
+        ]; // Total 33
+
+        // Gains pour 5 symboles (Lignes / Formes)
+        // Remplacez "liens image.png" par le chemin de vos images (ex: "images/S1.png")
+        const PAYOUTS = { 
+            "S1": 5,    // S1 = "images/chanvillard gta5.png"
+            "S2": 10,   // S2 = "images/guille gta5.png"
+            "S3": 20,   // S3 = "images/bouguelia gta5.png"
+            "S4": 40,   // S4 = "images/goldfarb gta5.png"
+            "S5": 80,   // S5 = "images/fisquet gta5.png"
+            "S6": 150,  // S6 = "images/agoun gta5.png"
+            "S7": 300,  // S7 = "images/boubou gta5.png"
+            "S8": 600,  // S8 = "images/lhomme gta5.png"
+            "S9": 1200, // S9 = "images/rassel gta5.png"
+            "S10": 5000 // S10 = "images/ouzrout gta5.png" (Jackpot)
+        };
+        
+        // Gains pour 3 symboles (Colonnes)
+        const PAYOUTS_3 = { 
+            "S1": 5,    // S1 = "images/chanvillard gta5.png"
+            "S2": 10,   // S2 = "images/guille gta5.png"
+            "S3": 20,   // S3 = "images/bouguelia gta5.png"
+            "S4": 40,   // S4 = "images/goldfarb gta5.png"
+            "S5": 80,   // S5 = "images/fisquet gta5.png"
+            "S6": 150,  // S6 = "images/agoun gta5.png"
+            "S7": 300,  // S7 = "images/boubou gta5.png"
+            "S8": 600,  // S8 = "images/lhomme gta5.png"
+            "S9": 1200, // S9 = "images/rassel gta5.png"
+            "S10": 5000, // S10 = "images/ouzrout gta5.png" (Jackpot)
+            "🌟": 0     // 🌟 = "liens scatter.png"
+        };
+
+               // --- Association symboles → images + noms pour l'affichage des règles ---
+        const SYMBOL_IMAGES = {
+            "S1":  { src: "images/chanvillard gta5.png", label: "Chanvillard" },
+            "S2":  { src: "images/guille gta5.png",      label: "Guille" },
+            "S3":  { src: "images/bouguelia gta5.png",   label: "Bouguelia" },
+            "S4":  { src: "images/goldfarb gta5.png",    label: "Goldfarb" },
+            "S5":  { src: "images/fisquet gta5.png",     label: "Fisquet" },
+            "S6":  { src: "images/agoun gta5.png",       label: "Agoun" },
+            "S7":  { src: "images/boubou gta5.png",      label: "Boubou" },
+            "S8":  { src: "images/lhomme gta5.png",      label: "Lhomme" },
+            "S9":  { src: "images/rassel gta5.png",      label: "Rassel" },
+            "S10": { src: "images/ouzrout gta5.png",     label: "Ouzrout" },
+            "🌟":  { src: "images/iut.png",              label: "Scatter" }
+        };
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const map = {
+    "S1":  "images/chanvillard gta5.png",
+    "S2":  "images/guille gta5.png",
+    "S3":  "images/bouguelia gta5.png",
+    "S4":  "images/goldfarb gta5.png",
+    "S5":  "images/fisquet gta5.png",
+    "S6":  "images/agoun gta5.png",
+    "S7":  "images/boubou gta5.png",
+    "S8":  "images/lhomme gta5.png",
+    "S9":  "images/rassel gta5.png",
+    "S10": "images/ouzrout gta5.png",
+    "🌟":  "images/iut.png"
+  };
+
+  function updateSymbols() {
+    document.querySelectorAll(".symbol").forEach(el => {
+      const symbol = el.textContent.trim();
+      const img = map[symbol];
+      if (!img) return;
+
+      el.style.width = "100px";
+      el.style.height = "100px";
+      el.style.display = "inline-block";
+      el.style.backgroundImage = `url("${img}")`;
+      el.style.backgroundSize = "cover";
+      el.style.backgroundPosition = "center";
+      el.style.backgroundRepeat = "no-repeat";
+      el.style.borderRadius = "10px";
+      el.style.overflow = "hidden";
+      el.style.fontSize = "0";
+      el.style.color = "transparent";
+    });
+  }
+
+  updateSymbols();
+
+  const reels = document.getElementById("reels-container");
+  if (reels) {
+    const observer = new MutationObserver(() => {
+      updateSymbols();
+    });
+
+    observer.observe(reels, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
+});
+
+        // ========= FIN MODIFICATIONS Symboles =========
+
 
         // --- CONSTANTES D'AUTH ---
         // (Note: ADMIN_EMAIL est maintenant défini dans database.js)
@@ -843,12 +991,10 @@
         let currentUser = null;
 
         // --- DÉMO / GUEST ---
-        let guaranteedWinNextSpin = false; // si true -> prochain spin sera gagnant (ligne milieu 77777)
+        let guaranteedWinNextSpin = false; // si true -> prochain spin sera gagnant (ligne milieu S10x5)
         let isGuest = false;
 
         // --- SÉLECTION DES ÉLÉMENTS DU DOM ---
-        let userBalance = 100.00; // Le solde initial
-        const MAX_BALANCE = 100.00;
         const balanceDisplay = document.getElementById('balance-display');
         const spinButton = document.getElementById('spin-button');
         const resultDisplay = document.getElementById('result-display');
@@ -1147,7 +1293,9 @@
                     totalWinnings += bet * multiplier;
                     const lineName = (r === 0) ? "Ligne Haut" : (r === 1) ? "Ligne Milieu" : "Ligne Bas";
                     winningLinesDesc.push(`${lineName} (${firstSymbol})`);
-                    if (firstSymbol === "7") isJackpotWin = true;
+                    
+                    // MODIFIÉ : Vérifie le Jackpot S10
+                    if (firstSymbol === "S10") isJackpotWin = true;
 
                     // NOUVEAU : Ajouter les coordonnées
                     for (let c_win = 0; c_win < C; c_win++) {
@@ -1188,7 +1336,10 @@
             if (PAYOUTS[firstVSymbol] && vSymbols.every(s => s === firstVSymbol)) {
                 totalWinnings += bet * PAYOUTS[firstVSymbol];
                 winningLinesDesc.push(`Forme V (${firstVSymbol})`);
-                if (firstVSymbol === "7") isJackpotWin = true;
+                
+                // MODIFIÉ : Vérifie le Jackpot S10
+                if (firstVSymbol === "S10") isJackpotWin = true;
+                
                 // NOUVEAU : Ajouter les coordonnées
                 addCoords(0, 0); addCoords(1, 1); addCoords(2, 2); addCoords(1, 3); addCoords(0, 4);
             }
@@ -1199,7 +1350,10 @@
             if (PAYOUTS[firstZSymbol] && zSymbols.every(s => s === firstZSymbol)) {
                 totalWinnings += bet * PAYOUTS[firstZSymbol];
                 winningLinesDesc.push(`Forme Z (${firstZSymbol})`);
-                if (firstZSymbol === "7") isJackpotWin = true;
+                
+                // MODIFIÉ : Vérifie le Jackpot S10
+                if (firstZSymbol === "S10") isJackpotWin = true;
+
                 // NOUVEAU : Ajouter les coordonnées
                 addCoords(0, 0); addCoords(0, 1); addCoords(1, 2); addCoords(2, 3); addCoords(2, 4);
             }
@@ -1210,19 +1364,24 @@
             if (PAYOUTS[firstRevZSymbol] && revZSymbols.every(s => s === firstRevZSymbol)) {
                 totalWinnings += bet * PAYOUTS[firstRevZSymbol];
                 winningLinesDesc.push(`Forme Z-inv (${firstRevZSymbol})`);
-                if (firstRevZSymbol === "7") isJackpotWin = true;
+                
+                // MODIFIÉ : Vérifie le Jackpot S10
+                if (firstRevZSymbol === "S10") isJackpotWin = true;
+
                 // NOUVEAU : Ajouter les coordonnées
                 addCoords(2, 0); addCoords(2, 1); addCoords(1, 2); addCoords(0, 3); addCoords(0, 4);
             }
 
             // Forme A (V inversé): [2,0], [1,1], [0,2], [1,3], [2,4]
-            // CORRIGÉ : Bug dans la définition du tableau aSymbols
             const aSymbols = [grid[2][0], grid[1][1], grid[0][2], grid[1][3], grid[2][4]]; 
             const firstASymbol = aSymbols[0];
             if (PAYOUTS[firstASymbol] && aSymbols.every(s => s === firstASymbol)) {
                 totalWinnings += bet * PAYOUTS[firstASymbol];
                 winningLinesDesc.push(`Forme A (${firstASymbol})`);
-                if (firstASymbol === "7") isJackpotWin = true;
+                
+                // MODIFIÉ : Vérifie le Jackpot S10
+                if (firstASymbol === "S10") isJackpotWin = true;
+
                 // NOUVEAU : Ajouter les coordonnées
                 addCoords(2, 0); addCoords(1, 1); addCoords(0, 2); addCoords(1, 3); addCoords(2, 4);
             }
@@ -1235,54 +1394,90 @@
         /**
          * FONCTION showRules MISE A JOUR
          */
-        function showRules() {
-            payoutList.innerHTML = ''; // Vider la liste
-            
-            // Modifier le texte principal (le premier <p> dans la modale)
-            const p = rulesModal.querySelector('.modal-content p');
-            p.innerHTML = "Alignez des symboles identiques sur les <strong>lignes horizontales (5x)</strong>, les <strong>colonnes (3x)</strong>, ou en <strong>formes (V, Z, A)</strong> pour gagner !";
+            function showRules() {
+        payoutList.innerHTML = ''; // Vider la liste
+        
+        // Texte principal
+        const p = rulesModal.querySelector('.modal-content p');
+        p.innerHTML = "Alignez des symboles identiques sur les <strong>lignes horizontales (5x)</strong>, les <strong>colonnes (3x)</strong>, ou en <strong>formes (V, Z, A)</strong> pour gagner !";
 
-            // Ajoute un titre pour les gains 5x
-            const h5x = document.createElement('li');
-            h5x.innerHTML = "<strong>--- Gains (5 symboles) ---</strong>";
-            h5x.style.background = "none";
-            h5x.style.marginTop = "10px";
-            payoutList.appendChild(h5x);
-
-            // Affiche les gains 5x (PAYOUTS)
-            const sortedPayouts = Object.entries(PAYOUTS).sort(([, a], [, b]) => a - b);
-            for (const [symbol, multiplier] of sortedPayouts) {
-                const li = document.createElement('li');
-                li.innerHTML = `<span>${symbol}</span> x 5 (Lignes, V, Z, A) = <strong>${multiplier}x</strong> la mise`;
-                payoutList.appendChild(li);
+        // Petit helper pour générer l'icône (image ou texte de secours)
+        function getSymbolIconHTML(symbol) {
+            const info = SYMBOL_IMAGES[symbol];
+            if (info) {
+                return `
+                <span class="rules-symbol">
+                    <img src="${info.src}" alt="${info.label}" class="rules-symbol-img">
+                </span>
+                `;
             }
-            
-            // Ajoute un titre pour les gains 3x
-            const h3x = document.createElement('li');
-            h3x.innerHTML = "<strong>--- Gains (3 symboles) ---</strong>";
-            h3x.style.background = "none";
-            h3x.style.marginTop = "10px";
-            payoutList.appendChild(h3x);
-
-            // Affiche les gains 3x (PAYOUTS_3)
-            const sortedPayouts3 = Object.entries(PAYOUTS_3)
-                .filter(([, multiplier]) => multiplier > 0) // Ne pas montrer 🌟
-                .sort(([, a], [, b]) => a - b);
-                
-            for (const [symbol, multiplier] of sortedPayouts3) {
-                const li = document.createElement('li');
-                li.innerHTML = `<span>${symbol}</span> x 3 (Colonnes) = <strong>${multiplier}x</strong> la mise`;
-                payoutList.appendChild(li);
-            }
-
-            // Affiche le gain de Scatter
-            const li = document.createElement('li');
-            li.style.marginTop = "10px";
-            li.innerHTML = `<span>🌟</span> x 3 (ou plus) n'importe où = <strong>${FRENZY_SPINS_AWARDED} Tours Frénésie</strong>`;
-            payoutList.appendChild(li);
-            
-            rulesModal.style.display = 'flex';
+            // fallback si pas d'image trouvée
+            return `
+            <span class="rules-symbol rules-symbol-code">
+                ${symbol}
+            </span>
+            `;
         }
+        
+
+        // ----------- Gains 5 symboles (lignes + formes) -----------
+        const h5x = document.createElement('li');
+        h5x.innerHTML = "<strong>--- Gains (5 symboles) ---</strong>";
+        h5x.style.background = "none";
+        h5x.style.marginTop = "10px";
+        payoutList.appendChild(h5x);
+
+        const sortedPayouts = Object.entries(PAYOUTS).sort(([keyA], [keyB]) => {
+            const numA = parseInt(keyA.substring(1));
+            const numB = parseInt(keyB.substring(1));
+            return numA - numB;
+        });
+
+        for (const [symbol, multiplier] of sortedPayouts) {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                ${getSymbolIconHTML(symbol)}
+                x 5 (Lignes, V, Z, A) = <strong>${multiplier}x</strong> la mise
+            `;
+            payoutList.appendChild(li);
+        }
+
+        // ----------- Gains 3 symboles (colonnes) -----------
+        const h3x = document.createElement('li');
+        h3x.innerHTML = "<strong>--- Gains (3 symboles) ---</strong>";
+        h3x.style.background = "none";
+        h3x.style.marginTop = "10px";
+        payoutList.appendChild(h3x);
+
+        const sortedPayouts3 = Object.entries(PAYOUTS_3)
+            .filter(([key, multiplier]) => multiplier > 0 && key !== '🌟')
+            .sort(([keyA], [keyB]) => {
+                const numA = parseInt(keyA.substring(1));
+                const numB = parseInt(keyB.substring(1));
+                return numA - numB;
+            });
+
+        for (const [symbol, multiplier] of sortedPayouts3) {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                ${getSymbolIconHTML(symbol)}
+                x 3 (Colonnes) = <strong>${multiplier}x</strong> la mise
+            `;
+            payoutList.appendChild(li);
+        }
+
+        // ----------- Scatter -----------
+        const liScatter = document.createElement('li');
+        liScatter.style.marginTop = "10px";
+        liScatter.innerHTML = `
+            ${getSymbolIconHTML("🌟")}
+            x 3 (ou plus) n'importe où = <strong>${FRENZY_SPINS_AWARDED} Tours Frénésie</strong>
+        `;
+        payoutList.appendChild(liScatter);
+
+        rulesModal.style.display = 'flex';
+    }
+
         function hideRules() { rulesModal.style.display = 'none'; }
         rulesModal.addEventListener('click', function (event) {
             if (event.target === rulesModal) { hideRules(); }
@@ -1334,14 +1529,16 @@
             const correctPassword = "938-555-0100";
 
             if (password === correctPassword) {
-                const choice = prompt("Quel cheat activer ?\n1 = Jackpot (77777)\n2 = Scatter (Frénésie 100%)\n\nEntrez 1 ou 2 :");
+                // MODIFIÉ : Texte pour S10
+                const choice = prompt("Quel cheat activer ?\n1 = Jackpot (S10x5)\n2 = Scatter (Frénésie 100%)\n\nEntrez 1 ou 2 :");
 
                 if (choice === "1") {
                     activeCheatMode = "jackpot";
-                    cheatBtn.textContent = "CHEAT: 777";
+                    // MODIFIÉ : Texte pour S10
+                    cheatBtn.textContent = "CHEAT: S10";
                     cheatBtn.style.backgroundColor = "#2ecc71";
                     testButton.style.display = "inline-block";
-                    alert("Mode Jackpot activé ! Tous les spins seront des 77777.");
+                    alert("Mode Jackpot activé ! Tous les spins seront des S10x5.");
                 } else if (choice === "2") {
                     activeCheatMode = "scatter";
                     cheatBtn.textContent = "CHEAT: 🌟";
@@ -1410,16 +1607,20 @@
             return symbolList[Math.floor(Math.random() * symbolList.length)];
         }
 
+        /**
+         * FONCTION generateFinalGrid (MODIFIÉE)
+         */
         function generateFinalGrid() {
             // Si on veut un spin garanti, produire une grille adéquate
             if (guaranteedWinNextSpin) {
                 guaranteedWinNextSpin = false;
-                // Produire une grille où la ligne du milieu est 77777 (gros gain)
+                // Produire une grille où la ligne du milieu est S10x5 (gros gain)
                 let grid = [];
                 for (let r = 0; r < 3; r++) {
                     let row = [];
                     for (let c = 0; c < 5; c++) {
-                        if (r === 1) row.push("7");
+                        // MODIFIÉ : Utilise S10 au lieu de 7
+                        if (r === 1) row.push("S10");
                         else row.push(getRandomSymbol());
                     }
                     grid.push(row);
@@ -1432,12 +1633,13 @@
                 let row = [];
                 for (let c = 0; c < 5; c++) {
                     // Logique de Cheat
+                    // MODIFIÉ : Utilise S10 au lieu de 7
                     if (activeCheatMode === "jackpot" && (
                         (r === 1) || // Ligne milieu
                         [0,4].includes(c) || // Colonnes V/Z
                         (r === 2 && c === 2) // Centre V
                     )) {
-                        row.push("7");
+                        row.push("S10");
                     } else if (activeCheatMode === "scatter" && ((r === 0 && c === 0) || (r === 1 && c === 2) || (r === 2 && c === 4))) {
                         row.push("🌟");
                     } else {
@@ -1449,9 +1651,10 @@
 
             // Assurer que le Jackpot s'applique à TOUTES les lignes si demandé (pour test)
             if (activeCheatMode === "jackpot") {
-                grid[0] = ["7", "7", "7", "7", "7"];
-                grid[1] = ["7", "7", "7", "7", "7"];
-                grid[2] = ["7", "7", "7", "7", "7"];
+                // MODIFIÉ : Utilise S10 au lieu de 7
+                grid[0] = ["S10", "S10", "S10", "S10", "S10"];
+                grid[1] = ["S10", "S10", "S10", "S10", "S10"];
+                grid[2] = ["S10", "S10", "S10", "S10", "S10"];
             }
 
             return grid;
@@ -1461,7 +1664,24 @@
             spinningColumns.shift();
             for (let r = 0; r < 3; r++) {
                 const symbolEl = document.getElementById(`symbol-${colIndex}-${r}`);
+                
+                // MODIFIÉ : Affiche le texte du symbole
                 symbolEl.textContent = finalGrid[r][colIndex];
+                
+                /* // === ASTUCE POUR LES IMAGES ===
+                // Si vous voulez utiliser des images (ex: "S1.png"), 
+                // remplacez la ligne ci-dessus par celle-ci :
+                
+                const symbol = finalGrid[r][colIndex];
+                if (symbol === "🌟") {
+                    symbolEl.innerHTML = `<img src="images/scatter.png" alt="Scatter">`;
+                } else {
+                    symbolEl.innerHTML = `<img src="images/${symbol}.png" alt="${symbol}">`;
+                }
+                // (Assurez-vous aussi d'ajuster le CSS de .symbol et .symbol img)
+                // === FIN ASTUCE ===
+                */
+
                 symbolEl.classList.remove('spinning');
             }
         }
@@ -1470,7 +1690,21 @@
             for (const colIndex of spinningColumns) {
                 for (let r = 0; r < 3; r++) {
                     const symbolEl = document.getElementById(`symbol-${colIndex}-${r}`);
+                    
+                    // MODIFIÉ : Affiche le texte du symbole
                     symbolEl.textContent = getRandomSymbol();
+
+                    /*
+                    // === ASTUCE POUR LES IMAGES (animation) ===
+                    // (Utilisez la même logique que stopColumn pour l'animation)
+                    const symbol = getRandomSymbol();
+                    if (symbol === "🌟") {
+                        symbolEl.innerHTML = `<img src="images/scatter.png" alt="Scatter">`;
+                    } else {
+                        symbolEl.innerHTML = `<img src="images/${symbol}.png" alt="${symbol}">`;
+                    }
+                    // === FIN ASTUCE ===
+                    */
                 }
             }
         }
@@ -1651,6 +1885,9 @@
             document.getElementById('test-results').appendChild(li);
         }
 
+        /**
+         * FONCTION runTests (MODIFIÉE)
+         */
         function runTests() {
             const log = document.getElementById('test-log');
             log.style.display = 'block';
@@ -1662,9 +1899,10 @@
 
             activeCheatMode = "jackpot";
             const gridJackpot = generateFinalGrid();
-            assert('Mode Cheat [Jackpot] génère 77777 Ligne 1', gridJackpot[0].every(s => '7' === s));
-            assert('Mode Cheat [Jackpot] génère 77777 Ligne 2', gridJackpot[1].every(s => '7' === s));
-            assert('Mode Cheat [Jackpot] génère 77777 Ligne 3', gridJackpot[2].every(s => '7' === s));
+            // MODIFIÉ : Teste S10 au lieu de 7
+            assert('Mode Cheat [Jackpot] génère S10x5 Ligne 1', gridJackpot[0].every(s => 'S10' === s));
+            assert('Mode Cheat [Jackpot] génère S10x5 Ligne 2', gridJackpot[1].every(s => 'S10' === s));
+            assert('Mode Cheat [Jackpot] génère S10x5 Ligne 3', gridJackpot[2].every(s => 'S10' === s));
 
             activeCheatMode = "scatter";
             const gridScatter = generateFinalGrid();
@@ -1727,7 +1965,8 @@
                 return;
             }
             guaranteedWinNextSpin = true;
-            resultDisplay.textContent = "Spin garanti activé : prochain SPIN donnera une ligne gagnante (77777).";
+            // MODIFIÉ : Texte pour S10
+            resultDisplay.textContent = "Spin garanti activé : prochain SPIN donnera une ligne gagnante (S10x5).";
             resultDisplay.classList.add('win');
             hideDemoPanel();
         }
@@ -1842,5 +2081,4 @@
 })();
 </script>
 </body>
-
 </html>

@@ -128,3 +128,15 @@ header.page{
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.symbol {
+  position: relative;
+  width: 2px;
+  height: 2px;
+  font-size: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 8px;
+  overflow: hidden;
+}
